@@ -1,0 +1,10 @@
+server:
+  port: 8098
+management:
+  endpoint:
+    beans:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: beans
