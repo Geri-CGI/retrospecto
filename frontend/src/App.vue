@@ -1,18 +1,11 @@
 <template>
-  <v-app>
-    <v-main>
-      <router-view/>
-    </v-main>
-  </v-app>
+  <router-view />
 </template>
 
 <script>
+import { defineComponent } from 'vue'
 
-export default {
-  name: 'App',
-
-  data: () => ({
-    //
-  }),
-}
+export default defineComponent({
+  name: 'App'
+})
 </script>
