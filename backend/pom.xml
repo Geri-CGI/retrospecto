@@ -80,7 +80,7 @@
 								<resource>
 									<directory>${project.parent.basedir}/frontend/target/dist</directory>
 									<includes>
-										<include>static/</include>
+										<include>assets/</include>
 										<include>index.html</include>
 										<include>favicon.ico</include>
 									</includes>
