@@ -1,31 +1,40 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-toolbar class="bg-blue text-white shadow-2">
-      <q-btn flat label="Retrospecto"/>
-      <q-space/>
-
-      <!--
-        notice shrink property since we are placing it
-        as child of QToolbar
-      -->
-      <q-tabs shrink>
-        <q-route-tab
-          name="board" label="Board"
-          to="/board"
-          exact
-        />
-        <q-route-tab
-          name="poker" label="Poker"
-          to="/poker"
-          exact
-        />
-        <q-route-tab
-          name="chat" label="Chat"
-          to="/chat"
-          exact
-        />
-      </q-tabs>
-    </q-toolbar>
+    <q-header elevated>
+      <q-toolbar class="bg-blue text-white shadow-2">
+        <q-toolbar-title>retrospecto</q-toolbar-title>
+        <q-space/>
+        <q-tabs shrink>
+          <q-route-tab
+            name="home" icon="home"
+            to="/"
+            exact
+          />
+          <q-route-tab
+            name="board" icon="dashboard"
+            to="/board"
+            exact
+          />
+          <q-route-tab
+            name="poker" icon="style"
+            to="/poker"
+            exact
+          />
+          <q-route-tab
+            name="chat" icon="chat"
+            to="/chat"
+            exact
+          />
+        </q-tabs>
+      </q-toolbar>
+    </q-header>
+    <q-footer elevated>
+      <q-toolbar>
+        <q-toolbar-title>retrospecto</q-toolbar-title>
+        <q-space/>
+        <q-btn flat icon="navigation" @click="GoToTop()"/>
+      </q-toolbar>
+    </q-footer>
     <q-page-container>
       <router-view/>
     </q-page-container>
@@ -42,7 +51,11 @@ export default defineComponent({
 
   setup() {
 
-    return {}
+    return {
+      GoToTop() {
+        window.scrollTo(0, 0);
+      }
+    }
   }
 })
 </script>
