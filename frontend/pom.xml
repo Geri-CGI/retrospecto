@@ -39,7 +39,7 @@
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>install</arguments>
+              <arguments>install --cache=/out/.npm</arguments>
             </configuration>
           </execution>
           <execution>
@@ -48,7 +48,7 @@
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>install @quasar/cli -g</arguments>
+              <arguments>install @quasar/cli -g --cache=/out/.npm</arguments>
             </configuration>
           </execution>
           <execution>
