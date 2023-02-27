@@ -1,0 +1,7 @@
+version: "2"
+services:
+  backend:
+    image: retrospecto-backend:latest
+    container_name: "retrospecto"
+    ports:
+      - 8098:8098

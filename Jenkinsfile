@@ -17,5 +17,21 @@ pipeline {
                    '''
             }
         }
+
+        stage('Create backend Docker image') {
+                    steps {
+                        sh '''mv ../backend-0.0.1-SNAPSHOT.jar .
+                              docker build -t retrospecto-backend:latest .'''
+                    }
+                }
+
+                stage('Restart docker-compose environment') {
+                            steps {
+                                sh '''
+                                    docker-compose down
+                                    docker-compose up -d'''
+                            }
+                        }
+
     }
 }
