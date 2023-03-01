@@ -1,23 +1,6 @@
 <template>
-  <div class="q-mx-auto">
-    <div class="justify-center absolute-center" v-if="usernamePageVisible">
-      <q-card class="my-card">
-        <q-card-section>
-          <div class="text-h6">Type in your username:</div>
-        </q-card-section>
-        <q-card-actions vertical align="center">
-          <div style="padding-bottom: 15px; padding-top: 15px">
-            <input type="text" v-model="username" placeholder="Username" @keydown.enter="connect"/>
-          </div>
-          <div style="padding-bottom: 15px">
-            <q-btn color="primary" @click="connect">Start Chatting</q-btn>
-          </div>
-        </q-card-actions>
-      </q-card>
-    </div>
-  </div>
   <div class="column q-pa-xl full-height justify-center absolute-center full-width"
-       style="padding-top: 60px; padding-bottom: 60px" v-if="chatPageIsVisible">
+       style="padding-top: 60px; padding-bottom: 60px">
     <q-scroll-area class="col" ref="chatScroll">
       <q-list>
         <template v-for="(chatItem, index) in messages" :key="index">
@@ -35,7 +18,14 @@
     </q-scroll-area>
     <div class="row full-width text-center items-center">
       <div class="col-12">
-        <q-input type="text" bottom-slots v-model="messageInput" label="Text" @keydown.enter="sendMessage">
+        <q-input type="text" bottom-slots v-model="username" placeholder="Username" @keydown.enter="connect"
+                 v-if="usernameInputVisible">
+          <template v-slot:append>
+            <q-btn color="primary" @click="connect">Start Chatting</q-btn>
+          </template>
+        </q-input>
+        <q-input type="text" bottom-slots v-model="messageInput" label="Text" @keydown.enter="sendMessage"
+                 v-if="chatInputVisible">
           <template v-slot:append>
             <q-icon v-if="messageInput !== ''" name="close" @click="messageInput = ''" class="cursor-pointer"/>
             <q-btn color="primary" round flat icon="send" @click="sendMessage"/>
@@ -58,18 +48,21 @@ export default defineComponent({
   name: 'ChatPage',
   data() {
     return {
-      usernamePageVisible: true,
-      chatPageIsVisible: false,
+      usernameInputVisible: true,
+      chatInputVisible: false,
       messageInput: '',
       username: '',
       messages: []
     }
   },
+  created() {
+    this.getMessages()
+  },
   methods: {
     connect(event) {
       if (this.username) {
-        this.usernamePageVisible = false
-        this.chatPageIsVisible = true
+        this.usernameInputVisible = false
+        this.chatInputVisible = true
         let url = "https://www.retrospecto.cloud/ws"
         let socket = new SockJs(url);
         stompClient = Stomp.over(socket);
@@ -78,9 +71,8 @@ export default defineComponent({
       event.preventDefault();
     },
     onConnected() {
-      this.usernamePageVisible = false
-      this.chatPageIsVisible = true
-      this.getMessages()
+      this.usernameInputVisible = false
+      this.chatInputVisible = true
       // Subscribe to the Public Topic
       stompClient.subscribe('/topic/public', this.onMessageReceived);
 
@@ -117,8 +109,8 @@ export default defineComponent({
 
     },
     onClose() {
-      this.usernamePageVisible = true
-      this.chatPageIsVisible = false
+      this.usernameInputVisible = true
+      this.chatInputVisible = false
     },
     scrollToBottom() {
       const scrollArea = this.$refs.chatScroll;
@@ -131,6 +123,7 @@ export default defineComponent({
         .then(response => {
           // JSON responses are automatically parsed.
           this.messages = response.data
+          this.scrollToBottom()
         })
     }
   }
