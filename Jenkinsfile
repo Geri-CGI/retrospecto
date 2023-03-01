@@ -18,22 +18,25 @@ pipeline {
             }
         }
 
-        stage('Create backend Docker image') {
-            when { branch 'main' }
+        stage('Stop and remove old docker image') {
+            steps {
+                sh '''
+                        docker stop retrospecto
+                    '''
+            }
+        }
+
+        stage('Create new retrospecto docker image') {
             steps {
                 sh '''mv ../backend-0.0.1-SNAPSHOT.jar .
                               docker build -t retrospecto-backend:latest .'''
             }
         }
 
-        stage('Restart docker-compose environment') {
-            when { branch 'main' }
+        stage('Start retrospecto docker image') {
             steps {
-                sh '''
-                                    docker-compose down
-                                    docker-compose up -d'''
+                sh 'docker run -d -p 8098:8098 --name retrospecto --rm retrospecto-backend'
             }
         }
-
     }
 }
