@@ -22,13 +22,13 @@ public class ChatController {
     private ChatHandler chatHandler;
 
     @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
+    @SendTo("/topic/chat/public")
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
         return chatHandler.sendMessageReceived(chatMessage);
     }
 
     @MessageMapping("/chat.addUser")
-    @SendTo("/topic/public")
+    @SendTo("/topic/chat/public")
     public ChatMessage addUser(@Payload ChatMessage chatMessage,
                                SimpMessageHeaderAccessor headerAccessor) {
         return chatHandler.addUserReceived(chatMessage, headerAccessor);

@@ -39,7 +39,7 @@ public class WebSocketEventListener {
             chatMessage.setSender(username);
             chatMessage.setLocalDateTime(LocalDateTime.now());
 
-            messagingTemplate.convertAndSend("/topic/public", chatMessage);
+            messagingTemplate.convertAndSend("/topic/chat/public", chatMessage);
         }
     }
 }
