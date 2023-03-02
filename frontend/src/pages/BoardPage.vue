@@ -40,10 +40,16 @@
         </q-card>
       </div>
       <div v-if="messageInputVisible" class="row">
+        <div class="col-12">
+          <h4>
+            Board ID: {{ boardId }}
+          </h4>
+        </div>
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
-              <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white" label="What I expected:" label-color="white"
+              <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
+                       label="What I expected:" label-color="white"
                        outlined rounded type="text">
                 <template v-slot:append>
                   <q-btn color="white" flat icon="send" @click="sendMessage(inputExpectColumn,'EXPECT')"/>
@@ -210,8 +216,6 @@ export default defineComponent({
       } else {
         this.joinUsernameValid = false
         this.boardIdValid = false
-        this.messageInputVisible = true
-        this.joinAndCreateButtonVisible = false
         let url = "https://www.retrospecto.cloud/ws"
         let socket = new SockJs(url);
         stompClient = Stomp.over(socket);
@@ -222,6 +226,8 @@ export default defineComponent({
       if (this.checkRetroBoardExists()) {
         this.getRetroBoard()
         stompClient.subscribe('/topic/board/' + this.boardId, this.onMessageReceived);
+        this.messageInputVisible = true
+        this.joinAndCreateButtonVisible = false
       }
     },
     sendMessage(input, columnType) {
