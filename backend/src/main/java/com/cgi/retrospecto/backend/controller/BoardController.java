@@ -2,7 +2,7 @@ package com.cgi.retrospecto.backend.controller;
 
 import com.cgi.retrospecto.backend.domain.RetroBoard;
 import com.cgi.retrospecto.backend.domain.RetroBoardMessage;
-import com.cgi.retrospecto.backend.service.RetroBoardKeeper;
+import com.cgi.retrospecto.backend.service.RetroBoardHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -11,41 +11,37 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Random;
 
 @Controller
 public class BoardController {
 
     @Autowired
-    private RetroBoardKeeper retroBoardKeeper;
+    private RetroBoardHandler retroBoardHandler;
 
     @MessageMapping("/board/{boardId}/card.add")
     @SendTo("/topic/board/{boardId}")
-    public RetroBoardMessage simple(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
-        switch (retroBoardMessage.getColumnType()) {
-            case TRY -> retroBoardKeeper.getRetroBoard(boardId).getWantToTryColumn().add(retroBoardMessage);
-            case WELL -> retroBoardKeeper.getRetroBoard(boardId).getWentWellColumn().add(retroBoardMessage);
-            case EXPECT -> retroBoardKeeper.getRetroBoard(boardId).getExpectColumn().add(retroBoardMessage);
-            case NOT_WELL -> retroBoardKeeper.getRetroBoard(boardId).getDidNotGoWellColumn().add(retroBoardMessage);
-        }
-        return retroBoardMessage;
+    public RetroBoardMessage addRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.addRetroBoardCard(boardId, retroBoardMessage);
     }
 
     @CrossOrigin
     @ResponseBody
     @RequestMapping(path = "/board/{id}", method = RequestMethod.GET)
     public RetroBoard getRetroBoard(@PathVariable int id) {
-        return retroBoardKeeper.getRetroBoard(id);
+        return retroBoardHandler.getRetroBoard(id);
+    }
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(path = "/board/number", method = RequestMethod.GET)
+    public int getNumberOfActiveRetroBoards() {
+        return retroBoardHandler.getNumberOfActiveRetroBoards();
     }
 
     @CrossOrigin
     @ResponseBody
     @RequestMapping(path = "/board/create/{author}", method = RequestMethod.POST)
     public RetroBoard createBoard(@PathVariable String author) {
-        int id = new Random().nextInt(900000) + 100000;
-        RetroBoard newRetroBoard = new RetroBoard(id, author, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        retroBoardKeeper.addBoard(newRetroBoard);
-        return newRetroBoard;
+        return retroBoardHandler.createBoard(author);
     }
 }

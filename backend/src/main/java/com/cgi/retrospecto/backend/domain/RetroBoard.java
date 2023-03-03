@@ -1,5 +1,6 @@
 package com.cgi.retrospecto.backend.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class RetroBoard {
@@ -13,6 +14,8 @@ public class RetroBoard {
     private List<RetroBoardMessage> didNotGoWellColumn;
 
     private List<RetroBoardMessage> wantToTryColumn;
+
+    private LocalDateTime lastActionSubmittedTime;
 
     public RetroBoard(int id, String author, List<RetroBoardMessage> expectColumn, List<RetroBoardMessage> wentWellColumn, List<RetroBoardMessage> didNotGoWellColumn, List<RetroBoardMessage> wantToTryColumn) {
         this.id = id;
@@ -69,5 +72,13 @@ public class RetroBoard {
 
     public void setWantToTryColumn(List<RetroBoardMessage> wantToTryColumn) {
         this.wantToTryColumn = wantToTryColumn;
+    }
+
+    public LocalDateTime getLastActionSubmittedTime() {
+        return lastActionSubmittedTime;
+    }
+
+    public void setLastActionSubmittedTime(LocalDateTime lastActionSubmittedTime) {
+        this.lastActionSubmittedTime = lastActionSubmittedTime;
     }
 }

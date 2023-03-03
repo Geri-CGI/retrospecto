@@ -30,7 +30,7 @@
                          type="text"/>
               </div>
               <div class="col-12" style="padding: 5px">
-                <q-input v-model="boardId" :error="boardIdValid" bg-color="white" error-message="Board Id required!"
+                <q-input v-model="boardId" :error="boardIdValid" :error-message="boardIdErrorMessage" bg-color="white"
                          label="Board ID"
                          type="text"/>
               </div>
@@ -42,10 +42,13 @@
         </q-card>
       </div>
       <div v-if="messageInputVisible" class="row">
-        <div class="col-12">
+        <div class="col-6">
           <h4>
             Board ID: {{ boardId }}
           </h4>
+        </div>
+        <div class="col-6 text-right">
+          <q-btn color="negative" label="Exit" @click="exit"/>
         </div>
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
@@ -192,7 +195,8 @@ export default defineComponent({
         username: null,
         cardMessage: null,
         columnType: null
-      }
+      },
+      boardIdErrorMessage: 'Board ID required!'
     }
   },
   created() {
@@ -205,8 +209,10 @@ export default defineComponent({
         cardMessage: this.inputExpectColumn,
         columnType: 'EXPECT'
       }
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
-      this.inputExpectColumn = null
+      if (this.inputExpectColumn != null) {
+        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.inputExpectColumn = null
+      }
     },
     sendWellMessage() {
       this.retroBoardMessage = {
@@ -214,8 +220,10 @@ export default defineComponent({
         cardMessage: this.inputWentWellColumn,
         columnType: 'WELL'
       }
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
-      this.inputWentWellColumn = null
+      if (this.inputWentWellColumn != null) {
+        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.inputWentWellColumn = null
+      }
     },
     sendNotWellMessage() {
       this.retroBoardMessage = {
@@ -223,8 +231,10 @@ export default defineComponent({
         cardMessage: this.inputDidNotGoWellColumn,
         columnType: 'NOT_WELL'
       }
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
-      this.inputDidNotGoWellColumn = null
+      if (this.inputDidNotGoWellColumn != null) {
+        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.inputDidNotGoWellColumn = null
+      }
     },
     sendTryMessage() {
       this.retroBoardMessage = {
@@ -232,8 +242,10 @@ export default defineComponent({
         cardMessage: this.inputWantToTryColumn,
         columnType: 'TRY'
       }
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
-      this.inputWantToTryColumn = null
+      if (this.inputWantToTryColumn != null) {
+        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.inputWantToTryColumn = null
+      }
     },
     onMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
@@ -253,24 +265,38 @@ export default defineComponent({
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId, this.onMessageReceived);
     },
+    exit() {
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId);
+      this.messageInputVisible = false
+      this.joinAndCreateButtonVisible = true
+      this.username = null
+      this.boardId = null
+      this.retroBoard = null
+      this.author = null
+    },
     joinBoard() {
-      if (this.username === null && this.boardId != null) {
+      console.log(this.username)
+      console.log(this.boardId)
+      if (!this.boardId && !this.username) {
+        this.joinUsernameValid = true
+        this.boardIdValid = true
+        this.boardIdErrorMessage = "Board ID required!"
+      }
+      if (!this.username && this.boardId) {
         this.joinUsernameValid = true
         this.boardIdValid = false
       }
-      if (this.boardId === null && this.username != null) {
+      if (this.username && !this.boardId) {
+        this.boardIdValid = true
+        this.boardIdErrorMessage = "Board ID required!"
         this.joinUsernameValid = false
-        this.boardIdValid = true
       }
-      if (this.boardId === null && this.username === null) {
-        this.joinUsernameValid = true
-        this.boardIdValid = true
-      } else {
+      if (this.boardId && this.username) {
+        this.joinUsernameValid = false
+        this.boardIdValid = false
         axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
           .then(response => {
             if (response.data != null) {
-              this.joinUsernameValid = false
-              this.boardIdValid = false
               this.retroBoard = response.data
               this.subscribe()
               this.messageInputVisible = true
@@ -278,12 +304,15 @@ export default defineComponent({
             }
           })
           .catch(error => {
+            this.boardIdValid = true
+            this.boardIdErrorMessage = 'Board ID does not exist!'
+            this.boardId = null
             console.log(error)
           })
       }
     },
     createBoard() {
-      if (this.author === null) {
+      if (!this.author) {
         this.createUsernameValid = true
       } else {
         axios.post(`https://www.retrospecto.cloud/board/create/` + this.author)
