@@ -19,9 +19,15 @@ public class BoardController {
     private RetroBoardHandler retroBoardHandler;
 
     @MessageMapping("/board/{boardId}/card.add")
-    @SendTo("/topic/board/{boardId}")
+    @SendTo("/topic/board/{boardId}/add")
     public RetroBoardMessage addRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
         return retroBoardHandler.addRetroBoardCard(boardId, retroBoardMessage);
+    }
+
+    @MessageMapping("/board/{boardId}/card.delete")
+    @SendTo("/topic/board/{boardId}/delete")
+    public RetroBoardMessage deleteRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.deleteRetroBoardCard(boardId, retroBoardMessage);
     }
 
     @CrossOrigin

@@ -42,4 +42,17 @@ public class RetroBoardHandler {
     public int getNumberOfActiveRetroBoards() {
         return retroBoardKeeper.getNumberOfActiveRetroBoards();
     }
+
+    public RetroBoardMessage deleteRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+        final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        int index = retroBoardMessage.getIndex();
+        retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        switch (retroBoardMessage.getColumnType()) {
+            case TRY -> retroBoard.getWantToTryColumn().remove(index);
+            case WELL -> retroBoard.getWentWellColumn().remove(index);
+            case EXPECT -> retroBoard.getExpectColumn().remove(index);
+            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().remove(index);
+        }
+        return retroBoardMessage;
+    }
 }

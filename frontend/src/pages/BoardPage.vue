@@ -66,7 +66,15 @@
                   <div style="padding: 5px">
                     <q-card>
                       <q-card-section>
-                        {{ card.cardMessage }}
+                        <div class="column">
+                          <div class="col self-start">
+                            {{ card.cardMessage }}
+                          </div>
+                          <div class="col self-end">
+                            <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                                   @click="deleteCardExpectColumn(index)"/>
+                          </div>
+                        </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
                       </q-card-section>
                     </q-card>
@@ -92,7 +100,16 @@
                   <div style="padding: 5px">
                     <q-card>
                       <q-card-section>
-                        {{ card.cardMessage }}
+                        <div class="column">
+                          <div class="col self-start">
+                            {{ card.cardMessage }}
+                          </div>
+                          <div class="col self-end">
+                            <q-btn v-if="username === card.username" color="negative" icon="delete" round
+                                   size="sm"
+                                   @click="deleteCardWentWellColumn(index)"/>
+                          </div>
+                        </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
                       </q-card-section>
                     </q-card>
@@ -118,7 +135,16 @@
                   <div style="padding: 5px">
                     <q-card>
                       <q-card-section>
-                        {{ card.cardMessage }}
+                        <div class="column">
+                          <div class="col self-start">
+                            {{ card.cardMessage }}
+                          </div>
+                          <div class="col self-end">
+                            <q-btn v-if="username === card.username" color="negative" icon="delete" round
+                                   size="sm"
+                                   @click="deleteCardNotWellColumn(index)"/>
+                          </div>
+                        </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
                       </q-card-section>
                     </q-card>
@@ -144,7 +170,15 @@
                   <div style="padding: 5px">
                     <q-card class="my-card">
                       <q-card-section>
-                        {{ card.cardMessage }}
+                        <div class="column">
+                          <div class="col self-start">
+                            {{ card.cardMessage }}
+                          </div>
+                          <div class="col self-end">
+                            <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                                   @click="deleteCardTryColumn(index)"/>
+                          </div>
+                        </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
                       </q-card-section>
                     </q-card>
@@ -160,7 +194,7 @@
 </template>
 
 <script>
-import {defineComponent} from 'vue'
+import {defineComponent, ref} from 'vue'
 import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
 
@@ -194,15 +228,38 @@ export default defineComponent({
       retroBoardMessage: {
         username: null,
         cardMessage: null,
-        columnType: null
+        columnType: null,
+        index: null
       },
-      boardIdErrorMessage: 'Board ID required!'
+      boardIdErrorMessage: 'Board ID required!',
+      ratingModel: ref(3),
+      menu: false
     }
   },
   created() {
     this.joinAndCreateButtonVisible = !!stompClientStore().getStompClientStatus;
   },
   methods: {
+    deleteCardExpectColumn(key) {
+      let retroBoardMessage = this.retroBoard.expectColumn[key]
+      retroBoardMessage.index = key
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+    },
+    deleteCardWentWellColumn(key) {
+      let retroBoardMessage = this.retroBoard.wentWellColumn[key]
+      retroBoardMessage.index = key
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+    },
+    deleteCardNotWellColumn(key) {
+      let retroBoardMessage = this.retroBoard.didNotGoWellColumn[key]
+      retroBoardMessage.index = key
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+    },
+    deleteCardTryColumn(key) {
+      let retroBoardMessage = this.retroBoard.wantToTryColumn[key]
+      retroBoardMessage.index = key
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+    },
     sendExpectMessage() {
       this.retroBoardMessage = {
         username: this.username,
@@ -247,7 +304,7 @@ export default defineComponent({
         this.inputWantToTryColumn = null
       }
     },
-    onMessageReceived(payload) {
+    onAddMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
         this.retroBoard.expectColumn.push(retroBoardMessage)
@@ -262,11 +319,27 @@ export default defineComponent({
         this.retroBoard.wantToTryColumn.push(retroBoardMessage)
       }
     },
+    onDeleteMessageReceived(payload) {
+      let retroBoardMessage = JSON.parse(payload.body);
+      if (retroBoardMessage.columnType === 'EXPECT') {
+        this.retroBoard.expectColumn.splice(retroBoardMessage.index, 1)
+      }
+      if (retroBoardMessage.columnType === 'WELL') {
+        this.retroBoard.wentWellColumn.splice(retroBoardMessage.index, 1)
+      }
+      if (retroBoardMessage.columnType === 'NOT_WELL') {
+        this.retroBoard.didNotGoWellColumn.splice(retroBoardMessage.index, 1)
+      }
+      if (retroBoardMessage.columnType === 'TRY') {
+        this.retroBoard.wantToTryColumn.splice(retroBoardMessage.index, 1)
+      }
+    },
     subscribe() {
-      store.getStompClient.subscribe('/topic/board/' + this.boardId, this.onMessageReceived);
+      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
+      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived);
     },
     exit() {
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId);
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
       this.messageInputVisible = false
       this.joinAndCreateButtonVisible = true
       this.username = null

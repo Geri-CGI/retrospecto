@@ -7,6 +7,8 @@ public class RetroBoardMessage {
 
     private ColumnType columnType;
 
+    private int index;
+
     public RetroBoardMessage(String username, String cardMessage) {
         this.username = username;
         this.cardMessage = cardMessage;
@@ -34,6 +36,14 @@ public class RetroBoardMessage {
 
     public void setCardMessage(String cardMessage) {
         this.cardMessage = cardMessage;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public enum ColumnType {
