@@ -10,8 +10,8 @@
           <q-card-actions>
             <div class="row justify-center">
               <q-input v-model="author" :error="createUsernameValid" bg-color="white" error-message="Username required!"
-                       label="Username" style="padding: 30px" type="text"/>
-              <q-btn color="primary" label="Create" @click="createRandomBoardId"/>
+                       label="Username" style="padding: 30px" type="text" @keydown.enter="createBoard"/>
+              <q-btn color="primary" label="Create" @click="createBoard"/>
             </div>
           </q-card-actions>
         </q-card>
@@ -25,15 +25,17 @@
           <q-card-actions class="justify-center">
             <div class="justify-center">
               <div class="col-12" style="padding: 5px">
-                <q-input v-model="username" :error="joinUsernameValid" bg-color="white" error-message="Username required!" label="Username"
+                <q-input v-model="username" :error="joinUsernameValid" bg-color="white"
+                         error-message="Username required!" label="Username"
                          type="text"/>
               </div>
               <div class="col-12" style="padding: 5px">
-                <q-input v-model="boardId" :error="boardIdValid" bg-color="white" error-message="Board Id required!" label="Board ID"
+                <q-input v-model="boardId" :error="boardIdValid" bg-color="white" error-message="Board Id required!"
+                         label="Board ID"
                          type="text"/>
               </div>
               <div class="col-12 text-center" style="padding: 10px">
-                <q-btn color="secondary" label="Join" @click="connect"/>
+                <q-btn color="secondary" label="Join" @click="joinBoard"/>
               </div>
             </div>
           </q-card-actions>
@@ -50,10 +52,7 @@
             <div class="col-12">
               <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
                        label="What I expected:" label-color="white"
-                       outlined rounded type="text">
-                <template v-slot:append>
-                  <q-btn color="white" flat icon="send" @click="sendMessage(inputExpectColumn,'EXPECT')"/>
-                </template>
+                       outlined rounded type="text" @keydown.enter="sendExpectMessage">
               </q-input>
             </div>
           </div>
@@ -77,11 +76,9 @@
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
-              <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white" label="Went well:" label-color="white"
-                       outlined rounded type="text">
-                <template v-slot:append>
-                  <q-btn color="white" flat icon="send" @click="sendMessage(inputWentWellColumn,'WELL')"/>
-                </template>
+              <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white" label="Went well:"
+                       label-color="white"
+                       outlined rounded type="text" @keydown.enter="sendWellMessage">
               </q-input>
             </div>
           </div>
@@ -105,11 +102,9 @@
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
-              <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white" label="Went wrong:" label-color="white"
-                       outlined rounded type="text">
-                <template v-slot:append>
-                  <q-btn color="white" flat icon="send" @click="sendMessage(inputDidNotGoWellColumn,'NOT_WELL')"/>
-                </template>
+              <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white"
+                       label="Went wrong:" label-color="white"
+                       outlined rounded type="text" @keydown.enter="sendNotWellMessage">
               </q-input>
             </div>
           </div>
@@ -133,11 +128,9 @@
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
-              <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white" label="What I want to try:" label-color="white"
-                       outlined rounded type="text">
-                <template v-slot:append>
-                  <q-btn color="white" flat icon="send" @click="sendMessage(inputWantToTryColumn,'TRY')"/>
-                </template>
+              <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white"
+                       label="What I want to try:" label-color="white"
+                       outlined rounded type="text" @keydown.enter="sendTryMessage">
               </q-input>
             </div>
           </div>
@@ -165,11 +158,10 @@
 
 <script>
 import {defineComponent} from 'vue'
-import SockJs from 'sockjs-client/dist/sockjs.min.js'
-import {Stomp} from "@stomp/stompjs"
 import axios from 'axios'
+import {stompClientStore} from 'stores/stomp'
 
-let stompClient = null;
+const store = stompClientStore()
 
 export default defineComponent({
   name: 'BoardPage',
@@ -178,7 +170,7 @@ export default defineComponent({
       boardId: null,
       messageInput: null,
       messageInputVisible: false,
-      joinAndCreateButtonVisible: true,
+      joinAndCreateButtonVisible: false,
       username: null,
       author: null,
       retroBoard: {
@@ -195,64 +187,53 @@ export default defineComponent({
       inputWantToTryColumn: null,
       createUsernameValid: false,
       joinUsernameValid: false,
-      boardIdValid: false
+      boardIdValid: false,
+      retroBoardMessage: {
+        username: null,
+        cardMessage: null,
+        columnType: null
+      }
     }
   },
   created() {
+    this.joinAndCreateButtonVisible = !!stompClientStore().getStompClientStatus;
   },
   methods: {
-    connect() {
-      if (this.username === null && this.boardId != null) {
-        this.joinUsernameValid = true
-        this.boardIdValid = false
-      }
-      if (this.boardId === null && this.username != null) {
-        this.joinUsernameValid = false
-        this.boardIdValid = true
-      }
-      if (this.boardId === null && this.username === null) {
-        this.joinUsernameValid = true
-        this.boardIdValid = true
-      } else {
-        this.joinUsernameValid = false
-        this.boardIdValid = false
-        let url = "https://www.retrospecto.cloud/ws"
-        let socket = new SockJs(url);
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, this.onConnected, this.onError, this.onClose);
-      }
-    },
-    onConnected() {
-      if (this.checkRetroBoardExists()) {
-        this.getRetroBoard()
-        stompClient.subscribe('/topic/board/' + this.boardId, this.onMessageReceived);
-        this.messageInputVisible = true
-        this.joinAndCreateButtonVisible = false
-      }
-    },
-    sendMessage(input, columnType) {
-      let retroBoardMessage = {
+    sendExpectMessage() {
+      this.retroBoardMessage = {
         username: this.username,
-        cardMessage: input,
-        columnType: columnType
+        cardMessage: this.inputExpectColumn,
+        columnType: 'EXPECT'
       }
-      if (retroBoardMessage && stompClient) {
-        stompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(retroBoardMessage));
-        switch (columnType) {
-          case 'EXPECT':
-            this.inputExpectColumn = null
-            break;
-          case 'WELL':
-            this.inputWentWellColumn = null
-            break;
-          case 'NOT_WELL':
-            this.inputDidNotGoWellColumn = null
-            break;
-          case 'TRY':
-            this.inputWantToTryColumn = null
-            break;
-        }
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+      this.inputExpectColumn = null
+    },
+    sendWellMessage() {
+      this.retroBoardMessage = {
+        username: this.username,
+        cardMessage: this.inputWentWellColumn,
+        columnType: 'WELL'
       }
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+      this.inputWentWellColumn = null
+    },
+    sendNotWellMessage() {
+      this.retroBoardMessage = {
+        username: this.username,
+        cardMessage: this.inputDidNotGoWellColumn,
+        columnType: 'NOT_WELL'
+      }
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+      this.inputDidNotGoWellColumn = null
+    },
+    sendTryMessage() {
+      this.retroBoardMessage = {
+        username: this.username,
+        cardMessage: this.inputWantToTryColumn,
+        columnType: 'TRY'
+      }
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+      this.inputWantToTryColumn = null
     },
     onMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
@@ -269,48 +250,56 @@ export default defineComponent({
         this.retroBoard.wantToTryColumn.push(retroBoardMessage)
       }
     },
-    createRandomBoardId() {
+    subscribe() {
+      store.getStompClient.subscribe('/topic/board/' + this.boardId, this.onMessageReceived);
+    },
+    joinBoard() {
+      if (this.username === null && this.boardId != null) {
+        this.joinUsernameValid = true
+        this.boardIdValid = false
+      }
+      if (this.boardId === null && this.username != null) {
+        this.joinUsernameValid = false
+        this.boardIdValid = true
+      }
+      if (this.boardId === null && this.username === null) {
+        this.joinUsernameValid = true
+        this.boardIdValid = true
+      } else {
+        axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
+          .then(response => {
+            if (response.data != null) {
+              this.joinUsernameValid = false
+              this.boardIdValid = false
+              this.retroBoard = response.data
+              this.subscribe()
+              this.messageInputVisible = true
+              this.joinAndCreateButtonVisible = false
+            }
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      }
+    },
+    createBoard() {
       if (this.author === null) {
         this.createUsernameValid = true
       } else {
-        this.createUsernameValid = false
-        this.username = this.author
-        this.messageInputVisible = true
-        this.joinAndCreateButtonVisible = false
-        this.boardId = this.randomIntFromInterval()
-        this.createRetroBoard()
-        this.connect();
+        axios.post(`https://www.retrospecto.cloud/board/create/` + this.author)
+          .then(response => {
+            // JSON responses are automatically parsed.
+            if (response.data != null) {
+              this.retroBoard = response.data
+              this.boardId = response.data.id
+              this.createUsernameValid = false
+              this.username = this.author
+              this.messageInputVisible = true
+              this.joinAndCreateButtonVisible = false
+              this.subscribe()
+            }
+          })
       }
-    },
-    randomIntFromInterval() { // min and max included
-      return Math.floor(100000 + Math.random() * 900000)
-    },
-    onError() {
-      this.messageInputVisible = false
-      this.joinAndCreateButtonVisible = true
-    },
-    getRetroBoard() {
-      axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
-        .then(response => {
-          // JSON responses are automatically parsed.
-          this.retroBoard = response.data
-        })
-    },
-    checkRetroBoardExists() {
-      return axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
-        .then(response => {
-          return true
-        })
-        .catch(error => {
-          return false
-        })
-    },
-    createRetroBoard() {
-      axios.post(`https://www.retrospecto.cloud/board/create/` + this.boardId + '/' + this.author)
-        .then(response => {
-          // JSON responses are automatically parsed.
-          this.retroBoard = response.data
-        })
     }
   }
 })

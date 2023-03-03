@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 @Controller
 public class BoardController {
@@ -40,8 +41,9 @@ public class BoardController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(path = "/board/create/{id}/{author}", method = RequestMethod.POST)
-    public RetroBoard createBoard(@PathVariable int id, @PathVariable String author) {
+    @RequestMapping(path = "/board/create/{author}", method = RequestMethod.POST)
+    public RetroBoard createBoard(@PathVariable String author) {
+        int id = new Random().nextInt(900000) + 100000;
         RetroBoard newRetroBoard = new RetroBoard(id, author, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         retroBoardKeeper.addBoard(newRetroBoard);
         return newRetroBoard;
