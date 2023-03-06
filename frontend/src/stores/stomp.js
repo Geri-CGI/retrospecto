@@ -4,9 +4,12 @@ import {Stomp} from "@stomp/stompjs"
 
 export const stompClientStore = defineStore('stompClientStore', {
   state: () => ({
-    counter: 0,
     stompClient: null,
-    stompClientConnected: false
+    stompClientConnected: false,
+    username: null,
+    author: null,
+    boardId: null,
+    subscribedList: []
   }),
 
   getters: {
@@ -18,13 +21,19 @@ export const stompClientStore = defineStore('stompClientStore', {
     },
     getStompClient(state) {
       return state.stompClient
-    }
+    },
+    getRetroBoardId(state) {
+      return state.boardId
+    },
+    getUsername(state) {
+      return state.username
+    },
+    getAuthor(state) {
+      return state.author
+    },
   },
 
   actions: {
-    increment() {
-      this.counter++
-    },
     connect() {
       let url = "https://www.retrospecto.cloud/ws"
       let socket = new SockJs(url);
@@ -36,9 +45,18 @@ export const stompClientStore = defineStore('stompClientStore', {
     },
     onError() {
       this.stompClientConnected = false
+      this.stompClient.connect({}, this.onConnected, this.onError, this.onClose);
     },
     onClose() {
       this.stompClientConnected = false
+    },
+    setUsernameAuthorBoarDId(username, author, boardId) {
+      this.username = username
+      this.boardId = boardId
+      this.author = author
+    },
+    addToSubscribeList(address) {
+      this.subscribedList.push(address)
     }
   }
 })

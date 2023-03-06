@@ -1,6 +1,18 @@
 <template>
   <q-page class="q-pa-md flex flex-center">
     <div class="row">
+      <div v-if="spinnerVisible" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12"
+           style="padding: 30px">
+        <q-spinner
+          :thickness="10"
+          color="primary"
+          size="5em"
+        />
+      </div>
+      <div v-if="noWebsocketConnectionVisible" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12"
+           style="padding: 30px">
+        <div class="text-h2">No websocket connection reload page!</div>
+      </div>
       <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
            style="padding: 30px">
         <q-card>
@@ -64,18 +76,22 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.expectColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card>
+                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
                             {{ card.cardMessage }}
                           </div>
-                          <div class="col self-end">
-                            <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
-                                   @click="deleteCardExpectColumn(index)"/>
-                          </div>
                         </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-slide-transition>
+                          <div v-show="card.show" class="column">
+                            <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                                     @click="deleteCardExpectColumn(index)"/>
+                            </div>
+                          </div>
+                        </q-slide-transition>
                       </q-card-section>
                     </q-card>
                   </div>
@@ -98,19 +114,22 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.wentWellColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card>
+                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
                             {{ card.cardMessage }}
                           </div>
-                          <div class="col self-end">
-                            <q-btn v-if="username === card.username" color="negative" icon="delete" round
-                                   size="sm"
-                                   @click="deleteCardWentWellColumn(index)"/>
-                          </div>
                         </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-slide-transition>
+                          <div v-show="card.show" class="column">
+                            <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                                     @click="deleteCardWentWellColumn(index)"/>
+                            </div>
+                          </div>
+                        </q-slide-transition>
                       </q-card-section>
                     </q-card>
                   </div>
@@ -133,19 +152,22 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.didNotGoWellColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card>
+                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
                             {{ card.cardMessage }}
                           </div>
-                          <div class="col self-end">
-                            <q-btn v-if="username === card.username" color="negative" icon="delete" round
-                                   size="sm"
-                                   @click="deleteCardNotWellColumn(index)"/>
-                          </div>
                         </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-slide-transition>
+                          <div v-show="card.show" class="column">
+                            <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                                     @click="deleteCardNotWellColumn(index)"/>
+                            </div>
+                          </div>
+                        </q-slide-transition>
                       </q-card-section>
                     </q-card>
                   </div>
@@ -168,18 +190,22 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.wantToTryColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card class="my-card">
+                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
                             {{ card.cardMessage }}
                           </div>
-                          <div class="col self-end">
-                            <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
-                                   @click="deleteCardTryColumn(index)"/>
-                          </div>
                         </div>
                         <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-slide-transition>
+                          <div v-show="card.show" class="column">
+                            <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                                     @click="deleteCardTryColumn(index)"/>
+                            </div>
+                          </div>
+                        </q-slide-transition>
                       </q-card-section>
                     </q-card>
                   </div>
@@ -229,17 +255,49 @@ export default defineComponent({
         username: null,
         cardMessage: null,
         columnType: null,
-        index: null
+        index: null,
+        show: false
       },
       boardIdErrorMessage: 'Board ID required!',
       ratingModel: ref(3),
-      menu: false
+      menu: false,
+      noWebsocketConnectionVisible: false,
+      spinnerVisible: false
     }
   },
   created() {
-    this.joinAndCreateButtonVisible = !!stompClientStore().getStompClientStatus;
+    this.spinnerVisible = true
+    setTimeout(this.reload, 1000)
   },
   methods: {
+    reload() {
+      if (stompClientStore().getStompClientStatus) {
+        if (stompClientStore().getRetroBoardId) {
+          this.boardId = stompClientStore().getRetroBoardId
+          this.username = stompClientStore().getUsername
+          this.author = stompClientStore().getAuthor
+          axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
+            .then(response => {
+              if (response.data != null) {
+                this.spinnerVisible = false
+                this.retroBoard = response.data
+                this.messageInputVisible = true
+                this.joinAndCreateButtonVisible = false
+                this.subscribe()
+              }
+            })
+        } else {
+          this.spinnerVisible = false
+          this.joinAndCreateButtonVisible = true
+          this.messageInputVisible = false
+        }
+      } else {
+        this.spinnerVisible = false
+        this.noWebsocketConnectionVisible = true
+        this.joinAndCreateButtonVisible = false
+        this.messageInputVisible = false
+      }
+    },
     deleteCardExpectColumn(key) {
       let retroBoardMessage = this.retroBoard.expectColumn[key]
       retroBoardMessage.index = key
@@ -337,9 +395,12 @@ export default defineComponent({
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived);
+      stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
     },
     exit() {
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
+      stompClientStore().setUsernameAuthorBoarDId(null, null, null)
       this.messageInputVisible = false
       this.joinAndCreateButtonVisible = true
       this.username = null
@@ -348,8 +409,6 @@ export default defineComponent({
       this.author = null
     },
     joinBoard() {
-      console.log(this.username)
-      console.log(this.boardId)
       if (!this.boardId && !this.username) {
         this.joinUsernameValid = true
         this.boardIdValid = true
