@@ -76,7 +76,7 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.expectColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
+                    <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
@@ -114,7 +114,7 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.wentWellColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
+                    <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
@@ -152,7 +152,7 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.didNotGoWellColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
+                    <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
@@ -190,7 +190,7 @@
               <q-list>
                 <template v-for="(card, index) in retroBoard.wantToTryColumn" :key="index">
                   <div style="padding: 5px">
-                    <q-card @mouseleave="card.show = false" @mouseover="card.show = true">
+                    <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
                         <div class="column">
                           <div class="col self-start">
@@ -268,6 +268,10 @@ export default defineComponent({
   created() {
     this.spinnerVisible = true
     setTimeout(this.reload, 1000)
+  },
+  unmounted() {
+    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
+    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
   },
   methods: {
     reload() {
