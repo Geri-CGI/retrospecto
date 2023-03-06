@@ -8,8 +8,7 @@ export const stompClientStore = defineStore('stompClientStore', {
     stompClientConnected: false,
     username: null,
     author: null,
-    boardId: null,
-    subscribedList: []
+    boardId: null
   }),
 
   getters: {
@@ -54,9 +53,6 @@ export const stompClientStore = defineStore('stompClientStore', {
       this.username = username
       this.boardId = boardId
       this.author = author
-    },
-    addToSubscribeList(address) {
-      this.subscribedList.push(address)
     }
   }
 })

@@ -102,8 +102,9 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn color="warning" icon="thumb_up" round size="sm"/>
                               <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
-                                     @click="enableAlert(card)"/>
+                                     @click="enableAlert(card, index)"/>
                               <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
                                      @click="deleteCardExpectColumn(index)"/>
                             </div>
@@ -142,6 +143,8 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                                     @click="enableAlert(card, index)"/>
                               <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
                                      @click="deleteCardWentWellColumn(index)"/>
                             </div>
@@ -180,6 +183,8 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                                     @click="enableAlert(card, index)"/>
                               <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
                                      @click="deleteCardNotWellColumn(index)"/>
                             </div>
@@ -218,6 +223,8 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                                     @click="enableAlert(card, index)"/>
                               <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
                                      @click="deleteCardTryColumn(index)"/>
                             </div>
@@ -423,21 +430,22 @@ export default defineComponent({
     onEditMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
-        this.retroBoard.expectColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+        this.retroBoard.expectColumn[retroBoardMessage.index].cardMessage = retroBoardMessage.cardMessage
       }
       if (retroBoardMessage.columnType === 'WELL') {
-        this.retroBoard.wentWellColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].cardMessage = retroBoardMessage.cardMessage
       }
       if (retroBoardMessage.columnType === 'NOT_WELL') {
-        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].cardMessage = retroBoardMessage.cardMessage
       }
       if (retroBoardMessage.columnType === 'TRY') {
-        this.retroBoard.wantToTryColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].cardMessage = retroBoardMessage.cardMessage
       }
     },
-    enableAlert(message) {
+    enableAlert(message, index) {
       this.alert = true
       this.alertMessage = message
+      this.alertMessage.index = index
     },
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
