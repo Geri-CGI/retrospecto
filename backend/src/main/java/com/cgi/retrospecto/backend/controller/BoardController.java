@@ -30,6 +30,12 @@ public class BoardController {
         return retroBoardHandler.deleteRetroBoardCard(boardId, retroBoardMessage);
     }
 
+    @MessageMapping("/board/{boardId}/card.edit")
+    @SendTo("/topic/board/{boardId}/edit")
+    public RetroBoardMessage editRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.editRetroBoardCard(boardId, retroBoardMessage);
+    }
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(path = "/board/{id}", method = RequestMethod.GET)

@@ -55,4 +55,18 @@ public class RetroBoardHandler {
         }
         return retroBoardMessage;
     }
+
+    public RetroBoardMessage editRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+        final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        int index = retroBoardMessage.getIndex();
+        retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        switch (retroBoardMessage.getColumnType()) {
+            case TRY -> retroBoard.getWantToTryColumn().get(index).setCardMessage(retroBoardMessage.getCardMessage());
+            case WELL -> retroBoard.getWentWellColumn().get(index).setCardMessage(retroBoardMessage.getCardMessage());
+            case EXPECT -> retroBoard.getExpectColumn().get(index).setCardMessage(retroBoardMessage.getCardMessage());
+            case NOT_WELL ->
+                    retroBoard.getDidNotGoWellColumn().get(index).setCardMessage(retroBoardMessage.getCardMessage());
+        }
+        return retroBoardMessage;
+    }
 }

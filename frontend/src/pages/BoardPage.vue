@@ -1,5 +1,20 @@
 <template>
   <q-page class="q-pa-md flex flex-center">
+    <q-dialog v-model="alert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Edit the message:</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input v-model="alertMessage.cardMessage" type="textarea">
+          </q-input>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn v-close-popup color="primary" flat label="Ok" @click="sendEditMessage"/>
+          <q-btn v-close-popup color="negative" flat label="Close"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <div class="row">
       <div v-if="spinnerVisible" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12"
            style="padding: 30px">
@@ -87,6 +102,8 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                                     @click="enableAlert(card)"/>
                               <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
                                      @click="deleteCardExpectColumn(index)"/>
                             </div>
@@ -262,7 +279,9 @@ export default defineComponent({
       ratingModel: ref(3),
       menu: false,
       noWebsocketConnectionVisible: false,
-      spinnerVisible: false
+      spinnerVisible: false,
+      alert: false,
+      alertMessage: null
     }
   },
   created() {
@@ -366,6 +385,11 @@ export default defineComponent({
         this.inputWantToTryColumn = null
       }
     },
+    sendEditMessage() {
+      let updatedMessage = this.alertMessage
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.edit", {}, JSON.stringify(updatedMessage));
+      this.alertMessage = null
+    },
     onAddMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
@@ -396,14 +420,35 @@ export default defineComponent({
         this.retroBoard.wantToTryColumn.splice(retroBoardMessage.index, 1)
       }
     },
+    onEditMessageReceived(payload) {
+      let retroBoardMessage = JSON.parse(payload.body);
+      if (retroBoardMessage.columnType === 'EXPECT') {
+        this.retroBoard.expectColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+      }
+      if (retroBoardMessage.columnType === 'WELL') {
+        this.retroBoard.wentWellColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+      }
+      if (retroBoardMessage.columnType === 'NOT_WELL') {
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+      }
+      if (retroBoardMessage.columnType === 'TRY') {
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index] = retroBoardMessage.cardMessage
+      }
+    },
+    enableAlert(message) {
+      this.alert = true
+      this.alertMessage = message
+    },
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived);
+      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived);
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
     },
     exit() {
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
       stompClientStore().setUsernameAuthorBoarDId(null, null, null)
       this.messageInputVisible = false
       this.joinAndCreateButtonVisible = true
