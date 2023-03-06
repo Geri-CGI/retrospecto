@@ -244,11 +244,13 @@
 </template>
 
 <script>
-import {defineComponent, ref} from 'vue'
+import {defineComponent, ref, watch} from 'vue'
 import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
+import {storeToRefs} from "pinia";
 
 const store = stompClientStore()
+const {stompClientConnected} = storeToRefs(store)
 
 export default defineComponent({
   name: 'BoardPage',
@@ -294,6 +296,11 @@ export default defineComponent({
   created() {
     this.spinnerVisible = true
     setTimeout(this.reload, 1000)
+    watch(stompClientConnected, () => {
+      if (!stompClientConnected) {
+        this.exit()
+      }
+    })
   },
   unmounted() {
     store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
@@ -395,7 +402,6 @@ export default defineComponent({
     sendEditMessage() {
       let updatedMessage = this.alertMessage
       store.getStompClient.send("/app/board/" + this.boardId + "/card.edit", {}, JSON.stringify(updatedMessage));
-      this.alertMessage = null
     },
     onAddMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
