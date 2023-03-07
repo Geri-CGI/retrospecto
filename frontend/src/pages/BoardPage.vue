@@ -107,14 +107,14 @@
                         </div>
                         <q-badge color="transparent" floating>
                           <div class="row">
-                            <div class="col-4 q-pl-sm">
-                              <q-badge color="orange">{{ card.username }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pl-sm">
+                            <div class="col-4 q-pl-xs">
                               <q-badge color="secondary">{{ card.likes }}</q-badge>
                             </div>
-                            <div class="col-4 q-pl-sm">
+                            <div class="col-4 q-pl-xs q-pr-md">
                               <q-badge color="red-13">{{ card.dislikes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pa-lg-md">
+                              <q-badge color="orange">{{ card.username }}</q-badge>
                             </div>
                           </div>
                         </q-badge>
@@ -497,6 +497,7 @@ export default defineComponent({
     },
     onLikeMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
+      console.log(retroBoardMessage)
       if (retroBoardMessage.columnType === 'EXPECT') {
         this.retroBoard.expectColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
       }

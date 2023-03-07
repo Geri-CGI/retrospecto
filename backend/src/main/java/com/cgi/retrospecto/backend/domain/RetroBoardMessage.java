@@ -9,9 +9,9 @@ public class RetroBoardMessage {
 
     private int index;
 
-    private int likes;
+    private int likes = 0;
 
-    private int dislikes;
+    private int dislikes = 0;
 
     public RetroBoardMessage(String username, String cardMessage) {
         this.username = username;
