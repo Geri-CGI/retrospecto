@@ -86,7 +86,7 @@
           </div>
           <q-btn color="red-13" icon="logout" size="sm" @click="exit"/>
         </q-bar>
-        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
+        <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
@@ -140,7 +140,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
+        <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white" label="Went well:"
@@ -156,12 +156,22 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="column">
-                          <div class="col self-start">
-                            {{ card.cardMessage }}
-                          </div>
+                        <div class="row">
+                          {{ card.cardMessage }}
                         </div>
-                        <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-badge color="transparent" floating>
+                          <div class="row">
+                            <div class="col-4 q-pl-xs">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pl-xs q-pr-md">
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pa-lg-md">
+                              <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                          </div>
+                        </q-badge>
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
@@ -184,7 +194,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
+        <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white"
@@ -200,12 +210,22 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="column">
-                          <div class="col self-start">
-                            {{ card.cardMessage }}
-                          </div>
+                        <div class="row">
+                          {{ card.cardMessage }}
                         </div>
-                        <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-badge color="transparent" floating>
+                          <div class="row">
+                            <div class="col-4 q-pl-xs">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pl-xs q-pr-md">
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pa-lg-md">
+                              <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                          </div>
+                        </q-badge>
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
@@ -228,7 +248,7 @@
             </div>
           </div>
         </div>
-        <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
+        <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white"
@@ -244,12 +264,22 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="column">
-                          <div class="col self-start">
-                            {{ card.cardMessage }}
-                          </div>
+                        <div class="row">
+                          {{ card.cardMessage }}
                         </div>
-                        <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-badge color="transparent" floating>
+                          <div class="row">
+                            <div class="col-4 q-pl-xs">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pl-xs q-pr-md">
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pa-lg-md">
+                              <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                          </div>
+                        </q-badge>
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
@@ -318,7 +348,7 @@ export default defineComponent({
         index: null,
         show: false,
         likes: 0,
-        dislikes: 0
+        dislikes: 0,
       },
       boardIdErrorMessage: 'Board ID required!',
       ratingModel: ref(3),
@@ -497,7 +527,6 @@ export default defineComponent({
     },
     onLikeMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
-      console.log(retroBoardMessage)
       if (retroBoardMessage.columnType === 'EXPECT') {
         this.retroBoard.expectColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
       }
