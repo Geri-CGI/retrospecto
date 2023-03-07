@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md flex flex-center">
+  <q-page class="q-pa-md">
     <q-dialog v-model="alert">
       <q-card>
         <q-card-section>
@@ -15,68 +15,77 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <div class="row">
-      <div v-if="spinnerVisible" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12"
-           style="padding: 30px">
-        <q-spinner
-          :thickness="10"
-          color="primary"
-          size="5em"
-        />
+    <div class="column justify-center items-center content-center">
+      <div class="row justify-center items-center content-center">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
+          <div v-if="spinnerVisible"
+               class="row justify-center" style="padding: 30px">
+            <q-spinner
+              :thickness="10"
+              color="primary"
+              size="5em"
+            />
+          </div>
+          <div v-if="noWebsocketConnectionVisible" class="row justify-center" style="padding: 30px">
+            <div class="text-h2">No websocket connection reload page!</div>
+          </div>
+        </div>
       </div>
-      <div v-if="noWebsocketConnectionVisible" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12"
-           style="padding: 30px">
-        <div class="text-h2">No websocket connection reload page!</div>
-      </div>
-      <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
-           style="padding: 30px">
-        <q-card>
-          <q-card-section>
-            <div class="text-h5">Create a new session</div>
-          </q-card-section>
-          <q-card-actions>
-            <div class="row justify-center">
-              <q-input v-model="author" :error="createUsernameValid" bg-color="white" error-message="Username required!"
-                       label="Username" style="padding: 30px" type="text" @keydown.enter="createBoard"/>
-              <q-btn color="primary" label="Create" @click="createBoard"/>
-            </div>
-          </q-card-actions>
-        </q-card>
-      </div>
-      <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 justify-center"
-           style="padding: 30px">
-        <q-card>
-          <q-card-section>
-            <div class="text-h5">Join a session</div>
-          </q-card-section>
-          <q-card-actions class="justify-center">
-            <div class="justify-center">
-              <div class="col-12" style="padding: 5px">
-                <q-input v-model="username" :error="joinUsernameValid" bg-color="white"
-                         error-message="Username required!" label="Username"
-                         type="text"/>
+      <div class="row">
+        <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
+             style="padding: 30px">
+          <q-card style="max-width: 300px">
+            <q-card-section>
+              <div class="text-h5">Create a new session</div>
+            </q-card-section>
+            <q-card-actions>
+              <div class="row justify-center">
+                <q-input v-model="author" :error="createUsernameValid" bg-color="white"
+                         error-message="Username required!"
+                         label="Username" style="padding: 30px" type="text" @keydown.enter="createBoard"/>
+                <q-btn color="primary" label="Create" @click="createBoard"/>
               </div>
-              <div class="col-12" style="padding: 5px">
-                <q-input v-model="boardId" :error="boardIdValid" :error-message="boardIdErrorMessage" bg-color="white"
-                         label="Board ID"
-                         type="text"/>
+            </q-card-actions>
+          </q-card>
+        </div>
+        <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
+             style="padding: 30px">
+          <q-card style="max-width: 300px">
+            <q-card-section>
+              <div class="text-h5">Join a session</div>
+            </q-card-section>
+            <q-card-actions class="justify-center">
+              <div class="justify-center">
+                <div class="col-12" style="padding: 5px">
+                  <q-input v-model="username" :error="joinUsernameValid" bg-color="white"
+                           error-message="Username required!" label="Username"
+                           type="text"/>
+                </div>
+                <div class="col-12" style="padding: 5px">
+                  <q-input v-model="boardId" :error="boardIdValid" :error-message="boardIdErrorMessage" bg-color="white"
+                           label="Board ID"
+                           type="text"/>
+                </div>
+                <div class="col-12 text-center" style="padding: 10px">
+                  <q-btn color="secondary" label="Join" @click="joinBoard"/>
+                </div>
               </div>
-              <div class="col-12 text-center" style="padding: 10px">
-                <q-btn color="secondary" label="Join" @click="joinBoard"/>
-              </div>
-            </div>
-          </q-card-actions>
-        </q-card>
+            </q-card-actions>
+          </q-card>
+        </div>
       </div>
+    </div>
+    <div class="row justify-center">
       <div v-if="messageInputVisible" class="row">
-        <div class="col-6">
-          <h4>
+        <q-bar class="text-blue col-12" dark>
+          <div class="col text-left text-weight-bold">
+            Host: {{ retroBoard.author }}
+          </div>
+          <div class="col text-left text-weight-bold">
             Board ID: {{ boardId }}
-          </h4>
-        </div>
-        <div class="col-6 text-right">
-          <q-btn color="negative" label="Exit" @click="exit"/>
-        </div>
+          </div>
+          <q-btn color="red-13" icon="logout" size="sm" @click="exit"/>
+        </q-bar>
         <div class="col-xs-12 col-sm-12 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
@@ -93,19 +102,32 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="column">
-                          <div class="col self-start">
-                            {{ card.cardMessage }}
-                          </div>
+                        <div class="row">
+                          {{ card.cardMessage }}
                         </div>
-                        <q-badge color="orange" floating>{{ card.username }}</q-badge>
+                        <q-badge color="transparent" floating>
+                          <div class="row">
+                            <div class="col-4 q-pl-sm">
+                              <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pl-sm">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                            </div>
+                            <div class="col-4 q-pl-sm">
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
+                            </div>
+                          </div>
+                        </q-badge>
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn color="warning" icon="thumb_up" round size="sm"/>
-                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
+                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                                     size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                                     size="sm"
                                      @click="deleteCardExpectColumn(index)"/>
                             </div>
                           </div>
@@ -143,9 +165,13 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
+                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                                     size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                                     size="sm"
                                      @click="deleteCardWentWellColumn(index)"/>
                             </div>
                           </div>
@@ -183,9 +209,13 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
+                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                                     size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                                     size="sm"
                                      @click="deleteCardNotWellColumn(index)"/>
                             </div>
                           </div>
@@ -223,9 +253,13 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="username === card.username" color="warning" icon="edit" round size="sm"
+                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
+                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                                     size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="username === card.username" color="negative" icon="delete" round size="sm"
+                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                                     size="sm"
                                      @click="deleteCardTryColumn(index)"/>
                             </div>
                           </div>
@@ -282,7 +316,9 @@ export default defineComponent({
         cardMessage: null,
         columnType: null,
         index: null,
-        show: false
+        show: false,
+        likes: 0,
+        dislikes: 0
       },
       boardIdErrorMessage: 'Board ID required!',
       ratingModel: ref(3),
@@ -305,6 +341,9 @@ export default defineComponent({
   unmounted() {
     store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
     store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
+    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
+    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/like');
+    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/dislike');
   },
   methods: {
     reload() {
@@ -403,6 +442,14 @@ export default defineComponent({
       let updatedMessage = this.alertMessage
       store.getStompClient.send("/app/board/" + this.boardId + "/card.edit", {}, JSON.stringify(updatedMessage));
     },
+    like(message, index) {
+      message.index = index
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.like", {}, JSON.stringify(message));
+    },
+    dislike(message, index) {
+      message.index = index
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.dislike", {}, JSON.stringify(message));
+    },
     onAddMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
@@ -448,6 +495,36 @@ export default defineComponent({
         this.retroBoard.wantToTryColumn[retroBoardMessage.index].cardMessage = retroBoardMessage.cardMessage
       }
     },
+    onLikeMessageReceived(payload) {
+      let retroBoardMessage = JSON.parse(payload.body);
+      if (retroBoardMessage.columnType === 'EXPECT') {
+        this.retroBoard.expectColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+      }
+      if (retroBoardMessage.columnType === 'WELL') {
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+      }
+      if (retroBoardMessage.columnType === 'NOT_WELL') {
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+      }
+      if (retroBoardMessage.columnType === 'TRY') {
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+      }
+    },
+    onDislikeMessageReceived(payload) {
+      let retroBoardMessage = JSON.parse(payload.body);
+      if (retroBoardMessage.columnType === 'EXPECT') {
+        this.retroBoard.expectColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
+      }
+      if (retroBoardMessage.columnType === 'WELL') {
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
+      }
+      if (retroBoardMessage.columnType === 'NOT_WELL') {
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
+      }
+      if (retroBoardMessage.columnType === 'TRY') {
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
+      }
+    },
     enableAlert(message, index) {
       this.alert = true
       this.alertMessage = message
@@ -457,12 +534,16 @@ export default defineComponent({
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived);
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived);
+      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/like', this.onLikeMessageReceived);
+      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/dislike', this.onDislikeMessageReceived);
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
     },
     exit() {
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/like');
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/dislike');
       stompClientStore().setUsernameAuthorBoarDId(null, null, null)
       this.messageInputVisible = false
       this.joinAndCreateButtonVisible = true

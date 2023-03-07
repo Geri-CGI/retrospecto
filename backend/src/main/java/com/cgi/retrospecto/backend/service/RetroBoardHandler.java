@@ -69,4 +69,30 @@ public class RetroBoardHandler {
         }
         return retroBoardMessage;
     }
+
+    public RetroBoardMessage likeRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+        final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        int index = retroBoardMessage.getIndex();
+        retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        switch (retroBoardMessage.getColumnType()) {
+            case TRY -> retroBoard.getWantToTryColumn().get(index).increaseLikes();
+            case WELL -> retroBoard.getWentWellColumn().get(index).increaseLikes();
+            case EXPECT -> retroBoard.getExpectColumn().get(index).increaseLikes();
+            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseLikes();
+        }
+        return retroBoardMessage;
+    }
+
+    public RetroBoardMessage dislikeRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+        final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        int index = retroBoardMessage.getIndex();
+        retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        switch (retroBoardMessage.getColumnType()) {
+            case TRY -> retroBoard.getWantToTryColumn().get(index).increaseDislikes();
+            case WELL -> retroBoard.getWentWellColumn().get(index).increaseDislikes();
+            case EXPECT -> retroBoard.getExpectColumn().get(index).increaseDislikes();
+            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseDislikes();
+        }
+        return retroBoardMessage;
+    }
 }

@@ -36,6 +36,18 @@ public class BoardController {
         return retroBoardHandler.editRetroBoardCard(boardId, retroBoardMessage);
     }
 
+    @MessageMapping("/board/{boardId}/card.like")
+    @SendTo("/topic/board/{boardId}/like")
+    public RetroBoardMessage likeRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.likeRetroBoardCard(boardId, retroBoardMessage);
+    }
+
+    @MessageMapping("/board/{boardId}/card.dislike")
+    @SendTo("/topic/board/{boardId}/dislike")
+    public RetroBoardMessage dislikeRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.dislikeRetroBoardCard(boardId, retroBoardMessage);
+    }
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(path = "/board/{id}", method = RequestMethod.GET)

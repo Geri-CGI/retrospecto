@@ -9,6 +9,10 @@ public class RetroBoardMessage {
 
     private int index;
 
+    private int likes;
+
+    private int dislikes;
+
     public RetroBoardMessage(String username, String cardMessage) {
         this.username = username;
         this.cardMessage = cardMessage;
@@ -44,6 +48,22 @@ public class RetroBoardMessage {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getLikes() {
+        return likes;
+    }
+
+    public void increaseLikes() {
+        this.likes += 1;
+    }
+
+    public int getDislikes() {
+        return dislikes;
+    }
+
+    public void increaseDislikes() {
+        this.dislikes += 1;
     }
 
     public enum ColumnType {
