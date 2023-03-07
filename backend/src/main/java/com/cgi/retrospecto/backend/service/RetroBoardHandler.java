@@ -80,6 +80,7 @@ public class RetroBoardHandler {
             case EXPECT -> retroBoard.getExpectColumn().get(index).increaseLikes();
             case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseLikes();
         }
+        retroBoardMessage.increaseLikes();
         return retroBoardMessage;
     }
 
@@ -93,6 +94,7 @@ public class RetroBoardHandler {
             case EXPECT -> retroBoard.getExpectColumn().get(index).increaseDislikes();
             case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseDislikes();
         }
+        retroBoardMessage.increaseDislikes();
         return retroBoardMessage;
     }
 }
