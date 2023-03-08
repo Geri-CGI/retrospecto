@@ -579,10 +579,10 @@ export default defineComponent({
       this.alertMessage.index = index
     },
     orderByLikes() {
-      store.getStompClient.send("/app/board/" + this.boardId + "/order.like", {});
+      store.getStompClient.send("/app/board/" + this.boardId + "/order.like", {}, JSON.stringify(null));
     },
     orderByDislikes() {
-      store.getStompClient.send("/app/board/" + this.boardId + "/order.dislike", {});
+      store.getStompClient.send("/app/board/" + this.boardId + "/order.dislike", {}, JSON.stringify(null));
     },
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);

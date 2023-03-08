@@ -48,6 +48,19 @@ public class BoardController {
         return retroBoardHandler.dislikeRetroBoardCard(boardId, retroBoardMessage);
     }
 
+    @MessageMapping("/board/{boardId}/order.like")
+    @SendTo("/topic/board/{boardId}/reorder")
+    public RetroBoard getRetroBoardReorganizedByLikes(@DestinationVariable int boardId) {
+        return retroBoardHandler.getRetroBoardReorganizedByLikes(boardId);
+    }
+
+
+    @MessageMapping("/board/{boardId}/order.dislike")
+    @SendTo("/topic/board/{boardId}/reorder")
+    public RetroBoard getRetroBoardReorganizedByDislikes(@DestinationVariable int boardId) {
+        return retroBoardHandler.getRetroBoardReorganizedByDislikes(boardId);
+    }
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(path = "/board/{id}", method = RequestMethod.GET)
@@ -55,19 +68,6 @@ public class BoardController {
         return retroBoardHandler.getRetroBoard(id);
     }
 
-
-    @MessageMapping("/board/{boardId}/order.like")
-    @SendTo("/topic/board/{boardId}/reorder")
-    public RetroBoard getRetroBoardReorganizedByLikes(@PathVariable int boardId) {
-        return retroBoardHandler.getRetroBoardReorganizedByLikes(boardId);
-    }
-
-
-    @MessageMapping("/board/{boardId}/order.dislike")
-    @SendTo("/topic/board/{boardId}/reorder")
-    public RetroBoard getRetroBoardReorganizedByDislikes(@PathVariable int boardId) {
-        return retroBoardHandler.getRetroBoardReorganizedByDislikes(boardId);
-    }
 
     @CrossOrigin
     @ResponseBody

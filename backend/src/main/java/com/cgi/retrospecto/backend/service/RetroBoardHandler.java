@@ -100,11 +100,11 @@ public class RetroBoardHandler {
     }
 
     public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {
-        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getLikes));
+        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getLikes).thenComparing(RetroBoardMessage::getDislikes).reversed());
     }
 
     public RetroBoard getRetroBoardReorganizedByDislikes(int boardId) {
-        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getDislikes));
+        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getDislikes).thenComparing(RetroBoardMessage::getLikes).reversed());
     }
 
     private RetroBoard getRetroBoard(int boardId, Comparator<RetroBoardMessage> comparing) {
