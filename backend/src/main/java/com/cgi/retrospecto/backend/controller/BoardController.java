@@ -36,16 +36,16 @@ public class BoardController {
         return retroBoardHandler.editRetroBoardCard(boardId, retroBoardMessage);
     }
 
-    @MessageMapping("/board/{boardId}/card.like")
+    @MessageMapping("/board/{boardId}/{username}/card.like")
     @SendTo("/topic/board/{boardId}/like")
-    public RetroBoardMessage likeRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
-        return retroBoardHandler.likeRetroBoardCard(boardId, retroBoardMessage);
+    public RetroBoardMessage likeRetroBoardCard(@DestinationVariable int boardId, @DestinationVariable String username, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.likeRetroBoardCard(boardId, username, retroBoardMessage);
     }
 
-    @MessageMapping("/board/{boardId}/card.dislike")
+    @MessageMapping("/board/{boardId}/{username}/card.dislike")
     @SendTo("/topic/board/{boardId}/dislike")
-    public RetroBoardMessage dislikeRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
-        return retroBoardHandler.dislikeRetroBoardCard(boardId, retroBoardMessage);
+    public RetroBoardMessage dislikeRetroBoardCard(@DestinationVariable int boardId, @DestinationVariable String username, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.dislikeRetroBoardCard(boardId, username, retroBoardMessage);
     }
 
     @MessageMapping("/board/{boardId}/order.like")

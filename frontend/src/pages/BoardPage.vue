@@ -85,8 +85,8 @@
             Board ID: {{ boardId }}
           </div>
           <div class="col text-center text-weight-bold">
-            <q-btn v-if="username = author" color="secondary" icon="thumb_up" size="sm" @click="orderByLikes"/>
-            <q-btn v-if="username = author" color="red-13" icon="thumb_down" size="sm" @click="orderByDislikes"/>
+            <q-btn v-if="username === author" color="secondary" icon="thumb_up" size="sm" @click="orderByLikes"/>
+            <q-btn v-if="username === author" color="red-13" icon="thumb_down" size="sm" @click="orderByDislikes"/>
           </div>
           <q-btn color="red-13" icon="logout" size="sm" @click="exit"/>
         </q-bar>
@@ -125,9 +125,11 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
+                                     icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
-                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
@@ -181,9 +183,11 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
+                                     icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
-                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
@@ -237,9 +241,11 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
+                                     icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
-                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
@@ -293,9 +299,11 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
+                                     icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
-                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                              <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
@@ -344,7 +352,8 @@ export default defineComponent({
         expectColumn: [],
         wentWellColumn: [],
         didNotGoWellColumn: [],
-        wantToTryColumn: []
+        wantToTryColumn: [],
+        likedRecords: new Map()
       },
       inputWentWellColumn: null,
       inputExpectColumn: null,
@@ -354,6 +363,7 @@ export default defineComponent({
       joinUsernameValid: false,
       boardIdValid: false,
       retroBoardMessage: {
+        uniqueId: null,
         username: null,
         cardMessage: null,
         columnType: null,
@@ -387,6 +397,7 @@ export default defineComponent({
     store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
     store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/like');
     store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/dislike');
+    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/reorder');
   },
   methods: {
     reload() {
@@ -400,6 +411,7 @@ export default defineComponent({
               if (response.data != null) {
                 this.spinnerVisible = false
                 this.retroBoard = response.data
+                this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
                 this.messageInputVisible = true
                 this.joinAndCreateButtonVisible = false
                 this.subscribe()
@@ -488,12 +500,26 @@ export default defineComponent({
     like(message, index) {
       message.index = index
       message.likedOrDisliked = true
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.like", {}, JSON.stringify(message));
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/card.like", {}, JSON.stringify(message));
     },
     dislike(message, index) {
       message.index = index
       message.likedOrDisliked = true
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.dislike", {}, JSON.stringify(message));
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/card.dislike", {}, JSON.stringify(message));
+    },
+    likeButtonsVisible(uniqueId, likedOrDisliked) {
+      try {
+        const map = this.retroBoard.likedRecords
+        if (map.has(this.username)) {
+          if (map.get(this.username).includes(uniqueId)) {
+            return false
+          } else {
+            return !likedOrDisliked
+          }
+        }
+      } catch (error) {
+        return !likedOrDisliked
+      }
     },
     onAddMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
@@ -572,6 +598,7 @@ export default defineComponent({
     },
     onReorderMessageReceived(payload) {
       this.retroBoard = JSON.parse(payload.body)
+      this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
     },
     enableAlert(message, index) {
       this.alert = true

@@ -1,6 +1,10 @@
 package com.cgi.retrospecto.backend.domain;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class RetroBoardMessage {
+    private static final AtomicInteger idGenerator = new AtomicInteger(1000);
+
     private String username;
 
     private String cardMessage;
@@ -12,10 +16,11 @@ public class RetroBoardMessage {
     private int likes = 0;
 
     private int dislikes = 0;
-
+    private int uniqueId;
     public RetroBoardMessage(String username, String cardMessage) {
         this.username = username;
         this.cardMessage = cardMessage;
+        this.uniqueId = idGenerator.getAndIncrement();
     }
 
     public ColumnType getColumnType() {
@@ -64,6 +69,10 @@ public class RetroBoardMessage {
 
     public void increaseDislikes() {
         this.dislikes += 1;
+    }
+
+    public int getUniqueId() {
+        return uniqueId;
     }
 
     public enum ColumnType {

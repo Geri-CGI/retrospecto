@@ -7,9 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class RetroBoardHandler {
@@ -71,10 +69,11 @@ public class RetroBoardHandler {
         return retroBoardMessage;
     }
 
-    public RetroBoardMessage likeRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+    public RetroBoardMessage likeRetroBoardCard(int boardId, String username, RetroBoardMessage retroBoardMessage) {
         final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         int index = retroBoardMessage.getIndex();
         retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        addToLikedRecords(retroBoard, username, retroBoardMessage);
         switch (retroBoardMessage.getColumnType()) {
             case TRY -> retroBoard.getWantToTryColumn().get(index).increaseLikes();
             case WELL -> retroBoard.getWentWellColumn().get(index).increaseLikes();
@@ -85,10 +84,11 @@ public class RetroBoardHandler {
         return retroBoardMessage;
     }
 
-    public RetroBoardMessage dislikeRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+    public RetroBoardMessage dislikeRetroBoardCard(int boardId, String username, RetroBoardMessage retroBoardMessage) {
         final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         int index = retroBoardMessage.getIndex();
         retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        addToLikedRecords(retroBoard, username, retroBoardMessage);
         switch (retroBoardMessage.getColumnType()) {
             case TRY -> retroBoard.getWantToTryColumn().get(index).increaseDislikes();
             case WELL -> retroBoard.getWentWellColumn().get(index).increaseDislikes();
@@ -97,6 +97,14 @@ public class RetroBoardHandler {
         }
         retroBoardMessage.increaseDislikes();
         return retroBoardMessage;
+    }
+
+    public void addToLikedRecords(RetroBoard retroBoard, String username, RetroBoardMessage retroBoardMessage) {
+        Map<String, List<Integer>> likedRecords = retroBoard.getLikedRecords();
+        if (!likedRecords.containsKey(username)) {
+            likedRecords.put(username, new ArrayList<>());
+        }
+        likedRecords.get(username).add(retroBoardMessage.getUniqueId());
     }
 
     public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {
