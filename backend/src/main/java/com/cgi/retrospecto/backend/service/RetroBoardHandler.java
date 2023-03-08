@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Random;
 
 @Service
@@ -96,5 +97,22 @@ public class RetroBoardHandler {
         }
         retroBoardMessage.increaseDislikes();
         return retroBoardMessage;
+    }
+
+    public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {
+        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getLikes));
+    }
+
+    public RetroBoard getRetroBoardReorganizedByDislikes(int boardId) {
+        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getDislikes));
+    }
+
+    private RetroBoard getRetroBoard(int boardId, Comparator<RetroBoardMessage> comparing) {
+        RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        retroBoard.getExpectColumn().sort(comparing);
+        retroBoard.getWentWellColumn().sort(comparing);
+        retroBoard.getDidNotGoWellColumn().sort(comparing);
+        retroBoard.getWantToTryColumn().sort(comparing);
+        return retroBoard;
     }
 }

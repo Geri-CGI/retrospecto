@@ -57,6 +57,22 @@ public class BoardController {
 
     @CrossOrigin
     @ResponseBody
+    @RequestMapping(path = "/board/{id}/order/likes", method = RequestMethod.GET)
+    @SendTo("/topic/board/{boardId}/reorder")
+    public RetroBoard getRetroBoardReorganizedByLikes(@PathVariable int id) {
+        return retroBoardHandler.getRetroBoardReorganizedByLikes(id);
+    }
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(path = "/board/{id}/order/dislikes", method = RequestMethod.GET)
+    @SendTo("/topic/board/{boardId}/reorder")
+    public RetroBoard getRetroBoardReorganizedByDislikes(@PathVariable int id) {
+        return retroBoardHandler.getRetroBoardReorganizedByDislikes(id);
+    }
+
+    @CrossOrigin
+    @ResponseBody
     @RequestMapping(path = "/board/number", method = RequestMethod.GET)
     public int getNumberOfActiveRetroBoards() {
         return retroBoardHandler.getNumberOfActiveRetroBoards();

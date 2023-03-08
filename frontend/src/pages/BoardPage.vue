@@ -81,8 +81,12 @@
           <div class="col text-left text-weight-bold">
             Host: {{ retroBoard.author }}
           </div>
-          <div class="col text-left text-weight-bold">
+          <div class="col text-center text-weight-bold">
             Board ID: {{ boardId }}
+          </div>
+          <div class="col text-center text-weight-bold">
+            <q-btn v-if="username = author" color="secondary" icon="thumb_up" size="sm" @click="orderByLikes"/>
+            <q-btn v-if="username = author" color="red-13" icon="thumb_down" size="sm" @click="orderByDislikes"/>
           </div>
           <q-btn color="red-13" icon="logout" size="sm" @click="exit"/>
         </q-bar>
@@ -121,8 +125,10 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
-                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                                     @click="like(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                                     @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
@@ -175,8 +181,10 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
-                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                                     @click="like(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                                     @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
@@ -229,8 +237,10 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
-                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                                     @click="like(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                                     @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
@@ -283,8 +293,10 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
-                              <q-btn color="secondary" icon="thumb_up" round size="sm" @click="like(card, index)"/>
-                              <q-btn color="red-13" icon="thumb_down" round size="sm" @click="dislike(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="secondary" icon="thumb_up" round size="sm"
+                                     @click="like(card, index)"/>
+                              <q-btn v-if="!card.likedOrDisliked" color="red-13" icon="thumb_down" round size="sm"
+                                     @click="dislike(card, index)"/>
                               <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
@@ -349,6 +361,7 @@ export default defineComponent({
         show: false,
         likes: 0,
         dislikes: 0,
+        likedOrDisliked: false
       },
       boardIdErrorMessage: 'Board ID required!',
       ratingModel: ref(3),
@@ -474,10 +487,12 @@ export default defineComponent({
     },
     like(message, index) {
       message.index = index
+      message.likedOrDisliked = true
       store.getStompClient.send("/app/board/" + this.boardId + "/card.like", {}, JSON.stringify(message));
     },
     dislike(message, index) {
       message.index = index
+      message.likedOrDisliked = true
       store.getStompClient.send("/app/board/" + this.boardId + "/card.dislike", {}, JSON.stringify(message));
     },
     onAddMessageReceived(payload) {
@@ -555,10 +570,19 @@ export default defineComponent({
         this.retroBoard.wantToTryColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
       }
     },
+    onReorderMessageReceived(payload) {
+      this.retroBoard = JSON.parse(payload.body)
+    },
     enableAlert(message, index) {
       this.alert = true
       this.alertMessage = message
       this.alertMessage.index = index
+    },
+    orderByLikes() {
+      axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/order/likes')
+    },
+    orderByDislikes() {
+      axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/order/dislikes')
     },
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
@@ -566,6 +590,7 @@ export default defineComponent({
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived);
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/like', this.onLikeMessageReceived);
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/dislike', this.onDislikeMessageReceived);
+      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived);
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
     },
     exit() {
@@ -574,6 +599,7 @@ export default defineComponent({
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/like');
       store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/dislike');
+      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/reorder');
       stompClientStore().setUsernameAuthorBoarDId(null, null, null)
       this.messageInputVisible = false
       this.joinAndCreateButtonVisible = true
