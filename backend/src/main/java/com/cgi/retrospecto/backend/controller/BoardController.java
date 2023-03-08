@@ -58,15 +58,15 @@ public class BoardController {
 
     @MessageMapping("/board/{boardId}/order.like")
     @SendTo("/topic/board/{boardId}/reorder")
-    public RetroBoard getRetroBoardReorganizedByLikes(@PathVariable int id) {
-        return retroBoardHandler.getRetroBoardReorganizedByLikes(id);
+    public RetroBoard getRetroBoardReorganizedByLikes(@PathVariable int boardId) {
+        return retroBoardHandler.getRetroBoardReorganizedByLikes(boardId);
     }
 
 
     @MessageMapping("/board/{boardId}/order.dislike")
     @SendTo("/topic/board/{boardId}/reorder")
-    public RetroBoard getRetroBoardReorganizedByDislikes(@PathVariable int id) {
-        return retroBoardHandler.getRetroBoardReorganizedByDislikes(id);
+    public RetroBoard getRetroBoardReorganizedByDislikes(@PathVariable int boardId) {
+        return retroBoardHandler.getRetroBoardReorganizedByDislikes(boardId);
     }
 
     @CrossOrigin
