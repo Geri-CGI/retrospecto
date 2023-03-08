@@ -55,17 +55,15 @@ public class BoardController {
         return retroBoardHandler.getRetroBoard(id);
     }
 
-    @CrossOrigin
-    @ResponseBody
-    @RequestMapping(path = "/board/{id}/order/likes", method = RequestMethod.GET)
+
+    @MessageMapping("/board/{boardId}/order.like")
     @SendTo("/topic/board/{boardId}/reorder")
     public RetroBoard getRetroBoardReorganizedByLikes(@PathVariable int id) {
         return retroBoardHandler.getRetroBoardReorganizedByLikes(id);
     }
 
-    @CrossOrigin
-    @ResponseBody
-    @RequestMapping(path = "/board/{id}/order/dislikes", method = RequestMethod.GET)
+
+    @MessageMapping("/board/{boardId}/order.dislike")
     @SendTo("/topic/board/{boardId}/reorder")
     public RetroBoard getRetroBoardReorganizedByDislikes(@PathVariable int id) {
         return retroBoardHandler.getRetroBoardReorganizedByDislikes(id);

@@ -579,10 +579,10 @@ export default defineComponent({
       this.alertMessage.index = index
     },
     orderByLikes() {
-      axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/order/likes')
+      store.getStompClient.send("/app/board/" + this.boardId + "/order.like", {});
     },
     orderByDislikes() {
-      axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/order/dislikes')
+      store.getStompClient.send("/app/board/" + this.boardId + "/order.dislike", {});
     },
     subscribe() {
       store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
