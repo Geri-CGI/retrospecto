@@ -74,7 +74,7 @@ export default defineComponent({
       this.usernameInputVisible = false
       this.chatInputVisible = true
       // Subscribe to the Public Topic
-      stompClient.subscribe('/topic/public', this.onMessageReceived);
+      stompClient.subscribe('/topic/chat/public', this.onMessageReceived);
 
       // Tell your username to the server
       stompClient.send("/app/chat.addUser",

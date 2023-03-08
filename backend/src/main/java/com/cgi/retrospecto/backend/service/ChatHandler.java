@@ -30,6 +30,6 @@ public class ChatHandler {
     }
 
     public List<ChatMessage> getChatMessages() {
-        return chatMessageKeeper.getChatMessages();
+        return ChatMessageKeeper.getChatMessages();
     }
 }
