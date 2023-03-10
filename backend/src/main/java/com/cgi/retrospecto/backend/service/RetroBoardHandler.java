@@ -123,4 +123,16 @@ public class RetroBoardHandler {
         retroBoard.getWantToTryColumn().sort(comparing);
         return retroBoard;
     }
+
+    public List<String> addUserToRetroBoard(int boardId, String username) {
+        RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        retroBoard.getUsers().add(username);
+        return retroBoard.getUsers();
+    }
+
+    public List<String> removeUserFromRetroBoard(int boardId, String username) {
+        RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        retroBoard.getUsers().remove(username);
+        return retroBoard.getUsers();
+    }
 }

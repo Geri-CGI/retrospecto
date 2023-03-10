@@ -1,7 +1,6 @@
 package com.cgi.retrospecto.backend.component;
 
 import com.cgi.retrospecto.backend.domain.ChatMessage;
-import com.cgi.retrospecto.backend.service.RetroBoardKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,6 @@ public class WebSocketEventListener {
 
     @Autowired
     private SimpMessageSendingOperations messagingTemplate;
-
-    @Autowired
-    private RetroBoardKeeper retroBoardKeeper;
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
