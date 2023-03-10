@@ -11,7 +11,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Set;
 
 
 @Controller
@@ -52,13 +52,13 @@ public class BoardController {
 
     @MessageMapping("/board/{boardId}/{username}/user.add")
     @SendTo("/topic/board/{boardId}/user")
-    public List<String> addUserToRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+    public Set<String> addUserToRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
         return retroBoardHandler.addUserToRetroBoard(boardId, username);
     }
 
     @MessageMapping("/board/{boardId}/{username}/user.remove")
     @SendTo("/topic/board/{boardId}/user")
-    public List<String> removeUserFromRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+    public Set<String> removeUserFromRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
         return retroBoardHandler.removeUserFromRetroBoard(boardId, username);
     }
 

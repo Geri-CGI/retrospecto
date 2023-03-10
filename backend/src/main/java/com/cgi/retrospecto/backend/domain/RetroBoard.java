@@ -1,10 +1,7 @@
 package com.cgi.retrospecto.backend.domain;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RetroBoard {
     private int id;
@@ -22,7 +19,7 @@ public class RetroBoard {
 
     private Map<String, List<Integer>> likedRecords = new HashMap<>();
 
-    private List<String> users = new ArrayList<>();
+    private Set<String> users = new HashSet<>();
 
     public RetroBoard(int id, String author, List<RetroBoardMessage> expectColumn, List<RetroBoardMessage> wentWellColumn, List<RetroBoardMessage> didNotGoWellColumn, List<RetroBoardMessage> wantToTryColumn) {
         this.id = id;
@@ -93,11 +90,7 @@ public class RetroBoard {
         return likedRecords;
     }
 
-    public List<String> getUsers() {
+    public Set<String> getUsers() {
         return users;
-    }
-
-    public void setUsers(List<String> users) {
-        this.users = users;
     }
 }

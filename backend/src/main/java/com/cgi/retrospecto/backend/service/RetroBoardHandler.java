@@ -34,6 +34,7 @@ public class RetroBoardHandler {
     public RetroBoard createBoard(@PathVariable String author) {
         int id = new Random().nextInt(900000) + 100000;
         RetroBoard newRetroBoard = new RetroBoard(id, author, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        newRetroBoard.getUsers().add(author);
         retroBoardKeeper.addBoard(newRetroBoard);
         return newRetroBoard;
     }
@@ -124,13 +125,13 @@ public class RetroBoardHandler {
         return retroBoard;
     }
 
-    public List<String> addUserToRetroBoard(int boardId, String username) {
+    public Set<String> addUserToRetroBoard(int boardId, String username) {
         RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         retroBoard.getUsers().add(username);
         return retroBoard.getUsers();
     }
 
-    public List<String> removeUserFromRetroBoard(int boardId, String username) {
+    public Set<String> removeUserFromRetroBoard(int boardId, String username) {
         RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         retroBoard.getUsers().remove(username);
         return retroBoard.getUsers();
