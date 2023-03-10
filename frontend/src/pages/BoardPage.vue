@@ -82,7 +82,7 @@
             Host: {{ retroBoard.author }}
             <q-list>
               <template v-for="(user, index) in retroBoard.users" :key="index">
-                <q-avatar color="primary" text-color="white">
+                <q-avatar color="primary" size="lg" text-color="white">
                   {{ getFirstLetter(user) }}
                   <q-tooltip>
                     {{ user }}
