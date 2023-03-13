@@ -9,48 +9,56 @@
       </q-parallax>
     </div>
     <div class="row">
-      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4">
-        <q-card class="my-card full-height" flat square>
-          <div class="text-center">
-            <q-icon name="dashboard" color="blue" size="6.4em" style="padding: 30px"/>
-          </div>
-
-          <q-card-section>
-            <div class="text-h3 text-center" style="padding-bottom: 20px">Board</div>
-            <div class="text-subtitle2 text-center">A retrospective (from Latin retrospectare, "look back"), generally,
-              is a look back at events that took place, or works that were produced, in the past. We provide you a board
-              to help facilitate it.
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4 text-center">
+        <q-btn class="full-height" flat no-caps square to="/board">
+          <q-card class="full-height" flat square>
+            <div class="text-center">
+              <q-icon color="blue" name="dashboard" size="6.4em" style="padding: 30px"/>
             </div>
-          </q-card-section>
-        </q-card>
+
+            <q-card-section>
+              <div class="text-h3 text-center" style="padding-bottom: 20px">Board</div>
+              <div class="text-subtitle2 text-center">A retrospective (from Latin retrospectare, "look back"),
+                generally,
+                is a look back at events that took place, or works that were produced, in the past. We provide you a
+                board
+                to help facilitate it.
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-btn>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4">
-        <q-card class="my-card full-height" flat square>
-          <div class="text-center">
-            <q-icon name="style" color="blue" size="6.4em" style="padding: 30px"/>
-          </div>
-
-          <q-card-section>
-            <div class="text-h3 text-center" style="padding-bottom: 20px">Poker</div>
-            <div class="text-subtitle2 text-center">In planning poker, members of the group make estimates by playing
-              numbered cards face-down to the table, instead of speaking them aloud.
+        <q-btn class="full-height" flat no-caps square to="/poker">
+          <q-card class="my-card full-height" flat square>
+            <div class="text-center">
+              <q-icon color="blue" name="style" size="6.4em" style="padding: 30px"/>
             </div>
-          </q-card-section>
-        </q-card>
+
+            <q-card-section>
+              <div class="text-h3 text-center" style="padding-bottom: 20px">Poker</div>
+              <div class="text-subtitle2 text-center">In planning poker, members of the group make estimates by playing
+                numbered cards face-down to the table, instead of speaking them aloud.
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-btn>
       </div>
       <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4">
-        <q-card class="my-card full-height" flat square>
-          <div class="text-center">
-            <q-icon name="chat" color="blue" size="6.4em" style="padding: 30px"/>
-          </div>
-
-          <q-card-section>
-            <div class="text-h3 text-center" style="padding-bottom: 20px">Chat</div>
-            <div class="text-subtitle2 text-center">Just a simple chat feature for websocket testing with Spring Boot.
-              Come and have a talk with anyone. We do not store any history of the chat.
+        <q-btn class="full-height" flat no-caps square to="/chat">
+          <q-card class="my-card full-height" flat square>
+            <div class="text-center">
+              <q-icon color="blue" name="chat" size="6.4em" style="padding: 30px"/>
             </div>
-          </q-card-section>
-        </q-card>
+
+            <q-card-section>
+              <div class="text-h3 text-center" style="padding-bottom: 20px">Chat</div>
+              <div class="text-subtitle2 text-center">Just a simple chat feature for websocket testing with Spring Boot.
+                Come and have a talk with anyone. We do not store any history of the chat.
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-btn>
       </div>
     </div>
     <div>
