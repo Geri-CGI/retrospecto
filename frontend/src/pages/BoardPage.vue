@@ -80,6 +80,16 @@
         <q-bar class="text-blue col-12" dark>
           <div class="col text-left text-weight-bold">
             Host: {{ retroBoard.author }}
+            <q-list>
+              <template v-for="(user, index) in retroBoard.users" :key="index">
+                <q-avatar color="primary" size="lg" text-color="white">
+                  {{ getFirstLetter(user) }}
+                  <q-tooltip>
+                    {{ user }}
+                  </q-tooltip>
+                </q-avatar>
+              </template>
+            </q-list>
           </div>
           <div class="col text-center text-weight-bold">
             Board ID: {{ boardId }}
@@ -353,7 +363,8 @@ export default defineComponent({
         wentWellColumn: [],
         didNotGoWellColumn: [],
         wantToTryColumn: [],
-        likedRecords: new Map()
+        likedRecords: new Map(),
+        users: []
       },
       inputWentWellColumn: null,
       inputExpectColumn: null,
@@ -379,7 +390,8 @@ export default defineComponent({
       noWebsocketConnectionVisible: false,
       spinnerVisible: false,
       alert: false,
-      alertMessage: null
+      alertMessage: null,
+      subscriptions: []
     }
   },
   created() {
@@ -391,13 +403,13 @@ export default defineComponent({
       }
     })
   },
+  beforeUnmount() {
+    store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
+  },
   unmounted() {
-    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
-    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
-    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
-    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/like');
-    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/dislike');
-    store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/reorder');
+    this.subscriptions.forEach(function (subscription, index) {
+      subscription.unsubscribe()
+    })
   },
   methods: {
     reload() {
@@ -600,6 +612,9 @@ export default defineComponent({
       this.retroBoard = JSON.parse(payload.body)
       this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
     },
+    onUserMessageReceived(payload) {
+      this.retroBoard.users = JSON.parse(payload.body)
+    },
     enableAlert(message, index) {
       this.alert = true
       this.alertMessage = message
@@ -612,21 +627,21 @@ export default defineComponent({
       store.getStompClient.send("/app/board/" + this.boardId + "/order.dislike", {}, JSON.stringify(null));
     },
     subscribe() {
-      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived);
-      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived);
-      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived);
-      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/like', this.onLikeMessageReceived);
-      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/dislike', this.onDislikeMessageReceived);
-      store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived);
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/like', this.onLikeMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/dislike', this.onDislikeMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/user', this.onUserMessageReceived))
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
     },
     exit() {
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/add');
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/delete');
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/edit');
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/like');
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/dislike');
-      store.getStompClient.unsubscribe('/topic/board/' + this.boardId + '/reorder');
+      this.subscriptions.forEach(function (subscription, index) {
+        subscription.unsubscribe()
+      })
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
       stompClientStore().setUsernameAuthorBoarDId(null, null, null)
       this.messageInputVisible = false
       this.joinAndCreateButtonVisible = true
@@ -634,6 +649,9 @@ export default defineComponent({
       this.boardId = null
       this.retroBoard = null
       this.author = null
+    },
+    getFirstLetter(username) {
+      return Array.from(username)[0];
     },
     joinBoard() {
       if (!this.boardId && !this.username) {

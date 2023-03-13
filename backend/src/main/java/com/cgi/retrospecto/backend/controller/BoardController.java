@@ -11,6 +11,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 
 @Controller
 public class BoardController {
@@ -46,6 +48,18 @@ public class BoardController {
     @SendTo("/topic/board/{boardId}/dislike")
     public RetroBoardMessage dislikeRetroBoardCard(@DestinationVariable int boardId, @DestinationVariable String username, @Payload RetroBoardMessage retroBoardMessage) {
         return retroBoardHandler.dislikeRetroBoardCard(boardId, username, retroBoardMessage);
+    }
+
+    @MessageMapping("/board/{boardId}/{username}/user.add")
+    @SendTo("/topic/board/{boardId}/user")
+    public Set<String> addUserToRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+        return retroBoardHandler.addUserToRetroBoard(boardId, username);
+    }
+
+    @MessageMapping("/board/{boardId}/{username}/user.remove")
+    @SendTo("/topic/board/{boardId}/user")
+    public Set<String> removeUserFromRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+        return retroBoardHandler.removeUserFromRetroBoard(boardId, username);
     }
 
     @MessageMapping("/board/{boardId}/order.like")
