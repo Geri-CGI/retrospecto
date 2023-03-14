@@ -175,6 +175,9 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="cancel" round size="sm"
+                                     @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
@@ -560,6 +563,11 @@ export default defineComponent({
       message.likedOrDisliked = true
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/card.dislike", {}, JSON.stringify(message));
     },
+    removeLike(message, index) {
+      message.index = index
+      message.likedOrDisliked = false
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/card.removeLike", {}, JSON.stringify(message));
+    },
     likeButtonsVisible(uniqueId, likedOrDisliked) {
       try {
         const map = this.retroBoard.likedRecords
@@ -622,31 +630,16 @@ export default defineComponent({
     onLikeMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
-        this.retroBoard.expectColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.expectColumn[retroBoardMessage.index] = retroBoardMessage
       }
       if (retroBoardMessage.columnType === 'WELL') {
-        this.retroBoard.wentWellColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.wentWellColumn[retroBoardMessage.index] = retroBoardMessage
       }
       if (retroBoardMessage.columnType === 'NOT_WELL') {
-        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index] = retroBoardMessage
       }
       if (retroBoardMessage.columnType === 'TRY') {
-        this.retroBoard.wantToTryColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
-      }
-    },
-    onDislikeMessageReceived(payload) {
-      let retroBoardMessage = JSON.parse(payload.body);
-      if (retroBoardMessage.columnType === 'EXPECT') {
-        this.retroBoard.expectColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
-      }
-      if (retroBoardMessage.columnType === 'WELL') {
-        this.retroBoard.wentWellColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
-      }
-      if (retroBoardMessage.columnType === 'NOT_WELL') {
-        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
-      }
-      if (retroBoardMessage.columnType === 'TRY') {
-        this.retroBoard.wantToTryColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index] = retroBoardMessage
       }
     },
     onReorderMessageReceived(payload) {
@@ -672,7 +665,6 @@ export default defineComponent({
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/like', this.onLikeMessageReceived))
-      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/dislike', this.onDislikeMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/user', this.onUserMessageReceived))
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
