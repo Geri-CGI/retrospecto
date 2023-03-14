@@ -126,7 +126,13 @@ public class RetroBoardHandler {
 
     public void removeFromLikedRecords(RetroBoard retroBoard, String username, RetroBoardMessage retroBoardMessage) {
         Map<String, List<Integer>> likedRecords = retroBoard.getLikedRecords();
-        likedRecords.get(username).remove(retroBoardMessage.getUniqueId());
+        List<Integer> ids = likedRecords.get(username);
+        for (int i = 0; i < ids.size(); i++) {
+            if (ids.get(i) == retroBoardMessage.getUniqueId()) {
+                ids.remove(i);
+                return;
+            }
+        }
     }
 
     public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {

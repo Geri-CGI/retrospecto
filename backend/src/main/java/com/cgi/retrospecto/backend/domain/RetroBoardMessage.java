@@ -71,10 +71,8 @@ public class RetroBoardMessage {
 
     public void decreaseReaction(String username) {
         switch (getLikeLog().get(username)) {
-            case "LIKE":
-                decreaseLikes(username);
-            case "DISLIKE":
-                decreaseDislikes(username);
+            case "LIKE" -> decreaseLikes(username);
+            case "DISLIKE" -> decreaseDislikes(username);
         }
     }
 

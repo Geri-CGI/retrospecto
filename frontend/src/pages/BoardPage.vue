@@ -236,6 +236,9 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="cancel" round size="sm"
+                                     @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
@@ -294,6 +297,9 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="cancel" round size="sm"
+                                     @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
@@ -352,6 +358,9 @@
                         <q-slide-transition>
                           <div v-show="card.show" class="column">
                             <div class="col self-end">
+                              <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
+                                     icon="cancel" round size="sm"
+                                     @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
                                      @click="like(card, index)"/>
@@ -630,16 +639,20 @@ export default defineComponent({
     onLikeMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
-        this.retroBoard.expectColumn[retroBoardMessage.index] = retroBoardMessage
+        this.retroBoard.expectColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.expectColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
       }
       if (retroBoardMessage.columnType === 'WELL') {
-        this.retroBoard.wentWellColumn[retroBoardMessage.index] = retroBoardMessage
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
       }
       if (retroBoardMessage.columnType === 'NOT_WELL') {
-        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index] = retroBoardMessage
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
       }
       if (retroBoardMessage.columnType === 'TRY') {
-        this.retroBoard.wantToTryColumn[retroBoardMessage.index] = retroBoardMessage
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].likes = retroBoardMessage.likes
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].dislikes = retroBoardMessage.dislikes
       }
     },
     onReorderMessageReceived(payload) {
