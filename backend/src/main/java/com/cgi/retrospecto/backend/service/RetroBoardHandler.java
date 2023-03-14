@@ -113,6 +113,7 @@ public class RetroBoardHandler {
             case NOT_WELL -> retroBoardMessageFromMemory = retroBoard.getDidNotGoWellColumn().get(index);
         }
         retroBoardMessageFromMemory.decreaseReaction(username);
+        retroBoardMessageFromMemory.setIndex(index);
         return retroBoardMessageFromMemory;
     }
 
