@@ -76,12 +76,12 @@ public class RetroBoardHandler {
         retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
         addToLikedRecords(retroBoard, username, retroBoardMessage);
         switch (retroBoardMessage.getColumnType()) {
-            case TRY -> retroBoard.getWantToTryColumn().get(index).increaseLikes();
-            case WELL -> retroBoard.getWentWellColumn().get(index).increaseLikes();
-            case EXPECT -> retroBoard.getExpectColumn().get(index).increaseLikes();
-            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseLikes();
+            case TRY -> retroBoard.getWantToTryColumn().get(index).increaseLikes(username);
+            case WELL -> retroBoard.getWentWellColumn().get(index).increaseLikes(username);
+            case EXPECT -> retroBoard.getExpectColumn().get(index).increaseLikes(username);
+            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseLikes(username);
         }
-        retroBoardMessage.increaseLikes();
+        retroBoardMessage.increaseLikes(username);
         return retroBoardMessage;
     }
 
@@ -91,13 +91,30 @@ public class RetroBoardHandler {
         retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
         addToLikedRecords(retroBoard, username, retroBoardMessage);
         switch (retroBoardMessage.getColumnType()) {
-            case TRY -> retroBoard.getWantToTryColumn().get(index).increaseDislikes();
-            case WELL -> retroBoard.getWentWellColumn().get(index).increaseDislikes();
-            case EXPECT -> retroBoard.getExpectColumn().get(index).increaseDislikes();
-            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseDislikes();
+            case TRY -> retroBoard.getWantToTryColumn().get(index).increaseDislikes(username);
+            case WELL -> retroBoard.getWentWellColumn().get(index).increaseDislikes(username);
+            case EXPECT -> retroBoard.getExpectColumn().get(index).increaseDislikes(username);
+            case NOT_WELL -> retroBoard.getDidNotGoWellColumn().get(index).increaseDislikes(username);
         }
-        retroBoardMessage.increaseDislikes();
+        retroBoardMessage.increaseDislikes(username);
         return retroBoardMessage;
+    }
+
+    public RetroBoardMessage removeLikeRetroBoardCard(int boardId, String username, RetroBoardMessage retroBoardMessage) {
+        final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        int index = retroBoardMessage.getIndex();
+        retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        removeFromLikedRecords(retroBoard, username, retroBoardMessage);
+        RetroBoardMessage retroBoardMessageFromMemory = null;
+        switch (retroBoardMessage.getColumnType()) {
+            case TRY -> retroBoardMessageFromMemory = retroBoard.getWantToTryColumn().get(index);
+            case WELL -> retroBoardMessageFromMemory = retroBoard.getWentWellColumn().get(index);
+            case EXPECT -> retroBoardMessageFromMemory = retroBoard.getExpectColumn().get(index);
+            case NOT_WELL -> retroBoardMessageFromMemory = retroBoard.getDidNotGoWellColumn().get(index);
+        }
+        retroBoardMessageFromMemory.decreaseReaction(username);
+        retroBoardMessageFromMemory.setIndex(index);
+        return retroBoardMessageFromMemory;
     }
 
     public void addToLikedRecords(RetroBoard retroBoard, String username, RetroBoardMessage retroBoardMessage) {
@@ -106,6 +123,17 @@ public class RetroBoardHandler {
             likedRecords.put(username, new ArrayList<>());
         }
         likedRecords.get(username).add(retroBoardMessage.getUniqueId());
+    }
+
+    public void removeFromLikedRecords(RetroBoard retroBoard, String username, RetroBoardMessage retroBoardMessage) {
+        Map<String, List<Integer>> likedRecords = retroBoard.getLikedRecords();
+        List<Integer> ids = likedRecords.get(username);
+        for (int i = 0; i < ids.size(); i++) {
+            if (ids.get(i) == retroBoardMessage.getUniqueId()) {
+                ids.remove(i);
+                return;
+            }
+        }
     }
 
     public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {

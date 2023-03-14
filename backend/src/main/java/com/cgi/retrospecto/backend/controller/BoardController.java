@@ -45,9 +45,15 @@ public class BoardController {
     }
 
     @MessageMapping("/board/{boardId}/{username}/card.dislike")
-    @SendTo("/topic/board/{boardId}/dislike")
+    @SendTo("/topic/board/{boardId}/like")
     public RetroBoardMessage dislikeRetroBoardCard(@DestinationVariable int boardId, @DestinationVariable String username, @Payload RetroBoardMessage retroBoardMessage) {
         return retroBoardHandler.dislikeRetroBoardCard(boardId, username, retroBoardMessage);
+    }
+
+    @MessageMapping("/board/{boardId}/{username}/card.removeLike")
+    @SendTo("/topic/board/{boardId}/like")
+    public RetroBoardMessage removeLikeRetroBoardCard(@DestinationVariable int boardId, @DestinationVariable String username, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.removeLikeRetroBoardCard(boardId, username, retroBoardMessage);
     }
 
     @MessageMapping("/board/{boardId}/{username}/user.add")

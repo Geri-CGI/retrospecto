@@ -1,5 +1,7 @@
 package com.cgi.retrospecto.backend.domain;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RetroBoardMessage {
@@ -17,6 +19,9 @@ public class RetroBoardMessage {
 
     private int dislikes = 0;
     private int uniqueId;
+
+    private Map<String, String> likeLog = new HashMap<>();
+
     public RetroBoardMessage(String username, String cardMessage) {
         this.username = username;
         this.cardMessage = cardMessage;
@@ -59,16 +64,35 @@ public class RetroBoardMessage {
         return likes;
     }
 
-    public void increaseLikes() {
+    public void increaseLikes(String username) {
         this.likes += 1;
+        getLikeLog().put(username, "LIKE");
+    }
+
+    public void decreaseReaction(String username) {
+        switch (getLikeLog().get(username)) {
+            case "LIKE" -> decreaseLikes(username);
+            case "DISLIKE" -> decreaseDislikes(username);
+        }
+    }
+
+    public void decreaseLikes(String username) {
+        this.likes -= 1;
+        getLikeLog().remove(username);
     }
 
     public int getDislikes() {
         return dislikes;
     }
 
-    public void increaseDislikes() {
+    public void increaseDislikes(String username) {
         this.dislikes += 1;
+        getLikeLog().put(username, "DISLIKE");
+    }
+
+    public void decreaseDislikes(String username) {
+        this.dislikes -= 1;
+        getLikeLog().remove(username);
     }
 
     public int getUniqueId() {
@@ -80,5 +104,9 @@ public class RetroBoardMessage {
         WELL,
         NOT_WELL,
         TRY
+    }
+
+    public Map<String, String> getLikeLog() {
+        return likeLog;
     }
 }
