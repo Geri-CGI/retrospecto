@@ -91,14 +91,54 @@
               </template>
             </q-list>
           </div>
-          <div class="col text-center text-weight-bold">
+          <div class="col text-left text-weight-bold">
             Board ID: {{ boardId }}
           </div>
-          <div class="col text-center text-weight-bold">
-            <q-btn v-if="username === author" color="secondary" icon="thumb_up" size="sm" @click="orderByLikes"/>
-            <q-btn v-if="username === author" color="red-13" icon="thumb_down" size="sm" @click="orderByDislikes"/>
-          </div>
-          <q-btn color="red-13" icon="logout" size="sm" @click="exit"/>
+          <q-btn-dropdown v-if="userIsAuthor()" color="primary" label="Menu">
+            <q-list>
+              <q-item v-close-popup clickable @click="orderByLikes">
+                <q-item-section>
+                  <q-item-label>Order by likes</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="secondary" icon="thumb_up" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-close-popup clickable @click="orderByDislikes">
+                <q-item-section>
+                  <q-item-label>Order by dislikes</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="red-13" icon="thumb_down" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-close-popup clickable @click="lockTheBoard">
+                <q-item-section>
+                  <q-item-label>Lock the board</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="warning" icon="lock" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-close-popup clickable @click="exportTheBoard">
+                <q-item-section>
+                  <q-item-label>Export the board</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="primary" icon="download" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-close-popup clickable @click="exit">
+                <q-item-section>
+                  <q-item-label>Exit</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="red-13" icon="logout" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+          <q-btn v-if="!userIsAuthor()" color="red-13" icon="logout" size="sm" @click="exit"/>
         </q-bar>
         <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
@@ -402,6 +442,7 @@ export default defineComponent({
         this.exit()
       }
     })
+    window.addEventListener("beforeunload", this.exit)
   },
   beforeUnmount() {
     store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
@@ -652,6 +693,15 @@ export default defineComponent({
     },
     getFirstLetter(username) {
       return Array.from(username)[0];
+    },
+    userIsAuthor() {
+      return this.username === this.author
+    },
+    lockTheBoard() {
+      //coming
+    },
+    exportTheBoard() {
+      //coming
     },
     joinBoard() {
       if (!this.boardId && !this.username) {

@@ -3,7 +3,9 @@
     <q-layout view="lHh Lpr lFf">
       <q-header elevated>
         <q-toolbar class="bg-blue text-white shadow-2">
-          <q-toolbar-title>retrospecto</q-toolbar-title>
+          <q-toolbar-title>
+            <q-btn flat no-caps size="lg" to="/">retrospecto</q-btn>
+          </q-toolbar-title>
           <q-space/>
           <q-tabs shrink>
             <q-route-tab
@@ -85,7 +87,9 @@
 
       <q-footer elevated>
         <q-toolbar>
-          <q-toolbar-title>retrospecto</q-toolbar-title>
+          <q-toolbar-title>
+            <q-btn flat no-caps size="lg" to="/">retrospecto</q-btn>
+          </q-toolbar-title>
           <q-space/>
           <q-btn flat icon="navigation" @click="GoToTop()"/>
         </q-toolbar>
