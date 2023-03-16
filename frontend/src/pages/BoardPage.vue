@@ -32,7 +32,7 @@
         </div>
       </div>
       <div class="row">
-        <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
+        <div v-if="createCardVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
              style="padding: 30px">
           <q-card style="max-width: 300px">
             <q-card-section>
@@ -48,9 +48,9 @@
             </q-card-actions>
           </q-card>
         </div>
-        <div v-if="joinAndCreateButtonVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
+        <div v-if="joinCardVisible" class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6"
              style="padding: 30px">
-          <q-card style="max-width: 300px">
+          <q-card style="max-width: 300px; min-width: 250px">
             <q-card-section>
               <div class="text-h5">Join a session</div>
             </q-card-section>
@@ -110,6 +110,14 @@
                 </q-item-section>
                 <q-item-section avatar>
                   <q-avatar color="red-13" icon="thumb_down" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-close-popup clickable @click="shareTheBoard()">
+                <q-item-section>
+                  <q-item-label>Share the board</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="primary" icon="ios_share" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
               <q-item v-close-popup clickable @click="lockTheBoard">
@@ -394,6 +402,7 @@ import {defineComponent, ref, watch} from 'vue'
 import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
 import {storeToRefs} from "pinia";
+import {copyToClipboard, Notify} from 'quasar'
 
 const store = stompClientStore()
 const {stompClientConnected} = storeToRefs(store)
@@ -405,7 +414,8 @@ export default defineComponent({
       boardId: null,
       messageInput: null,
       messageInputVisible: false,
-      joinAndCreateButtonVisible: false,
+      joinCardVisible: false,
+      createCardVisible: false,
       username: null,
       author: null,
       retroBoard: {
@@ -443,12 +453,12 @@ export default defineComponent({
       spinnerVisible: false,
       alert: false,
       alertMessage: null,
-      subscriptions: []
+      subscriptions: [],
     }
   },
   created() {
     this.spinnerVisible = true
-    setTimeout(this.reload, 1000)
+    setTimeout(this.reload, 2000)
     watch(stompClientConnected, () => {
       if (!stompClientConnected) {
         this.exit()
@@ -460,7 +470,7 @@ export default defineComponent({
     store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
   },
   unmounted() {
-    this.subscriptions.forEach(function (subscription, index) {
+    this.subscriptions.forEach(function (subscription) {
       subscription.unsubscribe()
     })
   },
@@ -478,39 +488,49 @@ export default defineComponent({
                 this.retroBoard = response.data
                 this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
                 this.messageInputVisible = true
-                this.joinAndCreateButtonVisible = false
+                this.joinCardVisible = false
+                this.createCardVisible = false
                 this.subscribe()
               }
             })
         } else {
+          if (this.$route.params.boardId != null) {
+            this.boardId = this.$route.params.boardId
+            this.createCardVisible = false
+          } else {
+            this.createCardVisible = true
+          }
           this.spinnerVisible = false
-          this.joinAndCreateButtonVisible = true
+          this.joinCardVisible = true
           this.messageInputVisible = false
         }
       } else {
         this.spinnerVisible = false
         this.noWebsocketConnectionVisible = true
-        this.joinAndCreateButtonVisible = false
+        this.joinCardVisible = false
+        this.createCardVisible = false
         this.messageInputVisible = false
       }
+      this.username = localStorage.getItem('username')
+      this.author = localStorage.getItem('author')
     },
     deleteCardExpectColumn(key) {
       let retroBoardMessage = this.retroBoard.expectColumn[key]
-      retroBoardMessage.index = key
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+      this.deleteCard(retroBoardMessage, key)
     },
     deleteCardWentWellColumn(key) {
       let retroBoardMessage = this.retroBoard.wentWellColumn[key]
-      retroBoardMessage.index = key
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+      this.deleteCard(retroBoardMessage, key)
     },
     deleteCardNotWellColumn(key) {
       let retroBoardMessage = this.retroBoard.didNotGoWellColumn[key]
-      retroBoardMessage.index = key
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+      this.deleteCard(retroBoardMessage, key)
     },
     deleteCardTryColumn(key) {
       let retroBoardMessage = this.retroBoard.wantToTryColumn[key]
+      this.deleteCard(retroBoardMessage, key)
+    },
+    deleteCard(retroBoardMessage, key) {
       retroBoardMessage.index = key
       store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
     },
@@ -521,7 +541,7 @@ export default defineComponent({
         columnType: 'EXPECT'
       }
       if (this.inputExpectColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputExpectColumn = null
       }
     },
@@ -532,7 +552,7 @@ export default defineComponent({
         columnType: 'WELL'
       }
       if (this.inputWentWellColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputWentWellColumn = null
       }
     },
@@ -543,7 +563,7 @@ export default defineComponent({
         columnType: 'NOT_WELL'
       }
       if (this.inputDidNotGoWellColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputDidNotGoWellColumn = null
       }
     },
@@ -554,9 +574,12 @@ export default defineComponent({
         columnType: 'TRY'
       }
       if (this.inputWantToTryColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputWantToTryColumn = null
       }
+    },
+    sendCardMessage() {
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
     },
     sendEditMessage() {
       let updatedMessage = this.alertMessage
@@ -674,6 +697,7 @@ export default defineComponent({
       store.getStompClient.send("/app/board/" + this.boardId + "/order.dislike", {}, JSON.stringify(null));
     },
     subscribe() {
+      localStorage.setItem('username', this.username)
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived))
@@ -684,17 +708,18 @@ export default defineComponent({
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
     },
     exit() {
-      this.subscriptions.forEach(function (subscription, index) {
+      this.subscriptions.forEach(function (subscription) {
         subscription.unsubscribe()
       })
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
-      stompClientStore().setUsernameAuthorBoarDId(null, null, null)
+      stompClientStore().setUsernameAuthorBoarDId(localStorage.getItem('username'), localStorage.getItem('author'), null)
       this.messageInputVisible = false
-      this.joinAndCreateButtonVisible = true
-      this.username = null
+      this.joinCardVisible = true
+      this.createCardVisible = true
+      this.username = localStorage.getItem('username')
       this.boardId = null
       this.retroBoard = null
-      this.author = null
+      this.author = localStorage.getItem('author')
     },
     getFirstLetter(username) {
       return Array.from(username)[0];
@@ -707,6 +732,24 @@ export default defineComponent({
     },
     exportTheBoard() {
       //coming
+    },
+    shareTheBoard() {
+      copyToClipboard('https://www.retrospecto.cloud/#/board/' + this.boardId).then(() => {
+        // success!
+        Notify.create({
+          message: 'URL copied to clipboard!',
+          color: 'blue',
+          position: "center"
+        })
+      })
+        .catch(() => {
+          // fail
+          Notify.create({
+            message: 'URL copy failed!',
+            color: 'red',
+            position: "center"
+          })
+        })
     },
     joinBoard() {
       if (!this.boardId && !this.username) {
@@ -732,7 +775,8 @@ export default defineComponent({
               this.retroBoard = response.data
               this.subscribe()
               this.messageInputVisible = true
-              this.joinAndCreateButtonVisible = false
+              this.joinCardVisible = false
+              this.createCardVisible = false
             }
           })
           .catch(error => {
@@ -756,7 +800,9 @@ export default defineComponent({
               this.createUsernameValid = false
               this.username = this.author
               this.messageInputVisible = true
-              this.joinAndCreateButtonVisible = false
+              this.joinCardVisible = false
+              this.createCardVisible = false
+              localStorage.setItem('author', this.author)
               this.subscribe()
             }
           })
