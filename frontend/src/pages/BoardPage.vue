@@ -516,21 +516,21 @@ export default defineComponent({
     },
     deleteCardExpectColumn(key) {
       let retroBoardMessage = this.retroBoard.expectColumn[key]
-      retroBoardMessage.index = key
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+      this.deleteCard(retroBoardMessage, key)
     },
     deleteCardWentWellColumn(key) {
       let retroBoardMessage = this.retroBoard.wentWellColumn[key]
-      retroBoardMessage.index = key
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+      this.deleteCard(retroBoardMessage, key)
     },
     deleteCardNotWellColumn(key) {
       let retroBoardMessage = this.retroBoard.didNotGoWellColumn[key]
-      retroBoardMessage.index = key
-      store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
+      this.deleteCard(retroBoardMessage, key)
     },
     deleteCardTryColumn(key) {
       let retroBoardMessage = this.retroBoard.wantToTryColumn[key]
+      this.deleteCard(retroBoardMessage, key)
+    },
+    deleteCard(retroBoardMessage, key) {
       retroBoardMessage.index = key
       store.getStompClient.send("/app/board/" + this.boardId + "/card.delete", {}, JSON.stringify(retroBoardMessage));
     },
@@ -541,7 +541,7 @@ export default defineComponent({
         columnType: 'EXPECT'
       }
       if (this.inputExpectColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputExpectColumn = null
       }
     },
@@ -552,7 +552,7 @@ export default defineComponent({
         columnType: 'WELL'
       }
       if (this.inputWentWellColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputWentWellColumn = null
       }
     },
@@ -563,7 +563,7 @@ export default defineComponent({
         columnType: 'NOT_WELL'
       }
       if (this.inputDidNotGoWellColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputDidNotGoWellColumn = null
       }
     },
@@ -574,9 +574,12 @@ export default defineComponent({
         columnType: 'TRY'
       }
       if (this.inputWantToTryColumn != null) {
-        store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
+        this.sendCardMessage()
         this.inputWantToTryColumn = null
       }
+    },
+    sendCardMessage() {
+      store.getStompClient.send("/app/board/" + this.boardId + "/card.add", {}, JSON.stringify(this.retroBoardMessage));
     },
     sendEditMessage() {
       let updatedMessage = this.alertMessage
