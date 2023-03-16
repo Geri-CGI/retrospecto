@@ -112,6 +112,14 @@
                   <q-avatar color="red-13" icon="thumb_down" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
+              <q-item v-close-popup clickable @click="shareTheBoard()">
+                <q-item-section>
+                  <q-item-label>Share the board</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="primary" icon="ios_share" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
               <q-item v-close-popup clickable @click="lockTheBoard">
                 <q-item-section>
                   <q-item-label>Lock the board</q-item-label>
@@ -394,6 +402,7 @@ import {defineComponent, ref, watch} from 'vue'
 import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
 import {storeToRefs} from "pinia";
+import {copyToClipboard, Notify} from 'quasar'
 
 const store = stompClientStore()
 const {stompClientConnected} = storeToRefs(store)
@@ -443,7 +452,7 @@ export default defineComponent({
       spinnerVisible: false,
       alert: false,
       alertMessage: null,
-      subscriptions: []
+      subscriptions: [],
     }
   },
   created() {
@@ -455,6 +464,7 @@ export default defineComponent({
       }
     })
     window.addEventListener("beforeunload", this.exit)
+    this.boardId = this.$route.params.boardId
   },
   beforeUnmount() {
     store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
@@ -707,6 +717,24 @@ export default defineComponent({
     },
     exportTheBoard() {
       //coming
+    },
+    shareTheBoard() {
+      copyToClipboard('https://www.retrospecto.cloud/#/board/' + this.boardId).then(() => {
+        // success!
+        Notify.create({
+          message: 'URL copied to clipboard!',
+          color: 'blue',
+          position: "center"
+        })
+      })
+        .catch(() => {
+          // fail
+          Notify.create({
+            message: 'URL copy failed!',
+            color: 'red',
+            position: "center"
+          })
+        })
     },
     joinBoard() {
       if (!this.boardId && !this.username) {

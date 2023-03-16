@@ -5,6 +5,7 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {path: '/board', component: () => import('pages/BoardPage.vue')},
+      {path: '/board/:boardId', component: () => import('pages/BoardPage.vue')},
       {path: '/chat', component: () => import('pages/ChatPage.vue')},
       {path: '/poker', component: () => import('pages/PokerPage.vue')},
       {path: '/', component: () => import('pages/HomePage.vue')},
