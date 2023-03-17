@@ -4,7 +4,6 @@ import com.cgi.retrospecto.backend.domain.RetroBoard;
 import com.cgi.retrospecto.backend.domain.RetroBoardMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,11 +26,11 @@ public class RetroBoardHandler {
         return retroBoardMessage;
     }
 
-    public RetroBoard getRetroBoard(@PathVariable int id) {
+    public RetroBoard getRetroBoard(int id) {
         return retroBoardKeeper.getRetroBoard(id);
     }
 
-    public RetroBoard createBoard(@PathVariable String author) {
+    public RetroBoard createBoard(String author) {
         int id = new Random().nextInt(900000) + 100000;
         RetroBoard newRetroBoard = new RetroBoard(id, author, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         newRetroBoard.getUsers().add(author);

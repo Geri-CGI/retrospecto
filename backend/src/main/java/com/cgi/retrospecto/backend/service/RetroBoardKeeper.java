@@ -23,7 +23,10 @@ public class RetroBoardKeeper {
     }
 
     public RetroBoard getRetroBoard(int id) {
-        return retroBoardsMap.get(id);
+        if (retroBoardsMap.containsKey(id)) {
+            return retroBoardsMap.get(id);
+        }
+        return null;
     }
 
     public int getNumberOfActiveRetroBoards() {
