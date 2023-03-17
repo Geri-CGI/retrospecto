@@ -771,12 +771,16 @@ export default defineComponent({
         this.boardIdValid = false
         axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
           .then(response => {
-            if (response.data != null) {
+            if (!response.data && response.data !== '') {
               this.retroBoard = response.data
               this.subscribe()
               this.messageInputVisible = true
               this.joinCardVisible = false
               this.createCardVisible = false
+            } else {
+              this.boardIdValid = true
+              this.boardIdErrorMessage = 'Board ID does not exist!'
+              this.boardId = null
             }
           })
           .catch(error => {
