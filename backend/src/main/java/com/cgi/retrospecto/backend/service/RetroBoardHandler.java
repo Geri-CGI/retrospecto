@@ -3,6 +3,8 @@ package com.cgi.retrospecto.backend.service;
 import com.cgi.retrospecto.backend.domain.RetroBoard;
 import com.cgi.retrospecto.backend.domain.RetroBoardMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,8 +28,13 @@ public class RetroBoardHandler {
         return retroBoardMessage;
     }
 
-    public RetroBoard getRetroBoard(int id) {
-        return retroBoardKeeper.getRetroBoard(id);
+    public ResponseEntity<RetroBoard> getRetroBoard(int id) {
+        RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(id);
+        if (retroBoard == null) {
+            return new ResponseEntity<>(retroBoard, HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(retroBoard, HttpStatus.OK);
+        }
     }
 
     public RetroBoard createBoard(String author) {

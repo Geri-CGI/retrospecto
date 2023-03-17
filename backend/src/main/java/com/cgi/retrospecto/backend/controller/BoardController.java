@@ -4,6 +4,7 @@ import com.cgi.retrospecto.backend.domain.RetroBoard;
 import com.cgi.retrospecto.backend.domain.RetroBoardMessage;
 import com.cgi.retrospecto.backend.service.RetroBoardHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -84,7 +85,7 @@ public class BoardController {
     @CrossOrigin
     @ResponseBody
     @RequestMapping(path = "/board/{id}", method = RequestMethod.GET)
-    public RetroBoard getRetroBoard(@PathVariable int id) {
+    public ResponseEntity<RetroBoard> getRetroBoard(@PathVariable int id) {
         return retroBoardHandler.getRetroBoard(id);
     }
 

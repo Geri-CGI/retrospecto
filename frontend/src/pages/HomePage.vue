@@ -28,7 +28,7 @@
           </q-card>
         </q-btn>
       </div>
-      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4 text-center">
         <q-btn class="full-height" flat no-caps square to="/poker">
           <q-card class="my-card full-height" flat square>
             <div class="text-center">
@@ -44,7 +44,7 @@
           </q-card>
         </q-btn>
       </div>
-      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-4 col-xl-4 text-center">
         <q-btn class="full-height" flat no-caps square to="/chat">
           <q-card class="my-card full-height" flat square>
             <div class="text-center">

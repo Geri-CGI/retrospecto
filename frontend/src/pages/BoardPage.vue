@@ -771,7 +771,7 @@ export default defineComponent({
         this.boardIdValid = false
         axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
           .then(response => {
-            if (!response.data && response.data !== '') {
+            if (response.status === 200) {
               this.retroBoard = response.data
               this.subscribe()
               this.messageInputVisible = true
