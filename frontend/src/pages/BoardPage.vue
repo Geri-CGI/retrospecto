@@ -58,8 +58,7 @@
               <div class="justify-center">
                 <div class="col-12" style="padding: 5px">
                   <q-input v-model="username" :error="joinUsernameValid" :error-message="usernameErrorMessage"
-                           bg-color="white"
-                           error-message="Username required!" label="Username"
+                           bg-color="white" label="Username"
                            type="text"/>
                 </div>
                 <div class="col-12" style="padding: 5px">
