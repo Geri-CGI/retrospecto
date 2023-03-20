@@ -28,12 +28,16 @@ public class RetroBoardHandler {
         return retroBoardMessage;
     }
 
-    public ResponseEntity<RetroBoard> getRetroBoard(int id) {
+    public ResponseEntity<RetroBoard> getRetroBoard(int id, String username) {
         RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(id);
         if (retroBoard == null) {
-            return new ResponseEntity<>(retroBoard, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } else {
-            return new ResponseEntity<>(retroBoard, HttpStatus.OK);
+            if (retroBoard.getUsers().contains(username)) {
+                return new ResponseEntity<>(null, HttpStatus.FOUND);
+            } else {
+                return new ResponseEntity<>(retroBoard, HttpStatus.OK);
+            }
         }
     }
 
@@ -143,14 +147,14 @@ public class RetroBoardHandler {
     }
 
     public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {
-        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getLikes).thenComparing(RetroBoardMessage::getDislikes).reversed());
+        return getRetroBoardOrganized(boardId, Comparator.comparing(RetroBoardMessage::getLikes).thenComparing(RetroBoardMessage::getDislikes).reversed());
     }
 
     public RetroBoard getRetroBoardReorganizedByDislikes(int boardId) {
-        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getDislikes).thenComparing(RetroBoardMessage::getLikes).reversed());
+        return getRetroBoardOrganized(boardId, Comparator.comparing(RetroBoardMessage::getDislikes).thenComparing(RetroBoardMessage::getLikes).reversed());
     }
 
-    private RetroBoard getRetroBoard(int boardId, Comparator<RetroBoardMessage> comparing) {
+    private RetroBoard getRetroBoardOrganized(int boardId, Comparator<RetroBoardMessage> comparing) {
         RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         retroBoard.getExpectColumn().sort(comparing);
         retroBoard.getWentWellColumn().sort(comparing);
