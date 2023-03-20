@@ -482,7 +482,7 @@ export default defineComponent({
           this.boardId = stompClientStore().getRetroBoardId
           this.username = stompClientStore().getUsername
           this.author = stompClientStore().getAuthor
-          axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
+          axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/' + this.username)
             .then(response => {
               if (response.status === 200 || response.status === 302) {
                 this.spinnerVisible = false
@@ -776,7 +776,7 @@ export default defineComponent({
       if (this.boardId && this.username) {
         this.joinUsernameValid = false
         this.boardIdValid = false
-        axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
+        axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/' + this.username)
           .then(response => {
             if (response.status === 200) {
               this.retroBoard = response.data

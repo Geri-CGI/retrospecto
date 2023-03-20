@@ -84,7 +84,7 @@ public class BoardController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(path = "/board/{id}/{userame}", method = RequestMethod.GET)
+    @RequestMapping(path = "/board/{id}/{username}", method = RequestMethod.GET)
     public ResponseEntity<RetroBoard> getRetroBoard(@PathVariable int id, @PathVariable String username) {
         return retroBoardHandler.getRetroBoard(id, username);
     }
