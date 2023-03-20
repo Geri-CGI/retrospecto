@@ -484,7 +484,7 @@ export default defineComponent({
           this.author = stompClientStore().getAuthor
           axios.get(`https://www.retrospecto.cloud/board/` + this.boardId + '/' + this.username)
             .then(response => {
-              if (response.status === 200 || response.status === 302) {
+              if (response.status === 200) {
                 this.spinnerVisible = false
                 this.retroBoard = response.data
                 this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
@@ -494,11 +494,22 @@ export default defineComponent({
                 this.subscribe()
               }
             }).catch(error => {
-            this.spinnerVisible = false
-            this.noWebsocketConnectionVisible = true
-            this.joinCardVisible = false
-            this.createCardVisible = false
-            this.messageInputVisible = false
+            if (error.response.status === 302) {
+              this.spinnerVisible = false
+              this.retroBoard = error.response.data
+              this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
+              this.messageInputVisible = true
+              this.joinCardVisible = false
+              this.createCardVisible = false
+              this.subscribe()
+            } else {
+              this.spinnerVisible = false
+              this.noWebsocketConnectionVisible = true
+              this.joinCardVisible = false
+              this.createCardVisible = false
+              this.messageInputVisible = false
+              console.log(error)
+            }
           })
         } else {
           if (this.$route.params.boardId != null) {
@@ -784,17 +795,19 @@ export default defineComponent({
               this.messageInputVisible = true
               this.joinCardVisible = false
               this.createCardVisible = false
-            } else if (response.status === 302) {
-              this.boardIdValid = true
-              this.usernameErrorMessage = 'Username is already taken.'
-              this.boardId = null
             }
           })
           .catch(error => {
-            this.boardIdValid = true
-            this.boardIdErrorMessage = 'Board ID does not exist!'
-            this.boardId = null
-            console.log(error)
+            if (error.response.status === 302) {
+              this.joinUsernameValid = true
+              this.usernameErrorMessage = 'Username is already taken.'
+              this.username = null
+            } else {
+              this.boardIdValid = true
+              this.boardIdErrorMessage = 'Board ID does not exist!'
+              this.boardId = null
+              console.log(error)
+            }
           })
       }
     },

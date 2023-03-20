@@ -34,7 +34,7 @@ public class RetroBoardHandler {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } else {
             if (retroBoard.getUsers().contains(username)) {
-                return new ResponseEntity<>(null, HttpStatus.FOUND);
+                return new ResponseEntity<>(retroBoard, HttpStatus.FOUND);
             } else {
                 return new ResponseEntity<>(retroBoard, HttpStatus.OK);
             }
