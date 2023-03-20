@@ -57,7 +57,8 @@
             <q-card-actions class="justify-center">
               <div class="justify-center">
                 <div class="col-12" style="padding: 5px">
-                  <q-input v-model="username" :error="joinUsernameValid" bg-color="white"
+                  <q-input v-model="username" :error="joinUsernameValid" :error-message="usernameErrorMessage"
+                           bg-color="white"
                            error-message="Username required!" label="Username"
                            type="text"/>
                 </div>
@@ -447,6 +448,7 @@ export default defineComponent({
         likedOrDisliked: false
       },
       boardIdErrorMessage: 'Board ID required!',
+      usernameErrorMessage: 'Username required!',
       ratingModel: ref(3),
       menu: false,
       noWebsocketConnectionVisible: false,
@@ -483,7 +485,7 @@ export default defineComponent({
           this.author = stompClientStore().getAuthor
           axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
             .then(response => {
-              if (response.data != null) {
+              if (response.status === 200 || response.status === 302) {
                 this.spinnerVisible = false
                 this.retroBoard = response.data
                 this.retroBoard.likedRecords = new Map(Object.entries(this.retroBoard.likedRecords))
@@ -492,7 +494,13 @@ export default defineComponent({
                 this.createCardVisible = false
                 this.subscribe()
               }
-            })
+            }).catch(error => {
+            this.spinnerVisible = false
+            this.noWebsocketConnectionVisible = true
+            this.joinCardVisible = false
+            this.createCardVisible = false
+            this.messageInputVisible = false
+          })
         } else {
           if (this.$route.params.boardId != null) {
             this.boardId = this.$route.params.boardId
@@ -771,12 +779,16 @@ export default defineComponent({
         this.boardIdValid = false
         axios.get(`https://www.retrospecto.cloud/board/` + this.boardId)
           .then(response => {
-            if (response.data != null) {
+            if (response.status === 200) {
               this.retroBoard = response.data
               this.subscribe()
               this.messageInputVisible = true
               this.joinCardVisible = false
               this.createCardVisible = false
+            } else if (response.status === 302) {
+              this.boardIdValid = true
+              this.usernameErrorMessage = 'Username is already taken.'
+              this.boardId = null
             }
           })
           .catch(error => {

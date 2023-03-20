@@ -3,8 +3,9 @@ package com.cgi.retrospecto.backend.service;
 import com.cgi.retrospecto.backend.domain.RetroBoard;
 import com.cgi.retrospecto.backend.domain.RetroBoardMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,11 +28,20 @@ public class RetroBoardHandler {
         return retroBoardMessage;
     }
 
-    public RetroBoard getRetroBoard(@PathVariable int id) {
-        return retroBoardKeeper.getRetroBoard(id);
+    public ResponseEntity<RetroBoard> getRetroBoard(int id, String username) {
+        RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(id);
+        if (retroBoard == null) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } else {
+            if (retroBoard.getUsers().contains(username)) {
+                return new ResponseEntity<>(null, HttpStatus.FOUND);
+            } else {
+                return new ResponseEntity<>(retroBoard, HttpStatus.OK);
+            }
+        }
     }
 
-    public RetroBoard createBoard(@PathVariable String author) {
+    public RetroBoard createBoard(String author) {
         int id = new Random().nextInt(900000) + 100000;
         RetroBoard newRetroBoard = new RetroBoard(id, author, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
         newRetroBoard.getUsers().add(author);
@@ -137,14 +147,14 @@ public class RetroBoardHandler {
     }
 
     public RetroBoard getRetroBoardReorganizedByLikes(int boardId) {
-        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getLikes).thenComparing(RetroBoardMessage::getDislikes).reversed());
+        return getRetroBoardOrganized(boardId, Comparator.comparing(RetroBoardMessage::getLikes).thenComparing(RetroBoardMessage::getDislikes).reversed());
     }
 
     public RetroBoard getRetroBoardReorganizedByDislikes(int boardId) {
-        return getRetroBoard(boardId, Comparator.comparing(RetroBoardMessage::getDislikes).thenComparing(RetroBoardMessage::getLikes).reversed());
+        return getRetroBoardOrganized(boardId, Comparator.comparing(RetroBoardMessage::getDislikes).thenComparing(RetroBoardMessage::getLikes).reversed());
     }
 
-    private RetroBoard getRetroBoard(int boardId, Comparator<RetroBoardMessage> comparing) {
+    private RetroBoard getRetroBoardOrganized(int boardId, Comparator<RetroBoardMessage> comparing) {
         RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         retroBoard.getExpectColumn().sort(comparing);
         retroBoard.getWentWellColumn().sort(comparing);
