@@ -174,4 +174,22 @@ public class RetroBoardHandler {
         retroBoard.getUsers().remove(username);
         return retroBoard.getUsers();
     }
+
+    public ResponseEntity<RetroBoard> lockRetroBoard(int boardId, String username) {
+        return handleRetroBoardLocking(boardId, username, true);
+    }
+
+    public ResponseEntity<RetroBoard> unlockRetroBoard(int boardId, String username) {
+        return handleRetroBoardLocking(boardId, username, false);
+    }
+
+    private ResponseEntity<RetroBoard> handleRetroBoardLocking(int boardId, String username, boolean locked) {
+        RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        if (retroBoard.getAuthor().equals(username)) {
+            retroBoard.setLocked(locked);
+            return new ResponseEntity<>(retroBoard, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+    }
 }
