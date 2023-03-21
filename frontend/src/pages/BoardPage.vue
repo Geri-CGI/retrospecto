@@ -120,7 +120,7 @@
                   <q-avatar color="primary" icon="ios_share" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
-              <q-item v-if="!isLockedOptionVisible" v-close-popup clickable @click="lockTheBoard">
+              <q-item v-if="!retroBoard.locked" v-close-popup clickable @click="lockTheBoard">
                 <q-item-section>
                   <q-item-label>Lock the board</q-item-label>
                 </q-item-section>
@@ -128,7 +128,7 @@
                   <q-avatar color="warning" icon="lock" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
-              <q-item v-if="isLockedOptionVisible" v-close-popup clickable @click="unlockTheBoard">
+              <q-item v-if="retroBoard.locked" v-close-popup clickable @click="unlockTheBoard">
                 <q-item-section>
                   <q-item-label>Unlock the board</q-item-label>
                 </q-item-section>
@@ -437,7 +437,7 @@ export default defineComponent({
         wantToTryColumn: [],
         likedRecords: new Map(),
         users: [],
-        isLocked: false
+        locked: false
       },
       inputWentWellColumn: null,
       inputExpectColumn: null,
@@ -466,8 +466,6 @@ export default defineComponent({
       alert: false,
       alertMessage: null,
       subscriptions: [],
-      isLockedOptionVisible: false,
-      isBoardLocked: false
     }
   },
   created() {
@@ -769,25 +767,26 @@ export default defineComponent({
       }
     },
     lockTheBoard() {
-      this.isLockedOptionVisible = true
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/lock", {}, JSON.stringify(null));
     },
     unlockTheBoard() {
-      this.isLockedOptionVisible = false
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/unlock", {}, JSON.stringify(null));
     },
     exportTheBoard() {
       //coming
     },
     onLockMessageReceived(payload) {
-      if (payload.status === 200) {
-        this.isBoardLocked = JSON.parse(payload.body.retroBoard.isLocked)
+      const response = JSON.parse(payload.body)
+      console.log(response.statusCodeValue)
+      if (response.statusCodeValue === 200) {
+        this.retroBoard = response.body
       } else {
-        console.log(payload.error)
+        console.log('Error with locking the board:')
+        console.log(response)
       }
     },
     getIsDisabled() {
-      return this.isBoardLocked
+      return this.retroBoard.locked
     },
     shareTheBoard() {
       copyToClipboard('https://www.retrospecto.cloud/#/board/' + this.boardId).then(() => {
