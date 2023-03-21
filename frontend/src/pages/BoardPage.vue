@@ -192,10 +192,10 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative" icon="delete" round
                                      size="sm"
                                      @click="deleteCardExpectColumn(index)"/>
                             </div>
@@ -253,10 +253,10 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative" icon="delete" round
                                      size="sm"
                                      @click="deleteCardWentWellColumn(index)"/>
                             </div>
@@ -314,10 +314,10 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative" icon="delete" round
                                      size="sm"
                                      @click="deleteCardNotWellColumn(index)"/>
                             </div>
@@ -375,10 +375,12 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      @click="dislike(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="warning" icon="edit" round
+                              <q-btn v-if="retroBoard.author || username === card.username" color="warning" icon="edit"
+                                     round
                                      size="sm"
                                      @click="enableAlert(card, index)"/>
-                              <q-btn v-if="author || username === card.username" color="negative" icon="delete" round
+                              <q-btn v-if="retroBoard.author || username === card.username" color="negative"
+                                     icon="delete" round
                                      size="sm"
                                      @click="deleteCardTryColumn(index)"/>
                             </div>
@@ -723,7 +725,7 @@ export default defineComponent({
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/user', this.onUserMessageReceived))
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
-      stompClientStore().setUsernameAuthorBoarDId(this.username, this.author, this.boardId)
+      stompClientStore().setUsernameAuthorBoarDId(this.username, this.retroBoard.author, this.boardId)
     },
     exit() {
       this.subscriptions.forEach(function (subscription) {
@@ -743,7 +745,16 @@ export default defineComponent({
       return Array.from(username)[0];
     },
     userIsAuthor() {
-      return this.username === this.author
+      return this.username === this.retroBoard.author
+    },
+    userIsAuthorOrIsHisCard(cardUsername) {
+      if (this.retroBoard.author === this.username) {
+        return true
+      } else if (this.username === cardUsername) {
+        return true
+      } else {
+        return false
+      }
     },
     lockTheBoard() {
       //coming
