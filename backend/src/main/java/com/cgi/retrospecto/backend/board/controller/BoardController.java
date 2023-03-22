@@ -1,8 +1,8 @@
-package com.cgi.retrospecto.backend.controller;
+package com.cgi.retrospecto.backend.board.controller;
 
-import com.cgi.retrospecto.backend.domain.RetroBoard;
-import com.cgi.retrospecto.backend.domain.RetroBoardMessage;
-import com.cgi.retrospecto.backend.service.RetroBoardHandler;
+import com.cgi.retrospecto.backend.board.domain.RetroBoard;
+import com.cgi.retrospecto.backend.board.domain.RetroBoardMessage;
+import com.cgi.retrospecto.backend.board.service.RetroBoardHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;

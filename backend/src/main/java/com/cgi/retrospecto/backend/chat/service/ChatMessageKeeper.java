@@ -1,6 +1,6 @@
-package com.cgi.retrospecto.backend.service;
+package com.cgi.retrospecto.backend.chat.service;
 
-import com.cgi.retrospecto.backend.domain.ChatMessage;
+import com.cgi.retrospecto.backend.chat.domain.ChatMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;

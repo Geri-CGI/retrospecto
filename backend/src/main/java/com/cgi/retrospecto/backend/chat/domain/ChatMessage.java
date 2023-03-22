@@ -1,4 +1,4 @@
-package com.cgi.retrospecto.backend.domain;
+package com.cgi.retrospecto.backend.chat.domain;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
