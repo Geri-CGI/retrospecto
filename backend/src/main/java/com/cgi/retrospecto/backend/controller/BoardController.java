@@ -69,6 +69,18 @@ public class BoardController {
         return retroBoardHandler.removeUserFromRetroBoard(boardId, username);
     }
 
+    @MessageMapping("/board/{boardId}/{username}/lock")
+    @SendTo("/topic/board/{boardId}/locking")
+    public ResponseEntity<RetroBoard> lockRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+        return retroBoardHandler.lockRetroBoard(boardId, username);
+    }
+
+    @MessageMapping("/board/{boardId}/{username}/unlock")
+    @SendTo("/topic/board/{boardId}/locking")
+    public ResponseEntity<RetroBoard> unlockRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+        return retroBoardHandler.unlockRetroBoard(boardId, username);
+    }
+
     @MessageMapping("/board/{boardId}/order.like")
     @SendTo("/topic/board/{boardId}/reorder")
     public RetroBoard getRetroBoardReorganizedByLikes(@DestinationVariable int boardId) {

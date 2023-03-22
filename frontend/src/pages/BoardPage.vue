@@ -120,12 +120,20 @@
                   <q-avatar color="primary" icon="ios_share" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
-              <q-item v-close-popup clickable @click="lockTheBoard">
+              <q-item v-if="!retroBoard.locked" v-close-popup clickable @click="lockTheBoard">
                 <q-item-section>
                   <q-item-label>Lock the board</q-item-label>
                 </q-item-section>
                 <q-item-section avatar>
                   <q-avatar color="warning" icon="lock" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-if="retroBoard.locked" v-close-popup clickable @click="unlockTheBoard">
+                <q-item-section>
+                  <q-item-label>Unlock the board</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="positive" icon="lock_open" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
               <q-item v-close-popup clickable @click="exportTheBoard">
@@ -153,7 +161,7 @@
             <div class="col-12">
               <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
                        label="What I expected:" label-color="white"
-                       outlined rounded type="text" @keydown.enter="sendExpectMessage">
+                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendExpectMessage">
               </q-input>
             </div>
           </div>
@@ -185,19 +193,19 @@
                             <div class="col self-end">
                               <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="cancel" round size="sm"
-                                     @click="removeLike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
-                                     @click="like(card, index)"/>
+                                     :disable="getIsDisabled()" @click="like(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
-                                     @click="dislike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="dislike(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
-                                     @click="enableAlert(card, index)"/>
+                                     :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative" icon="delete" round
                                      size="sm"
-                                     @click="deleteCardExpectColumn(index)"/>
+                                     :disable="getIsDisabled()" @click="deleteCardExpectColumn(index)"/>
                             </div>
                           </div>
                         </q-slide-transition>
@@ -214,7 +222,7 @@
             <div class="col-12">
               <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white" label="Went well:"
                        label-color="white"
-                       outlined rounded type="text" @keydown.enter="sendWellMessage">
+                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendWellMessage">
               </q-input>
             </div>
           </div>
@@ -246,19 +254,19 @@
                             <div class="col self-end">
                               <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="cancel" round size="sm"
-                                     @click="removeLike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
-                                     @click="like(card, index)"/>
+                                     :disable="getIsDisabled()" @click="like(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
-                                     @click="dislike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="dislike(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
-                                     @click="enableAlert(card, index)"/>
+                                     :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative" icon="delete" round
                                      size="sm"
-                                     @click="deleteCardWentWellColumn(index)"/>
+                                     :disable="getIsDisabled()" @click="deleteCardWentWellColumn(index)"/>
                             </div>
                           </div>
                         </q-slide-transition>
@@ -275,7 +283,7 @@
             <div class="col-12">
               <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white"
                        label="Went wrong:" label-color="white"
-                       outlined rounded type="text" @keydown.enter="sendNotWellMessage">
+                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendNotWellMessage">
               </q-input>
             </div>
           </div>
@@ -307,19 +315,19 @@
                             <div class="col self-end">
                               <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="cancel" round size="sm"
-                                     @click="removeLike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
-                                     @click="like(card, index)"/>
+                                     :disable="getIsDisabled()" @click="like(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
-                                     @click="dislike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="dislike(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
-                                     @click="enableAlert(card, index)"/>
+                                     :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative" icon="delete" round
                                      size="sm"
-                                     @click="deleteCardNotWellColumn(index)"/>
+                                     :disable="getIsDisabled()" @click="deleteCardNotWellColumn(index)"/>
                             </div>
                           </div>
                         </q-slide-transition>
@@ -336,7 +344,7 @@
             <div class="col-12">
               <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white"
                        label="What I want to try:" label-color="white"
-                       outlined rounded type="text" @keydown.enter="sendTryMessage">
+                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendTryMessage">
               </q-input>
             </div>
           </div>
@@ -368,21 +376,21 @@
                             <div class="col self-end">
                               <q-btn v-if="!likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="cancel" round size="sm"
-                                     @click="removeLike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="removeLike(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="secondary"
                                      icon="thumb_up" round size="sm"
-                                     @click="like(card, index)"/>
+                                     :disable="getIsDisabled()" @click="like(card, index)"/>
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
-                                     @click="dislike(card, index)"/>
+                                     :disable="getIsDisabled()" @click="dislike(card, index)"/>
                               <q-btn v-if="retroBoard.author || username === card.username" color="warning" icon="edit"
                                      round
                                      size="sm"
-                                     @click="enableAlert(card, index)"/>
+                                     :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
                               <q-btn v-if="retroBoard.author || username === card.username" color="negative"
                                      icon="delete" round
                                      size="sm"
-                                     @click="deleteCardTryColumn(index)"/>
+                                     :disable="getIsDisabled()" @click="deleteCardTryColumn(index)"/>
                             </div>
                           </div>
                         </q-slide-transition>
@@ -428,7 +436,8 @@ export default defineComponent({
         didNotGoWellColumn: [],
         wantToTryColumn: [],
         likedRecords: new Map(),
-        users: []
+        users: [],
+        locked: false
       },
       inputWentWellColumn: null,
       inputExpectColumn: null,
@@ -724,6 +733,7 @@ export default defineComponent({
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/like', this.onLikeMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/user', this.onUserMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/locking', this.onLockMessageReceived))
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.retroBoard.author, this.boardId)
     },
@@ -757,10 +767,26 @@ export default defineComponent({
       }
     },
     lockTheBoard() {
-      //coming
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/lock", {}, JSON.stringify(null));
+    },
+    unlockTheBoard() {
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/unlock", {}, JSON.stringify(null));
     },
     exportTheBoard() {
       //coming
+    },
+    onLockMessageReceived(payload) {
+      const response = JSON.parse(payload.body)
+      console.log(response.statusCodeValue)
+      if (response.statusCodeValue === 200) {
+        this.retroBoard = response.body
+      } else {
+        console.log('Error with locking the board:')
+        console.log(response)
+      }
+    },
+    getIsDisabled() {
+      return this.retroBoard.locked
     },
     shareTheBoard() {
       copyToClipboard('https://www.retrospecto.cloud/#/board/' + this.boardId).then(() => {

@@ -21,6 +21,8 @@ public class RetroBoard {
 
     private Set<String> users = new HashSet<>();
 
+    private boolean isLocked = false;
+
     public RetroBoard(int id, String author, List<RetroBoardMessage> expectColumn, List<RetroBoardMessage> wentWellColumn, List<RetroBoardMessage> didNotGoWellColumn, List<RetroBoardMessage> wantToTryColumn) {
         this.id = id;
         this.author = author;
@@ -28,6 +30,14 @@ public class RetroBoard {
         this.wentWellColumn = wentWellColumn;
         this.didNotGoWellColumn = didNotGoWellColumn;
         this.wantToTryColumn = wantToTryColumn;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
     }
 
     public int getId() {
