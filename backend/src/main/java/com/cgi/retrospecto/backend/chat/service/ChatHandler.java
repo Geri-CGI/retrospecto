@@ -1,6 +1,6 @@
-package com.cgi.retrospecto.backend.service;
+package com.cgi.retrospecto.backend.chat.service;
 
-import com.cgi.retrospecto.backend.domain.ChatMessage;
+import com.cgi.retrospecto.backend.chat.domain.ChatMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;

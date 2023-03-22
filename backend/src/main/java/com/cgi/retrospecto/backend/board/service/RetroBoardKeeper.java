@@ -1,6 +1,6 @@
-package com.cgi.retrospecto.backend.service;
+package com.cgi.retrospecto.backend.board.service;
 
-import com.cgi.retrospecto.backend.domain.RetroBoard;
+import com.cgi.retrospecto.backend.board.domain.RetroBoard;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
