@@ -30,6 +30,11 @@ public class RetroBoardKeeper {
         return retroBoardsMap.size();
     }
 
+    public RetroBoard getActiveBoardForAuthorIfExists(String author) {
+        return retroBoardsMap.values().stream()
+                .filter(retroBoard -> retroBoard.getAuthor().equals(author)).findFirst().orElse(null);
+    }
+
     @Scheduled(fixedRate = 3600000)
     private void purgeInactiveRetroBoards() {
         for (Map.Entry<Integer, RetroBoard> entry : retroBoardsMap.entrySet()) {
