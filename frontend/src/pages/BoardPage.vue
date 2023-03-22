@@ -777,7 +777,6 @@ export default defineComponent({
     },
     onLockMessageReceived(payload) {
       const response = JSON.parse(payload.body)
-      console.log(response.statusCodeValue)
       if (response.statusCodeValue === 200) {
         this.retroBoard = response.body
       } else {
