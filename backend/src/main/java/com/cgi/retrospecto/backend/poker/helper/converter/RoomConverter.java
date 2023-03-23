@@ -1,11 +1,9 @@
 package com.cgi.retrospecto.backend.poker.helper.converter;
 
-import com.cgi.retrospecto.backend.poker.controller.dto.NewRoomDetails;
 import com.cgi.retrospecto.backend.poker.controller.dto.RoomDetails;
 import com.cgi.retrospecto.backend.poker.domain.Room;
 
 public class RoomConverter {
-    // @formatter:off
     public static RoomDetails toDTO(Room entity) {
         RoomDetails dto = new RoomDetails();
         dto.setId(entity.getId());
@@ -17,11 +15,10 @@ public class RoomConverter {
         return dto;
     }
 
-    public static Room toEntity(NewRoomDetails dto) {
+    public static Room toEntity(String author) {
         Room entity = new Room();
-        entity.setAuthor(dto.getAuthor());
-        entity.addUser(dto.getAuthor());
+        entity.setAuthor(author);
+        entity.addUser(author);
         return entity;
     }
-    // @formatter:on
 }

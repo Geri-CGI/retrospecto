@@ -120,21 +120,25 @@ export default defineComponent({
     },
     createStory() {
       if (this.inputStory) {
-        let storyMessage = {story: this.inputStory};
-        store.getStompClient.send("/app/poker/" + this.room.id + "/story/add", {}, JSON.stringify(storyMessage));
+        store.getStompClient.send("/app/poker/" + this.room.id + "/story/add", {}, this.inputStory);
         this.inputStory = null;
       }
     },
     selectStory(story) {
       if (this.author === this.room.author && !this.votingIsOpen) {
-        store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + story["id"] + "/selected", {}/*, JSON.stringify({"storyId": story["id"]})*/);
+        store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + story["id"] + "/selected", {});
       }
     },
     createRoom() {
       if (!this.author) {
         this.createUsernameValid = true
       } else {
-        axios.post(this.backendUrls.createRoom(), { author: this.author })
+        var config = {
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        };
+        axios.post(this.backendUrls.createRoom(), this.author, config)
           .then(response => {
               if (response.data != null) {
                 this.room = response.data;

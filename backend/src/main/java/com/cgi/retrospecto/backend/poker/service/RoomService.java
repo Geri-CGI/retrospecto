@@ -20,7 +20,7 @@ public class RoomService {
     private RoomRepository repo;
 
     public Room createRoom(Room room) {
-        room.setId(Helper.generateId(repo.getPokerRoomIds()));
+        room.setId(Helper.generateId());
         room.setLastActionSubmittedTime(LocalDateTime.now());
         repo.addRoom(room);
         return room;
@@ -29,7 +29,7 @@ public class RoomService {
     public Story createStory(int roomId, Story story) throws RoomNotFoundException {
         final Room room = repo.getPokerRoom(roomId);
 
-        story.setId(Helper.generateId(room.getStoriesIdsList()));
+        story.setId(Helper.generateId());
         room.addStory(story);
         room.setLastActionSubmittedTime(LocalDateTime.now());
 

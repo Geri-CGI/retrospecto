@@ -12,6 +12,7 @@ import com.cgi.retrospecto.backend.poker.helper.converter.StoryConverter;
 import com.cgi.retrospecto.backend.poker.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -28,15 +29,14 @@ public class PokerController {
     @Autowired
     private RoomService roomService;
 
-    // @formatter:off
     @ResponseBody
-    @RequestMapping(path = ROOM, method = RequestMethod.POST)
-    public ResponseEntity<RoomDetails> createRoom(@RequestBody NewRoomDetails dto) {
+    @RequestMapping(path = ROOM, method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<RoomDetails> createRoom(@RequestBody String author) {
         return new ResponseEntity<>(
                 RoomConverter.toDTO(
-                    roomService.createRoom(
-                            RoomConverter.toEntity(dto)
-                    )
+                        roomService.createRoom(
+                                RoomConverter.toEntity(author)
+                        )
                 ), HttpStatus.OK);
     }
 
@@ -55,10 +55,11 @@ public class PokerController {
     @SendTo("/topic" + POKER + "/{roomId}/story/add")
     public ResponseEntity<Story> createStory(
             @DestinationVariable int roomId,
-            @Payload CreateStoryDetails dto) throws RoomNotFoundException {
+            @Payload String story) throws RoomNotFoundException {
+        System.out.println("Creating story: " + story + " --> " + roomId);
         return new ResponseEntity<>(
-                        roomService.createStory(roomId,
-                                StoryConverter.toEntity(dto, new Story())
+                roomService.createStory(roomId,
+                        StoryConverter.toEntity(story)
                 ), HttpStatus.OK);
     }
 
@@ -102,5 +103,4 @@ public class PokerController {
         roomService.closeVoting(roomId, storyId);
         return new ResponseEntity<>(new IsVoteOpenStatus(false), HttpStatus.OK);
     }
-    // @formatter:on
 }

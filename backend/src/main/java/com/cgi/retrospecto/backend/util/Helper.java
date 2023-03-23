@@ -5,21 +5,15 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class Helper {
     private static Random random = new Random();
-
-    // TODO: make it thread safe (use AtomicInteger)
-    public static int generateId(List<Integer> ids) {
-        int id = generateId();
-        while (ids.contains(id)) {
-            id = generateId();
-        }
-        return id;
-    }
+    private static AtomicInteger currentId = new AtomicInteger(random.nextInt(900000) + 100000);
 
     public static int generateId() {
-        return random.nextInt(900000) + 100000;
+        return currentId.getAndAdd(random.nextInt(900) + 100);
     }
 
     public static boolean isOlderThanXHour(LocalDateTime fromDate, int hour) {

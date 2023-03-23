@@ -29,7 +29,6 @@ public class RoomRepository {
         return room;
     }
 
-    // @formatter:off
     public Story getPokerStory(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
         Room room = getPokerRoom(roomId);
 
@@ -39,21 +38,18 @@ public class RoomRepository {
                 .findFirst()
                 .orElseThrow(() -> new StoryNotFoundException(String.format("PokerStory with given id in the given room does not exists. [roomId=%s, storyId=%s]", roomId, storyId)));
     }
-    // @formatter:on
 
     public void addRoom(Room room) {
         pokerRoomsMap.put(room.getId(), room);
     }
 
-    // @formatter:off
     public List<Integer> getPokerRoomIds() {
         return pokerRoomsMap.values()
                 .stream()
                 .map(Room::getId)
                 .collect(Collectors.toList());
     }
-    // @formatter:on
-    // @formatter:off
+
     @Scheduled(fixedRate = 60 * 60 * 1000)
     private void purgeInactivePokerRooms() {
         pokerRoomsMap.entrySet()
@@ -63,5 +59,4 @@ public class RoomRepository {
                                 1)
                 );
     }
-    // @formatter:on
 }
