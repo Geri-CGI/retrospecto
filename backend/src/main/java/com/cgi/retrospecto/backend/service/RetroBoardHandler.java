@@ -42,11 +42,14 @@ public class RetroBoardHandler {
     }
 
     public RetroBoard createBoard(String author) {
-        int id = new Random().nextInt(900000) + 100000;
-        RetroBoard newRetroBoard = new RetroBoard(id, author, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        newRetroBoard.getUsers().add(author);
-        retroBoardKeeper.addBoard(newRetroBoard);
-        return newRetroBoard;
+        RetroBoard retroBoard = retroBoardKeeper.getActiveBoardForAuthorIfExists(author);
+        if (retroBoard == null) {
+            int id = new Random().nextInt(900000) + 100000;
+            retroBoard = new RetroBoard(id, author);
+            retroBoard.getUsers().add(author);
+            retroBoardKeeper.addBoard(retroBoard);
+        }
+        return retroBoard;
     }
 
     public int getNumberOfActiveRetroBoards() {

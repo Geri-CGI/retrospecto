@@ -7,13 +7,13 @@ public class RetroBoard {
     private int id;
     private String author;
 
-    private List<RetroBoardMessage> expectColumn;
+    private List<RetroBoardMessage> expectColumn = new ArrayList<>();
 
-    private List<RetroBoardMessage> wentWellColumn;
+    private List<RetroBoardMessage> wentWellColumn = new ArrayList<>();
 
-    private List<RetroBoardMessage> didNotGoWellColumn;
+    private List<RetroBoardMessage> didNotGoWellColumn = new ArrayList<>();
 
-    private List<RetroBoardMessage> wantToTryColumn;
+    private List<RetroBoardMessage> wantToTryColumn = new ArrayList<>();
 
     private LocalDateTime lastActionSubmittedTime;
 
@@ -23,13 +23,9 @@ public class RetroBoard {
 
     private boolean isLocked = false;
 
-    public RetroBoard(int id, String author, List<RetroBoardMessage> expectColumn, List<RetroBoardMessage> wentWellColumn, List<RetroBoardMessage> didNotGoWellColumn, List<RetroBoardMessage> wantToTryColumn) {
+    public RetroBoard(int id, String author) {
         this.id = id;
         this.author = author;
-        this.expectColumn = expectColumn;
-        this.wentWellColumn = wentWellColumn;
-        this.didNotGoWellColumn = didNotGoWellColumn;
-        this.wantToTryColumn = wantToTryColumn;
     }
 
     public boolean isLocked() {
