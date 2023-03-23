@@ -75,7 +75,7 @@
         </div>
       </div>
     </div>
-    <div class="row justify-center">
+    <div id="boardPage" class="row justify-center">
       <div v-if="messageInputVisible" class="row">
         <q-bar class="text-blue col-12" dark>
           <div class="col text-left text-weight-bold">
@@ -413,6 +413,7 @@ import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
 import {storeToRefs} from "pinia";
 import {copyToClipboard, Notify} from 'quasar'
+import {jsPDF} from "jspdf";
 
 const store = stompClientStore()
 const {stompClientConnected} = storeToRefs(store)
@@ -773,7 +774,15 @@ export default defineComponent({
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/unlock", {}, JSON.stringify(null));
     },
     exportTheBoard() {
-      //coming
+      const doc = new jsPDF('l', 'pt', 'a4');
+      var width = doc.internal.pageSize.getWidth();
+      var height = doc.internal.pageSize.getHeight();
+
+      doc.html(document.getElementById('boardPage'), {
+        callback: function (doc) {
+          doc.save('retroboard.pdf');
+        }
+      });
     },
     onLockMessageReceived(payload) {
       const response = JSON.parse(payload.body)
