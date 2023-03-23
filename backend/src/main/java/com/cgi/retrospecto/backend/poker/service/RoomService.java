@@ -49,8 +49,11 @@ public class RoomService {
     }
 
     public void closeVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
-        VoteResult voteResult = getVotingOrCreateNew(repo.getPokerStory(roomId, storyId));
-        voteResult.setLocked(true);
+        Story story = repo.getPokerStory(roomId, storyId);
+        VoteResult voteResult = story.getOpenPokerVoteResult();
+        if (voteResult != null) {
+            voteResult.setLocked(true);
+        }
     }
 
     public void setSelectedStory(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
