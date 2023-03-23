@@ -1,9 +1,9 @@
 package com.cgi.retrospecto.backend.poker.controller.dto;
 
-public class CreateRoomDTO {
+public class NewRoomDetails {
     private String author;
 
-    public CreateRoomDTO() {
+    public NewRoomDetails() {
     }
 
     public String getAuthor() {

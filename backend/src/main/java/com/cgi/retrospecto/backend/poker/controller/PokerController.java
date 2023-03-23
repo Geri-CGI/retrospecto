@@ -31,7 +31,7 @@ public class PokerController {
     // @formatter:off
     @ResponseBody
     @RequestMapping(path = ROOM, method = RequestMethod.POST)
-    public ResponseEntity<RoomDTO> createRoom(@RequestBody CreateRoomDTO dto) {
+    public ResponseEntity<RoomDetails> createRoom(@RequestBody NewRoomDetails dto) {
         return new ResponseEntity<>(
                 RoomConverter.toDTO(
                     roomService.createRoom(
@@ -42,7 +42,7 @@ public class PokerController {
 
     @ResponseBody
     @RequestMapping(path = GET_ROOM, method = RequestMethod.GET)
-    public ResponseEntity<RoomDTO> getRoom(
+    public ResponseEntity<RoomDetails> getRoom(
             @PathVariable(PokerConstants.ID) int id,
             @PathVariable(PokerConstants.USERNAME) String username)
             throws RoomNotFoundException {
@@ -55,7 +55,7 @@ public class PokerController {
     @SendTo("/topic" + POKER + "/{roomId}/story/add")
     public ResponseEntity<Story> createStory(
             @DestinationVariable int roomId,
-            @Payload CreateStoryDTO dto) throws RoomNotFoundException {
+            @Payload CreateStoryDetails dto) throws RoomNotFoundException {
         return new ResponseEntity<>(
                         roomService.createStory(roomId,
                                 StoryConverter.toEntity(dto, new Story())
@@ -64,7 +64,7 @@ public class PokerController {
 
     @MessageMapping(POKER + "/{roomId}/story/{storyId}/vote")
     @SendTo("/topic" + POKER + "/{roomId}/vote")
-    public ResponseEntity<RoomDTO> vote(
+    public ResponseEntity<RoomDetails> vote(
             @DestinationVariable int roomId,
             @DestinationVariable int storyId,
             @Payload Vote dto) throws RoomNotFoundException, StoryNotFoundException {
@@ -77,30 +77,30 @@ public class PokerController {
 
     @MessageMapping(POKER + "/{roomId}/story/{storyId}/selected")
     @SendTo("/topic" + POKER + "/{roomId}/selectedStory")
-    public ResponseEntity<SelectedStoryDTO> selectStory(
+    public ResponseEntity<SelectedStoryDetails> selectStory(
             @DestinationVariable int roomId,
             @DestinationVariable int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
         roomService.setSelectedStory(roomId, storyId);
-        return new ResponseEntity<>(new SelectedStoryDTO(roomId, storyId), HttpStatus.OK);
+        return new ResponseEntity<>(new SelectedStoryDetails(roomId, storyId), HttpStatus.OK);
     }
 
     @MessageMapping(POKER + ROOM + "/{roomId}/story/{storyId}/vote/open")
     @SendTo("/topic" + POKER + "/{roomId}/vote/open-close")
-    public ResponseEntity<VoteIsOpenDTO> openVoting(
+    public ResponseEntity<IsVoteOpenStatus> openVoting(
             @DestinationVariable int roomId,
             @DestinationVariable int storyId) {
-        return new ResponseEntity<>(new VoteIsOpenDTO(true), HttpStatus.OK);
+        return new ResponseEntity<>(new IsVoteOpenStatus(true), HttpStatus.OK);
     }
 
     @MessageMapping(POKER + ROOM + "/{roomId}/story/{storyId}/vote/close")
     @SendTo("/topic" + POKER + "/{roomId}/vote/open-close")
-    public ResponseEntity<VoteIsOpenDTO> closeVoting(
+    public ResponseEntity<IsVoteOpenStatus> closeVoting(
             @DestinationVariable int roomId,
             @DestinationVariable int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
         roomService.closeVoting(roomId, storyId);
-        return new ResponseEntity<>(new VoteIsOpenDTO(false), HttpStatus.OK);
+        return new ResponseEntity<>(new IsVoteOpenStatus(false), HttpStatus.OK);
     }
     // @formatter:on
 }

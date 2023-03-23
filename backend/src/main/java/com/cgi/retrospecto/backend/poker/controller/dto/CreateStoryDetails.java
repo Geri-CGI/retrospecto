@@ -1,9 +1,9 @@
 package com.cgi.retrospecto.backend.poker.controller.dto;
 
-public class CreateStoryDTO {
+public class CreateStoryDetails {
     private String story;
 
-    public CreateStoryDTO() {
+    public CreateStoryDetails() {
     }
 
     public String getStory() {

@@ -6,14 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class RoomDTO {
+public class RoomDetails {
     private int id;
     private String author;
     private List<Story> stories;
     private Integer selectedStoryId;
     private Set<String> users = new HashSet<>();
 
-    public RoomDTO() {
+    public RoomDetails() {
     }
 
     public int getId() {

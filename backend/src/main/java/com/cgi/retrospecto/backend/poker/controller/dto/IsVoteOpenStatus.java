@@ -1,12 +1,12 @@
 package com.cgi.retrospecto.backend.poker.controller.dto;
 
-public class VoteIsOpenDTO {
+public class IsVoteOpenStatus {
     private boolean open;
 
-    public VoteIsOpenDTO() {
+    public IsVoteOpenStatus() {
     }
 
-    public VoteIsOpenDTO(boolean open) {
+    public IsVoteOpenStatus(boolean open) {
         this.open = open;
     }
 

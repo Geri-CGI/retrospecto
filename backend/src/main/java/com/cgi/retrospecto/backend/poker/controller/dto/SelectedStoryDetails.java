@@ -1,15 +1,15 @@
 package com.cgi.retrospecto.backend.poker.controller.dto;
 
-public class SelectedStoryDTO {
+public class SelectedStoryDetails {
 
     private int roomId;
 
     private int storyId;
 
-    public SelectedStoryDTO() {
+    public SelectedStoryDetails() {
     }
 
-    public SelectedStoryDTO(int roomId, int storyId) {
+    public SelectedStoryDetails(int roomId, int storyId) {
         this.roomId = roomId;
         this.storyId = storyId;
     }
