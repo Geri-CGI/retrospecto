@@ -9,6 +9,7 @@ import java.util.Random;
 public class Helper {
     private static Random random = new Random();
 
+    // TODO: make it thread safe (use AtomicInteger)
     public static int generateId(List<Integer> ids) {
         int id = generateId();
         while (ids.contains(id)) {

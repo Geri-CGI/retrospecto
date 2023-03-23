@@ -12,18 +12,15 @@ public class RoomConverter {
         RoomDTO dto = new RoomDTO();
         dto.setId(entity.getId());
         dto.setAuthor(entity.getAuthor());
-        dto.setStories(
-                entity.getStories()
-                .stream()
-                .map(StoryConverter::toDTO)
-                .collect(Collectors.toList()));
+        dto.setStories(entity.getStories());
         dto.setSelectedStoryId(entity.getSelectedStory() == null ? null : entity.getSelectedStory().getId());
         dto.setUsers(entity.getUsers());
 
         return dto;
     }
 
-    public static Room toEntity(CreateRoomDTO dto, Room entity) {
+    public static Room toEntity(CreateRoomDTO dto) {
+        Room entity = new Room();
         entity.setAuthor(dto.getAuthor());
         entity.addUser(dto.getAuthor());
         return entity;

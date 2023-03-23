@@ -19,7 +19,7 @@ public class Room {
     }
 
     public List<Integer> getStoriesIdsList() {
-        return stories.stream().map(s -> s.getId()).collect(Collectors.toList());
+        return stories.stream().map(Story::getId).collect(Collectors.toList());
     }
 
     public void addUser(String author) {

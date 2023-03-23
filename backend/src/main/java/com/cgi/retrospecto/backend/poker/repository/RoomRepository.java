@@ -54,7 +54,7 @@ public class RoomRepository {
     }
     // @formatter:on
     // @formatter:off
-    @Scheduled(fixedRate = 1 * 60 * 60 * 1000)
+    @Scheduled(fixedRate = 60 * 60 * 1000)
     private void purgeInactivePokerRooms() {
         pokerRoomsMap.entrySet()
                 .removeIf(e ->
