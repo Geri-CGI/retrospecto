@@ -37,6 +37,7 @@
           <q-card style="max-width: 300px">
             <q-card-section>
               <div class="text-h5">Create a new session</div>
+              <div class="text-subtitle3">Open sessions: {{ numberOfActiveRetroBoards }}</div>
             </q-card-section>
             <q-card-actions>
               <div class="row justify-center">
@@ -77,7 +78,7 @@
     </div>
     <div id="boardPage" class="row justify-center">
       <div v-if="messageInputVisible" class="row">
-        <q-bar class="text-blue col-12" dark>
+        <q-bar class="text-blue col-12" dark data-html2canvas-ignore="true">
           <div class="col text-left text-weight-bold">
             Host: {{ retroBoard.author }}
             <q-list>
@@ -161,7 +162,7 @@
             <div class="col-12">
               <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
                        label="What I expected:" label-color="white"
-                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendExpectMessage">
+                       :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendExpectMessage">
               </q-input>
             </div>
           </div>
@@ -222,7 +223,7 @@
             <div class="col-12">
               <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white" label="Went well:"
                        label-color="white"
-                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendWellMessage">
+                       :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendWellMessage">
               </q-input>
             </div>
           </div>
@@ -283,7 +284,7 @@
             <div class="col-12">
               <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white"
                        label="Went wrong:" label-color="white"
-                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendNotWellMessage">
+                       :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendNotWellMessage">
               </q-input>
             </div>
           </div>
@@ -344,7 +345,7 @@
             <div class="col-12">
               <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white"
                        label="What I want to try:" label-color="white"
-                       :disable="getIsDisabled()" outlined rounded type="text" @keydown.enter="sendTryMessage">
+                       :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendTryMessage">
               </q-input>
             </div>
           </div>
@@ -467,6 +468,7 @@ export default defineComponent({
       alert: false,
       alertMessage: null,
       subscriptions: [],
+      numberOfActiveRetroBoards: 0
     }
   },
   created() {
@@ -489,6 +491,7 @@ export default defineComponent({
   },
   methods: {
     reload() {
+      this.getNumberOfActiveRetroBoards()
       if (stompClientStore().getStompClientStatus) {
         if (stompClientStore().getRetroBoardId) {
           this.boardId = stompClientStore().getRetroBoardId
@@ -739,6 +742,7 @@ export default defineComponent({
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.retroBoard.author, this.boardId)
     },
     exit() {
+      this.getNumberOfActiveRetroBoards()
       this.subscriptions.forEach(function (subscription) {
         subscription.unsubscribe()
       })
@@ -774,11 +778,21 @@ export default defineComponent({
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/unlock", {}, JSON.stringify(null));
     },
     exportTheBoard() {
-      const doc = new jsPDF('l', 'pt', 'a4');
-      var width = doc.internal.pageSize.getWidth();
-      var height = doc.internal.pageSize.getHeight();
+      const width = document.getElementById('boardPage').getBoundingClientRect().width
+      const height = document.getElementById('boardPage').getBoundingClientRect().height
+      console.log('width: ' + width)
+      console.log('height: ' + height)
+      const doc = new jsPDF('l', 'px', [height / 2.22, width / 2.22]);
 
       doc.html(document.getElementById('boardPage'), {
+        html2canvas: {
+          scale: 0.45,
+          backgroundColor: 'GhostWhite',
+          width: width,
+          height: height,
+          windowWidth: width,
+          windowHeight: height
+        },
         callback: function (doc) {
           doc.save('retroboard.pdf');
         }
@@ -795,6 +809,12 @@ export default defineComponent({
     },
     getIsDisabled() {
       return this.retroBoard.locked
+    },
+    getNumberOfActiveRetroBoards() {
+      axios.get(`https://www.retrospecto.cloud/board/number`)
+        .then(response => {
+          this.numberOfActiveRetroBoards = response.data
+        })
     },
     shareTheBoard() {
       copyToClipboard('https://www.retrospecto.cloud/#/board/' + this.boardId).then(() => {
