@@ -1,4 +1,4 @@
-package com.cgi.retrospecto.backend.domain;
+package com.cgi.retrospecto.backend.board.domain;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,7 +1,7 @@
-package com.cgi.retrospecto.backend.controller;
+package com.cgi.retrospecto.backend.chat.controller;
 
-import com.cgi.retrospecto.backend.domain.ChatMessage;
-import com.cgi.retrospecto.backend.service.ChatHandler;
+import com.cgi.retrospecto.backend.chat.domain.ChatMessage;
+import com.cgi.retrospecto.backend.chat.service.ChatHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
