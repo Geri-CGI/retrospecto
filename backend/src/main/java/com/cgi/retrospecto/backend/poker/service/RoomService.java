@@ -40,20 +40,29 @@ public class RoomService {
         return repo.getPokerRoom(id);
     }
 
+    public Room addUser(int id, String username) throws RoomNotFoundException {
+        Room room = getPokerRoom(id);
+        room.addUser(username);
+
+        return room;
+    }
+
     public Vote vote(int roomId, int storyId, Vote vote) throws RoomNotFoundException, StoryNotFoundException {
         Story story = repo.getPokerStory(roomId, storyId);
-        VoteResult pvr = getVotingOrCreateNew(story);
-        pvr.addVote(vote);
+        VoteResult voteResult = getVotingOrCreateNew(story);
+        voteResult.addVote(vote);
 
         return vote;
     }
 
-    public void closeVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
+    public boolean closeVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
         Story story = repo.getPokerStory(roomId, storyId);
         VoteResult voteResult = story.getOpenPokerVoteResult();
         if (voteResult != null) {
             voteResult.setLocked(true);
         }
+
+        return false;
     }
 
     public void setSelectedStory(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
