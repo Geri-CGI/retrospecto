@@ -30,6 +30,13 @@ public class RoomService {
         final Room room = repo.getPokerRoom(roomId);
 
         story.setId(Helper.generateId());
+
+        if (room.getStories().size() == 0) {
+            story.setDisabled(false);
+        } else {
+            story.setDisabled(true);
+        }
+
         room.addStory(story);
         room.setLastActionSubmittedTime(LocalDateTime.now());
 
@@ -47,28 +54,31 @@ public class RoomService {
         return room;
     }
 
-    public Vote vote(int roomId, int storyId, Vote vote) throws RoomNotFoundException, StoryNotFoundException {
+    public VoteResult vote(int roomId, int storyId, Vote vote) throws RoomNotFoundException, StoryNotFoundException {
         Story story = repo.getPokerStory(roomId, storyId);
         VoteResult voteResult = getVotingOrCreateNew(story);
         voteResult.addVote(vote);
 
-        return vote;
+        return voteResult;
     }
 
-    public boolean closeVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
+    public VoteResult closeVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
         Story story = repo.getPokerStory(roomId, storyId);
         VoteResult voteResult = story.getOpenPokerVoteResult();
         if (voteResult != null) {
             voteResult.setLocked(true);
         }
 
-        return false;
+        return voteResult;
     }
 
-    public void setSelectedStory(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
+    public boolean setSelectedStory(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
         Story story = repo.getPokerStory(roomId, storyId);
+        story.setDisabled(false);
         Room room = getPokerRoom(roomId);
         room.setSelectedStory(story);
+
+        return story.isDisabled();
     }
 
     private VoteResult getVotingOrCreateNew(Story story) {
@@ -83,5 +93,9 @@ public class RoomService {
         }
 
         return voteResult;
+    }
+
+    public VoteResult openVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
+        return getVotingOrCreateNew(repo.getPokerStory(roomId, storyId));
     }
 }
