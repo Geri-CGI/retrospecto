@@ -40,68 +40,100 @@
     </div>
   </q-page>
 
-  <div v-if="!joinAndCreateButtonVisible">
-    <div class="row">
-      <div class="col-6">
-          <h4>
-            Room ID: {{ this.room.id }}
-          </h4>
-        </div>
-        <div class="col-6">
-          <h4>
-            Username: {{ this.username }}
-          </h4>
-        </div>
+  <q-page v-else class="row q-pa-md content-start">
+    <div class="col-12 text-center">
+      <h5> {{ this.room.id }}</h5>
     </div>
-    <div class="q-pa-md flex flex-center">
-      <q-input v-model="inputStory" bg-color="white" label="Story" type="text" @keydown.enter="createStory"/>
-      <q-btn color="primary" label="Create" @click="createStory"/>
+    <div v-if="this.room.author == this.author" class="col-12">
+      <div class="row text-center q-pa-md">
+        <div class="col-11">
+          <q-input v-model="inputStory" label="Story name:" outlined/>
+        </div>
+        <div class="col-1">
+          <q-btn color="primary" @click="createStory">Add</q-btn>
+        </div>
+      </div>
     </div>
+    
+    <div class="col-12">
+      <q-tabs v-model="tab" active-color="primary" align="justify" 
+      class="bg-grey-3 text-grey-7" dense indicator-color="primary">
+        <template v-for="(story, index) in this.room.stories" :key="index">
+          <div @click="selectStory(story)">
+            <q-tab :disable=story.disabled :label=story.story :name=story.story no-caps></q-tab>
+          </div>
+        </template>
+      </q-tabs>
 
-      <div class="container">
-        <div class="q-pa-md">
-          <div v-for="story in room.stories" v-bind:key="story">
-            <ul style="display: flex; justify-content:space-around; list-style-type:none;">
-              <li>
-                <h5 @click="selectStory(story)">{{ story["story"] }}</h5>
-                <h5>Result: SOON</h5>
-                <q-btn v-if="!this.showVoteOptions" color="primary" label="History" size="12px" @click="openHistory(story)"></q-btn>
-                <div v-if="story['open']">
-                  <div v-for="voteResult in story['voteResults']" v-bind:key="voteResult"> 
-                    <div v-for="votes in voteResult" v-bind:key="votes"> 
-                      <h5 v-for="vote in votes" v-bind:key="vote">
-                        {{ voteResult["id"] }} {{ vote["username"] }} {{ vote["value"] }}
-                      </h5>  
-                    </div> 
+      <q-tab-panels v-model="tab" animated class="text-black">
+        <template v-for="(story, index) in this.room.stories" :key="index">
+          <q-tab-panel :name=story.story>
+            <div class="row justify-center items-center">
+              <div class="col-8">
+                <div class="row">
+                  <div v-for="(option, index) in voteOptionsFirst.slice(0, 4)" v-bind:key="index" 
+                  class="col-3 text-center q-pa-sm">
+                    <q-btn :disable=!showVoteOptions style="width: 200px; height: 200px; font-size: 70px;" :label="option" @click="vote(option)" />
                   </div>
                 </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="q-pa-md flex flex-center">
-          <div class="row">
-            <h4 v-if="this.room.selectedStory != null">
-            Current story: {{ this.room.selectedStory["story"] }}
-            </h4>
-          </div>
-          <div v-if="this.room.selectedStory != null && this.author === this.room.author">
-              <q-btn v-if="!this.votingIsOpen" color="primary" label="Start voting" size="22px" @click="startVoting()"/>
-              <q-btn v-if="this.votingIsOpen" color="primary" label="Finish voting" size="22px" @click="finishVoting()"/>
-          </div>
-        </div>
-      </div>
-
-      <div class="container" v-if="this.showVoteOptions">
-        <div class="q-pa-md flex flex-center">
-            <q-btn v-for="prime in primeNumbersList" v-bind:key="prime" color="primary" :label="prime" size="28px" @click="vote(prime)"/>
-        </div>
-      </div>
-  </div>
+                <div class="row">
+                  <div v-for="(option, index) in voteOptionsFirst.slice(4, 8)" v-bind:key="index" 
+                  class="col-3 text-center q-pa-sm">
+                    <q-btn :disable=!showVoteOptions style="width: 200px; height: 200px; font-size: 70px;" :label="option" @click="vote(option)" />
+                  </div>
+                </div>
+              </div>
+              <div v-if="this.room.selectedStory != null && this.author === this.room.author" class="row">
+                <div class="col-12 text-center items-center">
+                  <div class="col-12 q-pa-sm">
+                    <q-btn v-if="!this.votingIsOpen" color="secondary" @click="startVoting">Start voting</q-btn>
+                  </div>
+                  <div class="col-12 q-pa-md">
+                    <q-btn v-if="this.votingIsOpen" color="negative" @click="finishVoting">Close voting</q-btn>
+                  </div>
+                  <div class="col-12">
+                    <q-btn v-if="!this.votingIsOpen && index < this.room.stories.length - 1" color="primary" @click="nextStory(index, true)">Next story</q-btn>
+                  </div>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="row text-center papapa">
+                  <div class="col-12">
+                    <template v-for="(user, index) in room.users" :key="index">
+                      <q-item v-ripple clickable>
+                        <q-item-section side>
+                          <q-avatar color="primary" size="lg" text-color="white">
+                            {{ getFirstLetter(user.username) }}
+                            <q-tooltip>
+                              {{ user.username }}
+                            </q-tooltip>
+                          </q-avatar>
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>{{ user.username }}</q-item-label>
+                          <q-item-label v-if="votingIsOpen && !(typeof getVoteValue(user) == 'number')" caption>Voting...</q-item-label>
+                          <q-item-label v-if="!votingIsOpen || !showVoteOptions" caption> {{ getVoteValue(user) }} </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                    <div v-if="!votingIsOpen" class="text-center q-pa-sm">
+                      <h5>
+                        Average: {{ calculateVotesAvg() }}
+                      </h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-tab-panel>
+        </template>
+      </q-tab-panels>
+    </div>
+  </q-page>
 </template>
 
 <script>
-import {defineComponent, ref} from 'vue'
+import {defineComponent} from 'vue'
 import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
 
@@ -109,165 +141,66 @@ const store = stompClientStore()
 
 export default defineComponent({
   name: 'PokerPage',
-  methods: {
-    vote(voteValue) {
-      let vote = {
-        username: this.username,
-        value: voteValue,
-      };
-      store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote", {}, JSON.stringify(vote));
-      this.showVoteOptions = false;
-    },
-    createStory() {
-      if (this.inputStory) {
-        store.getStompClient.send("/app/poker/" + this.room.id + "/story/add", {}, this.inputStory);
-        this.inputStory = null;
-      }
-    },
-    selectStory(story) {
-      if (this.author === this.room.author && !this.votingIsOpen) {
-        store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + story["id"] + "/selected", {});
-      }
-    },
-    createRoom() {
-      if (!this.author) {
-        this.createUsernameValid = true
-      } else {
-        var config = {
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        };
-        axios.post(this.backendUrls.createRoom(), this.author, config)
-          .then(response => {
-              if (response.data != null) {
-                this.room = response.data;
-                this.joinAndCreateButtonVisible = false;
-                this.username = this.author;
-                this.subscribe();
-              }
-            });
-      }
-    },
-    joinRoom() {
-      if (!this.roomId && !this.username) {
-        this.joinUsernameValid = true
-        this.roomIdValid = true
-        this.roomIdErrorMessage = "Room ID required!"
-      }
-      if (!this.username && this.roomId) {
-        this.joinUsernameValid = true
-        this.roomIdValid = false
-      }
-      if (this.username && !this.roomId) {
-        this.roomIdValid = true
-        this.roomIdErrorMessage = "Room ID required!"
-        this.joinUsernameValid = false
-      }
-      if (this.roomId && this.username) {
-        this.joinUsernameValid = false
-        this.roomIdValid = false
-        axios.get(this.backendUrls.getRoom() + this.roomId + '/username/' + this.username)
-          .then(response => {
-            if (response.data != null) {
-              this.room = response.data;
-              this.subscribe();
-              this.joinAndCreateButtonVisible = false;
-            }
-          })
-          .catch(error => {
-            this.roomIdValid = true;
-            this.roomIdErrorMessage = 'Room ID does not exist!';
-            this.roomId = null;
-          })
-      }
-    },
-    subscribe() {
-      store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/story/add', this.storyAddMessageReceived);
-      store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/selectedStory', this.storySelectedByAuthorMessageReceived)
-      store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/vote/open-close', this.openVotingMessageReceived);
-      store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/vote', this.votesMessageReceived);
-    },
-    storyAddMessageReceived(payload) {
-      let storyString = this.parseWSResponseBody(payload.body);
-      let storyObject = JSON.parse(storyString);
-      this.room.stories.push(storyObject);
-    },
-    storySelectedByAuthorMessageReceived(payload) {
-      let storyString = this.parseWSResponseBody(payload.body);
-      let selectedStory = JSON.parse(storyString);
-
-      for (let i = 0; i < this.room.stories.length; i++) {
-        if (this.room.stories[i]["id"] === selectedStory["storyId"]) {
-          this.room.selectedStory = this.room.stories[i];
-        }
-      }
-    },
-    openVotingMessageReceived(payload) {
-      let votingIsOpenString = this.parseWSResponseBody(payload.body);
-      let votingIsOpen = JSON.parse(votingIsOpenString);
-      this.votingIsOpen = votingIsOpen["open"];
-      this.showVoteOptions = this.votingIsOpen;
-      for (let i = 0; i < this.room.stories.length; i++) {
-        this.room.stories[i].open = false;        
-      }
-    },
-    votesMessageReceived(payload) {
-      let pokerRoomString = this.parseWSResponseBody(payload.body);
-      let room = JSON.parse(pokerRoomString);
-      this.room = room;
-      for (let i = 0; i < this.room.stories.length; i++) {
-        if (this.room.stories[i]["id"] === room["selectedStoryId"]) {
-          this.room.selectedStory = this.room.stories[i];
-        }
-      }
-    },
-    startVoting() {
-      store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/open", {});
-    },
-    finishVoting() {
-      store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/close", {});
-    },
-    getRoom() {
-      axios.get(this.backendUrls.getRoom() + this.roomId)
-          .then(response => {
-            if (response.data != null) {
-              this.room = response.data;
-            }
-          });
-    },
-    openHistory(story) {
-      if (story["open"]) {
-        story["open"] = false;
-      } else {
-        story["open"] = true;
-      }
-    },
-    parseWSResponseBody(body) {
-      body = body.substring(body.indexOf("body") + 4);
-      body = body.substring(body.indexOf("{"));
-      body = body.substring(0, body.indexOf("statusCode") - 2);
-      return body;
-    }
-  },
   data() {
     return {
       author: null,
       inputStory: null,
       joinAndCreateButtonVisible: true,
-      selectedValue: 1,
       room: {
-        id: null,
-        author: null,
-        stories: [],
-        selectedStory: null,
+        id: 1,
+        author: "",
+        currentVoteResult: {
+          id: 0,
+          locked: false,
+          votes: [
+            {
+              username: "",
+              value: 10,
+            }
+          ]
+        },
+        stories: [
+          {
+            id: 1,
+            story: "",
+            voteResults: [
+              {
+                id: 1,
+                votes: [
+                  {
+                    username: "",
+                    value: 1
+                  }
+                ],
+              }
+            ],
+            disabled: true,
+          }
+        ],
+        selectedStory: {
+          id: 1,
+          story: "",
+          voteResults: [
+            {
+              id: 1,
+              votes: [
+                {
+                  username: "",
+                  value: 1
+                }
+              ],
+            }
+          ],
+          disabled: true,
+        },
+        users: [],
+        selectedStoryId: 1,
       },
       username: null,
       createUsernameValid: false,
       joinUsernameValid: false,
       roomIdValid: false,
       roomIdErrorMessage: 'Room ID required!',
-      primeNumbersList: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97],
       votingIsOpen: false,
       currentVoting: null,
       showVoteOptions: false,
@@ -282,7 +215,257 @@ export default defineComponent({
         createRoom: function() { return this.baseUrlPoker() + this.pathParts.room + "/"},
         getRoom: function() { return this.baseUrlPoker() + this.pathParts.room + "/"},
       },
+      voteOptionsFirst: [1, 2, 3, 5, 7, 11, 13, 17],
+      tab: 'test',
     }
-  }
+  },
+  methods:
+    {
+      getFirstLetter(username) {
+        return Array.from(username)[0];
+      },
+      vote(voteValue) {
+        let vote = {
+          username: this.username,
+          value: voteValue,
+        };
+
+        store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote", {}, JSON.stringify(vote));
+        this.showVoteOptions = false;
+      },
+      createStory() {
+        if (this.inputStory) {
+          store.getStompClient.send("/app/poker/" + this.room.id + "/story/add", {}, this.inputStory);
+          this.inputStory = null;
+        }
+      },
+      selectStory(story) {
+        if (this.author === this.room.author && !this.votingIsOpen && !story.disabled) {
+          store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + story["id"] + "/selected", {});
+        }
+      },
+      nextStory(index) {
+        if (this.author === this.room.author && !this.votingIsOpen) {
+          let story = this.room.stories[index+1];
+          store.getStompClient.send("/app/poker/" + this.room.id + "/story/" + story["id"] + "/selected", {});
+        }
+      },
+      createRoom() {
+        if (!this.author) {
+          this.createUsernameValid = true
+        } else {
+          this.room = null;
+          var config = {
+              headers: {
+                  'Content-Type': 'text/plain'
+              }
+          };
+          axios.post(this.backendUrls.createRoom(), this.author, config)
+            .then(response => {
+                if (response.data != null) {
+                  this.room = response.data;
+                  this.joinAndCreateButtonVisible = false;
+                  this.username = this.author;
+                  this.subscribe();
+                }
+              });
+        }
+      },
+      joinRoom() {
+        if (!this.roomId && !this.username) {
+          this.joinUsernameValid = true
+          this.roomIdValid = true
+          this.roomIdErrorMessage = "Room ID required!"
+        }
+        if (!this.username && this.roomId) {
+          this.joinUsernameValid = true
+          this.roomIdValid = false
+        }
+        if (this.username && !this.roomId) {
+          this.roomIdValid = true
+          this.roomIdErrorMessage = "Room ID required!"
+          this.joinUsernameValid = false
+        }
+        if (this.roomId && this.username) {
+          this.joinUsernameValid = false
+          this.roomIdValid = false
+        
+          axios.get(this.backendUrls.getRoom() + this.roomId + '/username/' + this.username)
+            .then(response => {
+              if (response.data != null) {
+                this.room = response.data;
+                this.joinAndCreateButtonVisible = false;
+                this.subscribe();
+
+          
+                for (let i = 0; i < this.room.stories.length; i++) {
+                  if (this.room.stories[i].id == this.room.selectedStoryId) {
+                    this.room.selectedStory = this.room.stories[i];
+                  }
+                }
+
+                store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, this.username);
+              }
+            })
+            .catch(error => {
+              this.roomIdValid = true;
+              this.roomIdErrorMessage = 'Room ID does not exist!';
+              this.roomId = null;
+            })
+        }
+      },
+      subscribe() {
+        store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/story/add', this.storyAddMessageReceived);
+        store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/selectedStory', this.storySelectedByAuthorMessageReceived)
+        store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/vote/open-close', this.openVotingMessageReceived);
+        store.getStompClient.subscribe('/topic/poker/' + this.room.id + '/vote', this.votesMessageReceived);
+        store.getStompClient.subscribe('/topic/poker/room/' + this.room.id + '/user/joined', this.userJoinedMessageReceived);
+      },
+      storyAddMessageReceived(payload) {
+        let storyString = this.parseWSResponseBody(payload.body);
+        let storyObject = JSON.parse(storyString);
+        this.room.stories.push(storyObject);
+      },
+      storySelectedByAuthorMessageReceived(payload) {
+        let storyString = this.parseWSResponseBody(payload.body);
+        let selectedStory = JSON.parse(storyString);
+        for (let i = 0; i < this.room.stories.length; i++) {
+          if (this.room.stories[i]["id"] === selectedStory["storyId"]) {
+            this.room.stories[i].disabled = selectedStory["disabled"];
+            this.room.selectedStory = this.room.stories[i];
+            this.tab = this.room.stories[i].story;
+
+            this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
+          }
+        }
+      },
+      openVotingMessageReceived(payload) {
+        let votingIsOpenString = this.parseWSResponseBody(payload.body);
+        let votingIsOpen = JSON.parse(votingIsOpenString);
+        this.votingIsOpen = votingIsOpen["open"];
+        this.showVoteOptions = this.votingIsOpen;
+
+        let voteResult = votingIsOpen["voteResult"];
+
+        this.room.currentVoteResult = voteResult;
+
+        for (let i = 0; i < this.room.stories.length; i++) {
+          if (this.room.stories[i].id === this.room.selectedStory.id) {
+            let voteResults = this.room.stories[i].voteResults;
+            this.room.stories[i].voteResults = [];
+            if (voteResults !== null && voteResults.length > 0) {
+              for (let j = 0; j < voteResults.length; j++) {
+                if (voteResults[j].id !== voteResult.id) {
+                  this.room.stories[i].voteResults.push(voteResults[j]);
+                } else {
+                  this.room.stories[i].voteResults.push(voteResult);
+                }
+              }
+            } else {
+              this.room.stories[i].voteResults.push(voteResult);
+            }
+          }
+        }
+
+      },
+      votesMessageReceived(payload) {
+        let refreshedCurrentVoteResult = this.parseWSResponseBody(payload.body);
+
+        let refreshedCurrentVoteResultObj = JSON.parse(refreshedCurrentVoteResult);
+        this.room.currentVoteResult = refreshedCurrentVoteResultObj;
+
+        for (let i = 0; i < this.room.stories.length; i++) {
+          if (this.room.stories[i].id === this.room.selectedStory.id) {
+            let voteResults = this.room.stories[i].voteResults;
+            this.room.stories[i].voteResults = [];
+            for (let j = 0; j < voteResults.length; j++) {
+              if (voteResults[j].id !== this.room.currentVoteResult.id) {
+                this.room.stories[i].voteResults.push(voteResults[j]);
+              } else {
+                this.room.stories[i].voteResults.push(this.room.currentVoteResult);
+              }
+            }
+          }
+        }
+      },
+      userJoinedMessageReceived(payload) {
+        let username = this.parseWSResponseBody(payload.body);
+        let usernameObj = JSON.parse(username);
+        if (usernameObj["username"] !== this.username) {
+          this.room.users.push(usernameObj);
+        }
+      },
+      startVoting() {
+        store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/open", {});
+      },
+      finishVoting() {
+        store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/close", {});
+      },
+      getRoom() {
+        axios.get(this.backendUrls.getRoom() + this.roomId)
+            .then(response => {
+              if (response.data != null) {
+                this.room = response.data;
+              }
+            });
+      },
+      calculateVotesAvg() {
+        if (this.room.currentVoteResult && this.room.currentVoteResult.votes) {
+          let total = 0;
+          for (let i = 0; i < this.room.currentVoteResult.votes.length; i++) {
+            total += this.room.currentVoteResult.votes[i].value;
+          }
+
+          return total / this.room.currentVoteResult.votes.length;
+        }
+        return "";
+      },
+      getVoteValue(user) {
+        if (this.room.selectedStory) {
+          let voteResult = this.getLastVoteResult(this.room.selectedStory);
+
+          if (this.room.currentVoteResult && this.room.currentVoteResult.votes) {
+            let votes = this.room.currentVoteResult.votes;
+            for (let i = 0; i < votes.length; i++) {
+              if (votes[i].username === user.username) {
+                return votes[i].value;
+              }
+            }
+          }
+        }
+        return "Not voted yet!";
+      },
+      getLastVoteResult(story) {
+        if (story !== null && story.id !== null) {
+          let currStory = story;
+          if (currStory !== null && currStory.voteResults) {
+            if (currStory.voteResults !== null && currStory.voteResults.length > 0) {
+              let lastVoteResult;
+              let id = -1;
+              let index;
+              for (let j = 0; j < currStory.voteResults.length; j++) {
+                if (currStory.voteResults[j].id > id) {
+                  id = currStory.voteResults[j].id;
+                  index = j;
+                }
+              }
+
+              if (index != -1) {
+                lastVoteResult = currStory.voteResults[index];
+              }
+            
+              return lastVoteResult;
+            }
+          }
+        }
+        return null;
+      },
+      parseWSResponseBody(body) {
+        body = body.substring(body.indexOf("body") + 4);
+        body = body.substring(body.indexOf("{"));
+        body = body.substring(0, body.indexOf("statusCode") - 2);
+        return body;
+      }
+    }
 })
 </script>

@@ -7,6 +7,7 @@ public class Story {
     private Integer id;
     private String story;
     private List<VoteResult> voteResults = new ArrayList<>();
+    private boolean disabled;
 
     public Story() {
     }
@@ -44,12 +45,21 @@ public class Story {
         this.voteResults = voteResults;
     }
 
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
     @Override
     public String toString() {
         return "Story{" +
                 "id=" + id +
                 ", story='" + story + '\'' +
                 ", voteResults=" + voteResults +
+                ", disabled=" + disabled +
                 '}';
     }
 }
