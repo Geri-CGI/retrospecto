@@ -384,11 +384,11 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
-                              <q-btn v-if="retroBoard.author || username === card.username" color="warning" icon="edit"
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit"
                                      round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
-                              <q-btn v-if="retroBoard.author || username === card.username" color="negative"
+                              <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="negative"
                                      icon="delete" round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="deleteCardTryColumn(index)"/>
@@ -780,8 +780,6 @@ export default defineComponent({
     exportTheBoard() {
       const width = document.getElementById('boardPage').getBoundingClientRect().width
       const height = document.getElementById('boardPage').getBoundingClientRect().height
-      console.log('width: ' + width)
-      console.log('height: ' + height)
       const doc = new jsPDF('l', 'px', [height / 2.22, width / 2.22]);
 
       doc.html(document.getElementById('boardPage'), {
