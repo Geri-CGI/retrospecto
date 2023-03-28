@@ -2,9 +2,9 @@ package com.cgi.retrospecto.backend.poker.controller;
 
 import com.cgi.retrospecto.backend.poker.api.PokerConstants;
 import com.cgi.retrospecto.backend.poker.controller.dto.*;
-import com.cgi.retrospecto.backend.poker.domain.Room;
 import com.cgi.retrospecto.backend.poker.domain.Story;
 import com.cgi.retrospecto.backend.poker.domain.Vote;
+import com.cgi.retrospecto.backend.poker.domain.VoteResult;
 import com.cgi.retrospecto.backend.poker.exception.RoomNotFoundException;
 import com.cgi.retrospecto.backend.poker.exception.StoryNotFoundException;
 import com.cgi.retrospecto.backend.poker.helper.converter.RoomConverter;
@@ -55,13 +55,22 @@ public class PokerController {
                 ), HttpStatus.OK);
     }
 
+    @MessageMapping(ADD_USER)
+    @SendTo(ADD_USER_TOPIC)
+    public ResponseEntity<JoinedUserDetails> addUser(
+            @DestinationVariable(ROOM_ID) int roomId,
+            @Payload String username) {
+        return new ResponseEntity<>(new JoinedUserDetails(username), HttpStatus.OK);
+    }
+
     @MessageMapping(ADD_STORY)
     @SendTo(ADD_STORY_TOPIC)
     public ResponseEntity<Story> createStory(
             @DestinationVariable(ROOM_ID) int roomId,
             @Payload String story) throws RoomNotFoundException {
         return new ResponseEntity<>(
-                roomService.createStory(roomId,
+                roomService.createStory(
+                        roomId,
                         StoryConverter.toEntity(story)
                 ), HttpStatus.OK);
     }
@@ -70,15 +79,11 @@ public class PokerController {
     // TODO: refactor
     @MessageMapping(VOTE)
     @SendTo(VOTE_TOPIC)
-    public ResponseEntity<RoomDetails> vote(
+    public ResponseEntity<VoteResult> vote(
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId,
             @Payload Vote dto) throws RoomNotFoundException, StoryNotFoundException {
-        roomService.vote(roomId, storyId, dto);
-        return new ResponseEntity<>(
-                RoomConverter.toDTO(
-                        roomService.getPokerRoom(roomId)
-                ), HttpStatus.OK);
+        return new ResponseEntity<>(roomService.vote(roomId, storyId, dto), HttpStatus.OK);
     }
 
     // TODO: refactor
@@ -88,26 +93,26 @@ public class PokerController {
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
-        roomService.setSelectedStory(roomId, storyId);
-        return new ResponseEntity<>(new SelectedStoryDetails(roomId, storyId), HttpStatus.OK);
+        return new ResponseEntity<>(new SelectedStoryDetails(roomId, storyId, roomService.setSelectedStory(roomId, storyId)), HttpStatus.OK);
     }
 
     @MessageMapping(OPEN_VOTING)
     @SendTo(OPEN_VOTING_TOPIC)
-    public ResponseEntity<IsVoteOpenStatus> openVoting(
+    public ResponseEntity<OpenVote> openVoting(
             @DestinationVariable(ROOM_ID) int roomId,
-            @DestinationVariable(STORY_ID) int storyId) {
-        return new ResponseEntity<>(new IsVoteOpenStatus(true), HttpStatus.OK);
+            @DestinationVariable(STORY_ID) int storyId)
+            throws RoomNotFoundException, StoryNotFoundException {
+        return new ResponseEntity<>(new OpenVote(true, roomService.openVoting(roomId, storyId)), HttpStatus.OK);
     }
 
     @MessageMapping(CLOSE_VOTING)
     @SendTo(CLOSE_VOTING_TOPIC)
-    public ResponseEntity<IsVoteOpenStatus> closeVoting(
+    public ResponseEntity<OpenVote> closeVoting(
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
         return new ResponseEntity<>
-                (new IsVoteOpenStatus(
+                (new OpenVote(false,
                         roomService.closeVoting(roomId, storyId)
                 ), HttpStatus.OK);
     }

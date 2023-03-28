@@ -6,12 +6,15 @@ public class SelectedStoryDetails {
 
     private int storyId;
 
+    private boolean disabled;
+
     public SelectedStoryDetails() {
     }
 
-    public SelectedStoryDetails(int roomId, int storyId) {
+    public SelectedStoryDetails(int roomId, int storyId, boolean disabled) {
         this.roomId = roomId;
         this.storyId = storyId;
+        this.disabled = disabled;
     }
 
     public int getRoomId() {
@@ -28,5 +31,13 @@ public class SelectedStoryDetails {
 
     public void setStoryId(int storyId) {
         this.storyId = storyId;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 }
