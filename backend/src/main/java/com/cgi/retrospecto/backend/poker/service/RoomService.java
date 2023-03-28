@@ -6,14 +6,12 @@ import com.cgi.retrospecto.backend.poker.domain.Vote;
 import com.cgi.retrospecto.backend.poker.domain.VoteResult;
 import com.cgi.retrospecto.backend.poker.exception.RoomNotFoundException;
 import com.cgi.retrospecto.backend.poker.exception.StoryNotFoundException;
-import com.cgi.retrospecto.backend.poker.exception.UsernameAlreadyInUseException;
 import com.cgi.retrospecto.backend.poker.repository.RoomRepository;
 import com.cgi.retrospecto.backend.util.Helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
@@ -49,9 +47,8 @@ public class RoomService {
         return repo.getPokerRoom(id);
     }
 
-    public Room addUser(int id, String username) throws RoomNotFoundException, UsernameAlreadyInUseException {
+    public Room addUser(int id, String username) throws RoomNotFoundException {
         Room room = getPokerRoom(id);
-        if (room.getUsers().contains(username)) throw new UsernameAlreadyInUseException("Username already in use!");
         room.addUser(username);
 
         return room;
@@ -100,11 +97,5 @@ public class RoomService {
 
     public VoteResult openVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
         return getVotingOrCreateNew(repo.getPokerStory(roomId, storyId));
-    }
-
-    public String removeUser(int roomId, String username) throws RoomNotFoundException {
-        Room room = getPokerRoom(roomId);
-        room.setUsers(room.getUsers().stream().filter(u -> !u.equals(username)).collect(Collectors.toSet()));
-        return username;
     }
 }
