@@ -25,7 +25,7 @@ public class RetroBoard {
 
     private int blurNumber = 5;
 
-    private boolean blurActive;
+    private boolean blurActive = false;
 
     public RetroBoard(int id, String author) {
         this.id = id;
