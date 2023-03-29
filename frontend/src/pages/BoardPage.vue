@@ -113,6 +113,22 @@
                   <q-avatar color="red-13" icon="thumb_down" size="sm" text-color="white"/>
                 </q-item-section>
               </q-item>
+              <q-item v-if="!retroBoard.blurActive" v-close-popup clickable @click="blurCardText()">
+                <q-item-section>
+                  <q-item-label>Blur text</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="primary" icon="visibility_off" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
+              <q-item v-if="retroBoard.blurActive" v-close-popup clickable @click="unblurCardText()">
+                <q-item-section>
+                  <q-item-label>Unblur text</q-item-label>
+                </q-item-section>
+                <q-item-section avatar>
+                  <q-avatar color="primary" icon="visibility" size="sm" text-color="white"/>
+                </q-item-section>
+              </q-item>
               <q-item v-close-popup clickable @click="shareTheBoard()">
                 <q-item-section>
                   <q-item-label>Share the board</q-item-label>
@@ -173,7 +189,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row">
+                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge color="transparent" floating>
@@ -234,7 +250,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row">
+                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge color="transparent" floating>
@@ -295,7 +311,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row">
+                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge color="transparent" floating>
@@ -356,7 +372,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row">
+                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge color="transparent" floating>
@@ -439,7 +455,9 @@ export default defineComponent({
         wantToTryColumn: [],
         likedRecords: new Map(),
         users: [],
-        locked: false
+        locked: false,
+        blurNumber: 0,
+        blurActive: false
       },
       inputWentWellColumn: null,
       inputExpectColumn: null,
@@ -468,7 +486,8 @@ export default defineComponent({
       alert: false,
       alertMessage: null,
       subscriptions: [],
-      numberOfActiveRetroBoards: 0
+      numberOfActiveRetroBoards: 0,
+
     }
   },
   created() {
@@ -738,6 +757,7 @@ export default defineComponent({
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/reorder', this.onReorderMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/user', this.onUserMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/locking', this.onLockMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/blur', this.onBlurMessageReceived))
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
       stompClientStore().setUsernameAuthorBoarDId(this.username, this.retroBoard.author, this.boardId)
     },
@@ -805,6 +825,15 @@ export default defineComponent({
         console.log(response)
       }
     },
+    onBlurMessageReceived(payload) {
+      const response = JSON.parse(payload.body)
+      if (response.statusCodeValue === 200) {
+        this.retroBoard = response.body
+      } else {
+        console.log('Error with bluring the board:')
+        console.log(response)
+      }
+    },
     getIsDisabled() {
       return this.retroBoard.locked
     },
@@ -831,6 +860,12 @@ export default defineComponent({
             position: "center"
           })
         })
+    },
+    blurCardText() {
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/blur", {}, JSON.stringify(null));
+    },
+    unblurCardText() {
+      store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/unblur", {}, JSON.stringify(null));
     },
     joinBoard() {
       if (!this.boardId && !this.username) {

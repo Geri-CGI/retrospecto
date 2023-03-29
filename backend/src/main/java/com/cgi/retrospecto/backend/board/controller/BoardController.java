@@ -81,6 +81,18 @@ public class BoardController {
         return retroBoardHandler.unlockRetroBoard(boardId, username);
     }
 
+    @MessageMapping("/board/{boardId}/{username}/blur")
+    @SendTo("/topic/board/{boardId}/blur")
+    public ResponseEntity<RetroBoard> blurRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+        return retroBoardHandler.blurRetroBoard(boardId, username);
+    }
+
+    @MessageMapping("/board/{boardId}/{username}/unblur")
+    @SendTo("/topic/board/{boardId}/blur")
+    public ResponseEntity<RetroBoard> unblurRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {
+        return retroBoardHandler.unblurRetroBoard(boardId, username);
+    }
+
     @MessageMapping("/board/{boardId}/order.like")
     @SendTo("/topic/board/{boardId}/reorder")
     public RetroBoard getRetroBoardReorganizedByLikes(@DestinationVariable int boardId) {
