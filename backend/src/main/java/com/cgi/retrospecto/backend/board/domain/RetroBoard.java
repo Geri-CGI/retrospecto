@@ -23,6 +23,10 @@ public class RetroBoard {
 
     private boolean isLocked = false;
 
+    private int blurNumber = 5;
+
+    private boolean blurActive;
+
     public RetroBoard(int id, String author) {
         this.id = id;
         this.author = author;
@@ -98,5 +102,21 @@ public class RetroBoard {
 
     public Set<String> getUsers() {
         return users;
+    }
+
+    public int getBlurNumber() {
+        return blurNumber;
+    }
+
+    public void setBlurNumber(int blurNumber) {
+        this.blurNumber = blurNumber;
+    }
+
+    public boolean isBlurActive() {
+        return blurActive;
+    }
+
+    public void setBlurActive(boolean blurActive) {
+        this.blurActive = blurActive;
     }
 }
