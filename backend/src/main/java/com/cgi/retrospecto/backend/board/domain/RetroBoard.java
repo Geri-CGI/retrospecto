@@ -23,7 +23,7 @@ public class RetroBoard {
 
     private boolean isLocked = false;
 
-    private int blurNumber = 5;
+    private int blurNumber = 0;
 
     private boolean blurActive = false;
 
