@@ -17,21 +17,29 @@
     </q-dialog>
     <q-dialog v-model="createBoardAlert">
       <q-card>
-        <q-img src="~assets/retrospecto-board.png" width="455px"/>
+        <q-img src="~assets/retrospecto-board.png" width="455px">
+          <div class="absolute-bottom text-subtitle1 text-left bg-transparent text-black">
+            Column names:
+          </div>
+        </q-img>
         <q-card-section>
-          <q-form
-            class="q-gutter-md text-center"
-            @submit="onSubmit"
-          >
-            <q-input v-model="retroBoardInput.firstColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="First column name:"
-                     lazy-rules/>
-            <q-input v-model="retroBoardInput.secondColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="Second column name:"
-                     lazy-rules/>
-            <q-input v-model="retroBoardInput.thirdColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="Third column name:"
-                     lazy-rules/>
-            <q-input v-model="retroBoardInput.fourthColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="Fourth column name:"
-                     lazy-rules/>
-
+          <q-form class="q-gutter-md text-center" @submit="onSubmit">
+            <q-input v-model="retroBoardInput.firstColumnName"
+                     :rules="[ val => val && val.length > 0 || 'Please type something']" dense
+                     filled
+                     hint="First column name:" lazy-rules/>
+            <q-input v-model="retroBoardInput.secondColumnName"
+                     :rules="[ val => val && val.length > 0 || 'Please type something']" dense
+                     filled
+                     hint="Second column name:" lazy-rules/>
+            <q-input v-model="retroBoardInput.thirdColumnName"
+                     :rules="[ val => val && val.length > 0 || 'Please type something']" dense
+                     filled
+                     hint="Third column name:" lazy-rules/>
+            <q-input v-model="retroBoardInput.fourthColumnName"
+                     :rules="[ val => val && val.length > 0 || 'Please type something']" dense
+                     filled
+                     hint="Fourth column name:" lazy-rules/>
             <div>
               <q-btn color="primary" label="Create" type="submit"/>
             </div>
