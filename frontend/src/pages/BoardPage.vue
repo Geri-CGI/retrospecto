@@ -202,7 +202,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
-                       label="{{retroBoardInput.firstColumnName}}" label-color="white"
+                       :label="retroBoardInput.firstColumnName" label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendExpectMessage">
               </q-input>
             </div>
@@ -217,16 +217,14 @@
                         <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
-                        <q-badge color="transparent" floating>
-                          <div class="row">
-                            <div class="col-4 q-pl-xs">
-                              <q-badge color="secondary">{{ card.likes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pl-xs q-pr-md">
-                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pa-lg-md">
+                        <q-badge class="row" color="transparent" floating>
+                          <div class="row text-right">
+                            <div class="col-12">
                               <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                            <div class="col-12">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
                             </div>
                           </div>
                         </q-badge>
@@ -263,7 +261,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white"
-                       label="{{retroBoardInput.secondColumnName}}"
+                       :label="retroBoardInput.secondColumnName"
                        label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendWellMessage">
               </q-input>
@@ -279,16 +277,14 @@
                         <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
-                        <q-badge color="transparent" floating>
-                          <div class="row">
-                            <div class="col-4 q-pl-xs">
-                              <q-badge color="secondary">{{ card.likes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pl-xs q-pr-md">
-                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pa-lg-md">
+                        <q-badge class="row" color="transparent" floating>
+                          <div class="row text-right">
+                            <div class="col-12">
                               <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                            <div class="col-12">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
                             </div>
                           </div>
                         </q-badge>
@@ -325,7 +321,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white"
-                       label="{{retroBoardInput.thirdColumnName}}" label-color="white"
+                       :label="retroBoardInput.thirdColumnName" label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendNotWellMessage">
               </q-input>
             </div>
@@ -340,16 +336,14 @@
                         <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
-                        <q-badge color="transparent" floating>
-                          <div class="row">
-                            <div class="col-4 q-pl-xs">
-                              <q-badge color="secondary">{{ card.likes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pl-xs q-pr-md">
-                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pa-lg-md">
+                        <q-badge class="row" color="transparent" floating>
+                          <div class="row text-right">
+                            <div class="col-12">
                               <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                            <div class="col-12">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
                             </div>
                           </div>
                         </q-badge>
@@ -386,7 +380,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white"
-                       label="{{retroBoardInput.fourthColumnName}}" label-color="white"
+                       :label="retroBoardInput.fourthColumnName" label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendTryMessage">
               </q-input>
             </div>
@@ -401,16 +395,14 @@
                         <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
                           {{ card.cardMessage }}
                         </div>
-                        <q-badge color="transparent" floating>
-                          <div class="row">
-                            <div class="col-4 q-pl-xs">
-                              <q-badge color="secondary">{{ card.likes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pl-xs q-pr-md">
-                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
-                            </div>
-                            <div class="col-4 q-pa-lg-md">
+                        <q-badge class="row" color="transparent" floating>
+                          <div class="row text-right">
+                            <div class="col-12">
                               <q-badge color="orange">{{ card.username }}</q-badge>
+                            </div>
+                            <div class="col-12">
+                              <q-badge color="secondary">{{ card.likes }}</q-badge>
+                              <q-badge color="red-13">{{ card.dislikes }}</q-badge>
                             </div>
                           </div>
                         </q-badge>
@@ -948,14 +940,12 @@ export default defineComponent({
       }
     },
     onSubmit() {
-      if (!this.author) {
-        this.createUsernameValid = true
-      } else {
         this.retroBoardInput.author = this.author
         axios.post(`https://www.retrospecto.cloud/board/create/`, this.retroBoardInput)
           .then(response => {
             // JSON responses are automatically parsed.
             if (response.data != null) {
+              this.createBoardAlert = false
               this.retroBoard = response.data
               this.boardId = response.data.id
               this.createUsernameValid = false
@@ -967,10 +957,13 @@ export default defineComponent({
               this.subscribe()
             }
           })
-      }
     },
     createBoard() {
-      this.createBoardAlert = true
+      if (!this.author) {
+        this.createUsernameValid = true
+      } else {
+        this.createBoardAlert = true
+      }
     }
   }
 })
