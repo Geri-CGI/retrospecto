@@ -214,7 +214,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
+                        <div class="row" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -274,7 +274,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
+                        <div class="row" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -333,7 +333,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
+                        <div class="row" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -392,7 +392,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="'-webkit-filter: blur(' + retroBoard.blurNumber + 'px)'">
+                        <div class="row" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -896,6 +896,13 @@ export default defineComponent({
     },
     unblurCardText() {
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/unblur", {}, JSON.stringify(null));
+    },
+    getBlur(username) {
+      if (this.username === username) {
+        return '-webkit-filter: blur(0px)'
+      } else {
+        return '-webkit-filter: blur(' + this.retroBoard.blurNumber + 'px)'
+      }
     },
     joinBoard() {
       if (!this.boardId && !this.username) {
