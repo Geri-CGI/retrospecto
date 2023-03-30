@@ -15,6 +15,31 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="createBoardAlert">
+      <q-card>
+        <q-img src="~assets/retrospecto-board.png" width="455px"/>
+        <q-card-section>
+          <q-form
+            class="q-gutter-md text-center"
+            @submit="onSubmit"
+          >
+            <q-input v-model="retroBoardInput.firstColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="First column name:"
+                     lazy-rules/>
+            <q-input v-model="retroBoardInput.secondColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="Second column name:"
+                     lazy-rules/>
+            <q-input v-model="retroBoardInput.thirdColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="Third column name:"
+                     lazy-rules/>
+            <q-input v-model="retroBoardInput.fourthColumnName" :rules="[ val => val && val.length > 0 || 'Please type something']" filled hint="Fourth column name:"
+                     lazy-rules/>
+
+            <div>
+              <q-btn color="primary" label="Create" type="submit"/>
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+
+    </q-dialog>
     <div class="column justify-center items-center content-center">
       <div class="row justify-center items-center content-center">
         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
@@ -177,7 +202,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputExpectColumn" bg-color="primary" bottom-slots color="white"
-                       label="What I expected:" label-color="white"
+                       label="{{retroBoardInput.firstColumnName}}" label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendExpectMessage">
               </q-input>
             </div>
@@ -237,7 +262,8 @@
         <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 col-xl-3" style="padding: 30px">
           <div class="row">
             <div class="col-12">
-              <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white" label="Went well:"
+              <q-input v-model="inputWentWellColumn" bg-color="secondary" bottom-slots color="white"
+                       label="{{retroBoardInput.secondColumnName}}"
                        label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendWellMessage">
               </q-input>
@@ -299,7 +325,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputDidNotGoWellColumn" bg-color="negative" bottom-slots color="white"
-                       label="Went wrong:" label-color="white"
+                       label="{{retroBoardInput.thirdColumnName}}" label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendNotWellMessage">
               </q-input>
             </div>
@@ -360,7 +386,7 @@
           <div class="row">
             <div class="col-12">
               <q-input v-model="inputWantToTryColumn" bg-color="info" bottom-slots color="white"
-                       label="What I want to try:" label-color="white"
+                       label="{{retroBoardInput.fourthColumnName}}" label-color="white"
                        :disable="getIsDisabled()" rounded standout type="text" @keydown.enter="sendTryMessage">
               </q-input>
             </div>
@@ -449,6 +475,10 @@ export default defineComponent({
       retroBoard: {
         id: null,
         author: null,
+        firstColumnName: 'What I expected:',
+        secondColumnName: 'Went well:',
+        thirdColumnName: 'Went wrong:',
+        fourthColumnName: 'What I want to try:',
         expectColumn: [],
         wentWellColumn: [],
         didNotGoWellColumn: [],
@@ -487,7 +517,15 @@ export default defineComponent({
       alertMessage: null,
       subscriptions: [],
       numberOfActiveRetroBoards: 0,
-
+      retroBoardInput: {
+        id: null,
+        author: null,
+        firstColumnName: 'What I expected:',
+        secondColumnName: 'Went well:',
+        thirdColumnName: 'Went wrong:',
+        fourthColumnName: 'What I want to try:'
+      },
+      createBoardAlert: false
     }
   },
   created() {
@@ -909,11 +947,12 @@ export default defineComponent({
           })
       }
     },
-    createBoard() {
+    onSubmit() {
       if (!this.author) {
         this.createUsernameValid = true
       } else {
-        axios.post(`https://www.retrospecto.cloud/board/create/` + this.author)
+        this.retroBoardInput.author = this.author
+        axios.post(`https://www.retrospecto.cloud/board/create/`, this.retroBoardInput)
           .then(response => {
             // JSON responses are automatically parsed.
             if (response.data != null) {
@@ -929,6 +968,9 @@ export default defineComponent({
             }
           })
       }
+    },
+    createBoard() {
+      this.createBoardAlert = true
     }
   }
 })
