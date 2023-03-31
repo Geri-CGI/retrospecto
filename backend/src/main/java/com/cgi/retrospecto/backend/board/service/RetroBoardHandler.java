@@ -2,6 +2,7 @@ package com.cgi.retrospecto.backend.board.service;
 
 import com.cgi.retrospecto.backend.board.domain.RetroBoard;
 import com.cgi.retrospecto.backend.board.domain.RetroBoardMessage;
+import com.cgi.retrospecto.backend.board.dto.RetroBoardInput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,13 +42,17 @@ public class RetroBoardHandler {
         }
     }
 
-    public RetroBoard createBoard(String author) {
-        RetroBoard retroBoard = retroBoardKeeper.getActiveBoardForAuthorIfExists(author);
+    public RetroBoard createBoard(RetroBoardInput retroBoardInput) {
+        RetroBoard retroBoard = retroBoardKeeper.getActiveBoardForAuthorIfExists(retroBoardInput.getAuthor());
         if (retroBoard == null) {
-            int id = new Random().nextInt(900000) + 100000;
-            retroBoard = new RetroBoard(id, author);
-            retroBoard.getUsers().add(author);
-            retroBoardKeeper.addBoard(retroBoard);
+            synchronized (this) {
+                int id = new Random().nextInt(900000) + 100000;
+                retroBoard = new RetroBoard(id, retroBoardInput.getAuthor(), retroBoardInput.getFirstColumnName(),
+                        retroBoardInput.getSecondColumnName(), retroBoardInput.getThirdColumnName(),
+                        retroBoardInput.getFourthColumnName());
+                retroBoard.getUsers().add(retroBoard.getAuthor());
+                retroBoardKeeper.addBoard(retroBoard);
+            }
         }
         return retroBoard;
     }

@@ -7,6 +7,11 @@ public class RetroBoard {
     private int id;
     private String author;
 
+    private String firstColumnName;
+    private String secondColumnName;
+    private String thirdColumnName;
+    private String fourthColumnName;
+
     private List<RetroBoardMessage> expectColumn = new ArrayList<>();
 
     private List<RetroBoardMessage> wentWellColumn = new ArrayList<>();
@@ -27,9 +32,13 @@ public class RetroBoard {
 
     private boolean blurActive = false;
 
-    public RetroBoard(int id, String author) {
+    public RetroBoard(int id, String author, String firstColumnName, String secondColumnName, String thirdColumnName, String fourthColumnName) {
         this.id = id;
         this.author = author;
+        this.firstColumnName = firstColumnName;
+        this.secondColumnName = secondColumnName;
+        this.thirdColumnName = thirdColumnName;
+        this.fourthColumnName = fourthColumnName;
     }
 
     public boolean isLocked() {

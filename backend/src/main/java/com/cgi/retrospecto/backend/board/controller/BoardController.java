@@ -2,6 +2,7 @@ package com.cgi.retrospecto.backend.board.controller;
 
 import com.cgi.retrospecto.backend.board.domain.RetroBoard;
 import com.cgi.retrospecto.backend.board.domain.RetroBoardMessage;
+import com.cgi.retrospecto.backend.board.dto.RetroBoardInput;
 import com.cgi.retrospecto.backend.board.service.RetroBoardHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -123,8 +124,8 @@ public class BoardController {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(path = "/board/create/{author}", method = RequestMethod.POST)
-    public RetroBoard createBoard(@PathVariable String author) {
-        return retroBoardHandler.createBoard(author);
+    @RequestMapping(path = "/board/create", method = RequestMethod.POST)
+    public RetroBoard createBoard(@RequestBody RetroBoardInput retroBoardInput) {
+        return retroBoardHandler.createBoard(retroBoardInput);
     }
 }
