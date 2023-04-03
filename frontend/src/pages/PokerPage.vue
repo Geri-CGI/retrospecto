@@ -1,12 +1,5 @@
 <template>
-  <q-page v-if="spinnerVisible" class="q-pa-md flex flex-center">
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 ">
-      <div class="row justify-center" style="padding: 30px">
-        <q-spinner :thickness="10" color="primary" size="5em" />
-      </div>
-    </div>
-  </q-page>
-  <q-page v-if="joinAndCreateButtonVisible && !spinnerVisible" class="q-pa-md flex flex-center">
+  <q-page v-if="joinAndCreateButtonVisible" class="q-pa-md flex flex-center">
     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6" style="padding: 30px">
           <q-card>
             <q-card-section>
@@ -53,38 +46,31 @@
 
   <q-page v-else class="row q-pa-md content-start">
     <q-bar class="text-blue col-12 justify-center" dark data-html2canvas-ignore="true">
-      <div class="text-weight-bold col-1 text-center" style="font-size:30px">
+      <div class="text-weight-bold col-2 text-center" style="font-size:30px">
         {{ this.username }}
       </div>
-      <div class="text-weight-bold col-10 text-center" style="font-size:30px">
+      <div class="text-weight-bold col-8 text-center" style="font-size:30px">
         {{ this.room.id }}
       </div>
-      <q-btn-dropdown class="col-1" v-if="true" color="primary" label="Menu">
-        <q-list>
+      <div class="text-weight-bold col-2 text-center" style="font-size:30px">
+        <div class="row">
           <q-item v-close-popup clickable @click="shareTheBoard">
-            <q-item-section>
-              <q-item-label>Share the board</q-item-label>
-            </q-item-section>
             <q-item-section avatar>
-              <q-avatar color="primary" icon="ios_share" size="sm" text-color="white"/>
+              <q-avatar color="primary" icon="ios_share" size="lg" text-color="white"/>
             </q-item-section>
           </q-item>
           <q-item v-close-popup clickable @click="exit">
-            <q-item-section>
-              <q-item-label>Exit</q-item-label>
-            </q-item-section>
             <q-item-section avatar>
-              <q-avatar color="red-13" icon="logout" size="sm" text-color="white"/>
+              <q-avatar color="red-13" icon="logout" size="lg" text-color="white"/>
             </q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-      
+          </q-item> 
+        </div>
+      </div>
     </q-bar>
     <div v-if="this.room.author == this.author" class="col-12">
       <div class="row text-center q-pa-md items-center">
         <div class="col-11">
-          <q-input v-model="inputStory" label="Story name:" outlined/>
+          <q-input v-model="inputStory" label="Story name:" outlined @keydown.enter="createStory"/>
         </div>
         <div class="col-1">
           <q-btn color="primary" @click="createStory">Add</q-btn>
@@ -97,24 +83,17 @@
       class="bg-grey-3 text-grey-7" dense indicator-color="primary">
         <template v-for="(story, index) in this.room.stories" :key="index">
           <div @click="selectStory(story)">
-            <q-tab :disable=isStoryDisable(story) :label=story.story :name=story.story no-caps></q-tab>
+            <q-tab :disable=isStoryDisable(story) :label=story.storyName :name=story.storyName no-caps></q-tab>
           </div>
         </template>
       </q-tabs>
       <q-tabs>
         <div v-if="this.room.selectedStory == null">
+          <div class="text-blue text-weight-bold text-h5">Joined users:</div>
           <template v-for="(user, index) in room.users" :key="index">
-            <q-item v-ripple clickable>
-              <q-item-section side>
-                <q-avatar color="primary" size="lg" text-color="white">
-                  {{ getFirstLetter(user.username) }}
-                  <q-tooltip>
-                    {{ user.username }}
-                  </q-tooltip>
-                </q-avatar>
-              </q-item-section>
+            <q-item v-ripple>
               <q-item-section>
-                <q-item-label>{{ user.username }}</q-item-label>
+                <q-item-label class="text-blue text-weight-bold text-h5"> {{ user.username }}</q-item-label>
               </q-item-section>
             </q-item>
           </template>
@@ -122,9 +101,9 @@
       </q-tabs>
       <q-tab-panels v-model="tab" animated class="text-black">
         <template v-for="(story, index) in this.room.stories" :key="index">
-          <q-tab-panel :name=story.story>
-            <div v-if="!votingIsOpen" class="col-12 text-center text-blue" style="font-size:50px;"> {{ story.story }} </div>
-            <div v-if="votingIsOpen" class="col-12 text-center text-blue" style="font-size:50px;"> {{ this.room.selectedStory.story }} </div>
+          <q-tab-panel :name=story.storyName>
+            <div v-if="!votingIsOpen" class="col-12 text-center text-blue" style="font-size:50px;"> {{ story.storyName }} </div>
+            <div v-if="votingIsOpen" class="col-12 text-center text-blue" style="font-size:50px;"> {{ this.room.selectedStory.storyName }} </div>
             <div class="row justify-center items-center">
               <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12">
                 <div class="row">
@@ -140,7 +119,21 @@
                   </div>
                 </div>
               </div>
-              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12" 
+              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12">
+                  <template v-for="(user, index) in room.users" :key="index">
+                    <q-item v-ripple>
+                      <q-item-section>
+                        <q-item-label class="text-blue text-weight-bold text-h5" >{{ user.username }}</q-item-label>
+                        <q-item-label v-if="!votingIsOpen || !showVoteOptions" caption> {{ getVoteValue(user) }} </q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                  <div v-if="!votingIsOpen" class="text-center q-pa-sm col-12">
+                    <h5>
+                      Average: {{ calculateVotesAvg() }}
+                    </h5>
+                  </div>
+                  <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12" 
                 v-if="this.room.selectedStory != null && this.author === this.room.author">
                 <div class="col-12 text-center items-center">
                   <div class="col-12 q-pa-sm">
@@ -154,34 +147,7 @@
                   </div>
                 </div>
               </div>
-              <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12">
-                <div class="row text-center">
-                  <div class="col-12">
-                    <template v-for="(user, index) in room.users" :key="index">
-                      <q-item v-ripple clickable>
-                        <q-item-section side>
-                          <q-avatar color="primary" size="lg" text-color="white">
-                            {{ getFirstLetter(user.username) }}
-                            <q-tooltip>
-                              {{ user.username }}
-                            </q-tooltip>
-                          </q-avatar>
-                        </q-item-section>
-                        <q-item-section>
-                          <q-item-label>{{ user.username }}</q-item-label>
-                          <q-item-label v-if="votingIsOpen && !(typeof getVoteValue(user) == 'number')" caption>Voting...</q-item-label>
-                          <q-item-label v-if="!votingIsOpen || !showVoteOptions" caption> {{ getVoteValue(user) }} </q-item-label>
-                        </q-item-section>
-                      </q-item>
-                    </template>
-                    <div v-if="!votingIsOpen" class="text-center q-pa-sm">
-                      <h5>
-                        Average: {{ calculateVotesAvg() }}
-                      </h5>
-                    </div>
-                  </div>
                 </div>
-              </div>
             </div>
           </q-tab-panel>
         </template>
@@ -210,6 +176,7 @@ export default defineComponent({
       username: null,
       createUsernameValid: false,
       joinUsernameValid: false,
+      roomId: null,
       roomIdValid: false,
       roomIdErrorMessage: 'Room ID required!',
       votingIsOpen: false,
@@ -217,7 +184,6 @@ export default defineComponent({
       showVoteOptions: false,
       chosenOption: null,
       subscriptions: [],
-      spinnerVisible: false,
       usernameErrorMessage: 'Username already in use!',
       frontendUrl: 'https://retrospecto.cloud',
       backendUrls: {
@@ -236,9 +202,7 @@ export default defineComponent({
   },
   created() {
     window.addEventListener("resize", this.getScreenSizeForButton);
-    this.spinnerVisible = true;
     setTimeout(this.createPage, 2000);
-    this.spinnerVisible = false;
   },
   methods:
     {
@@ -325,6 +289,7 @@ export default defineComponent({
                 for (let i = 0; i < this.room.stories.length; i++) {
                   if (this.room.stories[i].id == this.room.selectedStoryId) {
                     this.room.selectedStory = this.room.stories[i];
+                    this.tab = this.room.selectedStory.storyName;
                   }
                 }
 
@@ -376,7 +341,14 @@ export default defineComponent({
       storyAddMessageReceived(payload) {
         let storyString = this.parseWSResponseBody(payload.body);
         let storyObject = JSON.parse(storyString);
+       
         this.room.stories.push(storyObject);
+
+        if (this.room.stories.length == 1) {
+          storyObject.disabled = false;
+          this.selectStory(this.room.stories[0]);
+        }
+        
       },
       storySelectedByAuthorMessageReceived(payload) {
         let storyString = this.parseWSResponseBody(payload.body);
@@ -385,10 +357,7 @@ export default defineComponent({
           if (this.room.stories[i]["id"] === selectedStory["storyId"]) {
             this.room.stories[i].disabled = selectedStory["disabled"];
             this.room.selectedStory = this.room.stories[i];
-            console.log("Story stringify: " + JSON.stringify(this.room.selectedStory));
-            console.log("Story obj: " + this.room.selectedStory);
-            console.log("Story obj story: " + this.room.selectedStory.story);
-            this.tab = this.room.stories[i].story;
+            this.tab = this.room.stories[i].storyName;
 
             this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
           }
@@ -575,7 +544,6 @@ export default defineComponent({
         return story.disabled;
       },
       createPage() {
-        this.spinnerVisible = false;
         if (this.$route.params.roomId != null) {
           this.roomId = this.$route.params.roomId;
         }
