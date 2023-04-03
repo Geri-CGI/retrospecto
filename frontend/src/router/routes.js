@@ -8,6 +8,7 @@ const routes = [
       {path: '/board/:boardId', component: () => import('pages/BoardPage.vue')},
       {path: '/chat', component: () => import('pages/ChatPage.vue')},
       {path: '/poker', component: () => import('pages/PokerPage.vue')},
+      {path: '/poker/room/:roomId', component: () => import('pages/PokerPage.vue')},
       {path: '/', component: () => import('pages/HomePage.vue')},
     ]
   },
