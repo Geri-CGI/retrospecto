@@ -1,4 +1,9 @@
 <template>
+  <q-page v-if="spinnerVisible" class="row justify-center items-center content-center">
+    <div >
+      <q-spinner :thickness="10" color="primary" size="5em" />
+    </div>
+  </q-page>
   <q-page v-if="joinAndCreateButtonVisible" class="q-pa-md flex flex-center">
     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6" style="padding: 30px">
           <q-card>
@@ -43,7 +48,6 @@
         </q-card>
       </div>
   </q-page>
-
   <q-page v-else class="row q-pa-md content-start">
     <q-bar class="text-blue col-12 justify-center" dark data-html2canvas-ignore="true">
       <div class="text-weight-bold col-2 text-center" style="font-size:30px">
@@ -184,6 +188,7 @@ export default defineComponent({
       showVoteOptions: false,
       chosenOption: null,
       subscriptions: [],
+      spinnerVisible: true,
       usernameErrorMessage: 'Username already in use!',
       frontendUrl: 'https://retrospecto.cloud',
       backendUrls: {
@@ -554,6 +559,7 @@ export default defineComponent({
           this.author = localStorage.getItem("poker-author");
           localStorage.removeItem("poker-username");
         }
+        this.spinnerVisible = false;
       },
       getScreenSizeForButton() {
         if (Screen.xs) {
