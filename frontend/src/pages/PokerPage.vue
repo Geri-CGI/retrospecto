@@ -130,13 +130,13 @@
                 <div class="row">
                   <div v-for="(option, index) in voteOptions.slice(0, 4)" v-bind:key="index" 
                   class="col-xs-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 text-center q-pa-sm">
-                    <q-btn :disable=!showVoteOptions style="width: 70%; height: 70%; font-size: 70px;" :color="getVoteColor(option)" :label="option" @click="vote(option)" />
+                    <q-btn :disable=!showVoteOptions :style=getScreenSizeForButton() :color="getVoteColor(option)" :label="option" @click="vote(option)" />
                   </div>
                 </div>
                 <div class="row">
                   <div v-for="(option, index) in voteOptions.slice(4, 8)" v-bind:key="index" 
                   class="col-xs-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 text-center q-pa-sm">
-                    <q-btn :disable=!showVoteOptions style="width: 70%; height: 70%; font-size: 70px;" :color="getVoteColor(option)" :label="option" @click="vote(option)" />
+                    <q-btn :disable=!showVoteOptions :style=getScreenSizeForButton() :color="getVoteColor(option)" :label="option" @click="vote(option)" />
                   </div>
                 </div>
               </div>
@@ -195,6 +195,7 @@ import {defineComponent} from 'vue'
 import axios from 'axios'
 import {stompClientStore} from 'stores/stomp'
 import {copyToClipboard, Notify} from 'quasar'
+import { Screen } from 'quasar'
 
 const store = stompClientStore()
 
@@ -234,6 +235,7 @@ export default defineComponent({
     }
   },
   created() {
+    window.addEventListener("resize", this.getScreenSizeForButton);
     this.spinnerVisible = true;
     setTimeout(this.createPage, 2000);
     this.spinnerVisible = false;
@@ -583,6 +585,23 @@ export default defineComponent({
         if (localStorage.getItem("poker-author")) {
           this.author = localStorage.getItem("poker-author");
           localStorage.removeItem("poker-username");
+        }
+      },
+      getScreenSizeForButton() {
+        if (Screen.xs) {
+          return "width: 70%; height: 70%; font-size: 40px;";
+        }
+        if (Screen.sm) {
+          return "width: 70%; height: 70%; font-size: 40px;";
+        }
+        if (Screen.md) {
+          return "width: 70%; height: 70%; font-size: 40px;";
+        }
+        if (Screen.lg) {
+          return "width: 70%; height: 70%; font-size: 70px;";
+        }
+        if (Screen.xl) {
+          return "width: 70%; height: 70%; font-size: 70px;";
         }
       },
       parseWSResponseBody(body) {
