@@ -218,14 +218,13 @@ export default defineComponent({
       subscriptions: [],
       spinnerVisible: false,
       usernameErrorMessage: 'Username already in use!',
-      frontendUrl: 'http://localhost:8098',
+      frontendUrl: 'https://retrospecto.cloud',
       backendUrls: {
         pathParts: {
           poker: '/poker',
           room: '/room',
         },
-        baseUrl: 'http://localhost:8098',
-        //baseUrl: 'https://www.retrospecto.cloud',
+        baseUrl: 'https://www.retrospecto.cloud',
         baseUrlPoker: function() { return this.baseUrl + this.pathParts.poker},
         createRoom: function() { return this.baseUrlPoker() + this.pathParts.room + "/"},
         getRoom: function() { return this.baseUrlPoker() + this.pathParts.room + "/"},
