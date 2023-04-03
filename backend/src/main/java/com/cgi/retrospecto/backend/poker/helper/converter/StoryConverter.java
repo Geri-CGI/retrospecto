@@ -5,7 +5,7 @@ import com.cgi.retrospecto.backend.poker.domain.Story;
 public class StoryConverter {
     public static Story toEntity(String story) {
         Story entity = new Story();
-        entity.setStory(story);
+        entity.setStoryName(story);
 
         return entity;
     }

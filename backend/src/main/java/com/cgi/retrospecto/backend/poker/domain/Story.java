@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Story {
     private Integer id;
-    private String story;
+    private String storyName;
     private List<VoteResult> voteResults = new ArrayList<>();
     private boolean disabled;
 
@@ -29,12 +29,12 @@ public class Story {
         this.id = id;
     }
 
-    public String getStory() {
-        return story;
+    public String getStoryName() {
+        return storyName;
     }
 
-    public void setStory(String story) {
-        this.story = story;
+    public void setStoryName(String storyName) {
+        this.storyName = storyName;
     }
 
     public List<VoteResult> getVoteResults() {
@@ -57,7 +57,7 @@ public class Story {
     public String toString() {
         return "Story{" +
                 "id=" + id +
-                ", story='" + story + '\'' +
+                ", story='" + storyName + '\'' +
                 ", voteResults=" + voteResults +
                 ", disabled=" + disabled +
                 '}';
