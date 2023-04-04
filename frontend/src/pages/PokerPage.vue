@@ -51,31 +51,28 @@
   <q-page v-else class="row q-pa-md content-start">
     <div class="col-12 q-pa-md">
       <q-card>
-        <div class="row full-width text-weight-bold text-center text-primary items-center q-pa-xs">
-          <q-list class="col-2 text-left">
+        <div class="row">
+          <div class="col-2">
             <template v-for="(user, index) in room.users" :key="index">
-              <q-avatar color="primary" size="lg" text-color="white">
+              <q-avatar :style="`left: ${index * 25}px`" class="overlapping" color="primary" size="lg"
+                        text-color="white">
                 {{ getFirstLetter(user.username) }}
                 <q-tooltip>
                   {{ user.username }}
                 </q-tooltip>
               </q-avatar>
             </template>
-          </q-list>
-          <div class="col-8" style="font-size:20px">
+          </div>
+          <div class="col-8 text-bold text-primary text-center" style="font-size:20px">
             Room ID: {{ this.room.id }}
           </div>
-          <div class="col-2">
-            <div class="row">
-              <div class="col-10 text-right">
-                <q-btn color="primary" icon="ios_share" round size="sm" @click="shareTheBoard"/>
-              </div>
-              <div class="col-2">
-                <q-btn color="red-13" icon="logout" round size="sm" @click="exit"/>
-              </div>
-            </div>
+          <div class="col-2 text-right">
+            <q-btn color="primary" icon="ios_share" round size="md" @click="shareTheBoard"/>
+            <q-btn color="red-13" icon="logout" round size="md" @click="exit"/>
           </div>
-          <div v-if="this.room.author == this.author" class="col-12 full-width">
+        </div>
+        <div class="row">
+          <div v-if="this.room.author === this.author" class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
                 <q-input v-model="inputStory" label="Add story:" outlined @keydown.enter="createStory"/>
@@ -99,59 +96,64 @@
         <q-tab-panels v-model="tab" animated class="text-black">
           <template v-for="(story, index) in this.room.stories" :key="index">
             <q-tab-panel :name=story.storyName>
-              <div class="row justify-center items-start q-pa-md">
-                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 ">
-                  <q-card class="self-stretch">
-                    <q-card-section>
-                      <div v-if="!votingIsOpen" class="text-h6">{{ story.storyName }}</div>
-                      <div v-if="votingIsOpen" class="text-h6">{{ this.room.selectedStory.storyName }}</div>
+              <div class="row">
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 q-pa-md">
+                  <q-card id="storyCard">
+                    <div class="col-12 q-pa-md">
+                      <div v-if="!votingIsOpen" class="text-h6 text-primary text-bold">{{ story.storyName }}</div>
+                      <div v-if="votingIsOpen" class="text-h6 text-primary text-bold">
+                        {{ this.room.selectedStory.storyName }}
+                      </div>
                       <div v-if="!votingIsOpen" class="text-subtitle2">{{ calculateVotesAvg() }}</div>
-                    </q-card-section>
+                    </div>
                     <q-separator/>
-                    <q-card-section>
-                      <template v-for="(user, index) in room.users" :key="index">
-                        <q-item v-ripple>
-                          <q-item-section>
-                            <q-item-label class="text-blue text-weight-bold text-h5">{{ user.username }}</q-item-label>
-                            <q-item-label v-if="!votingIsOpen || !showVoteOptions" caption> {{
-                                getVoteValue(user)
-                              }}
-                            </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </template>
-                    </q-card-section>
-                    <q-separator/>
-                    <q-card-actions v-if="this.room.selectedStory != null && this.author === this.room.author" align="center"
-                                    vertical>
-                      <q-btn :disable="this.votingIsOpen" color="secondary" style="width: 30%" @click="startVoting">
-                        Start voting
-                      </q-btn>
-                      <q-btn :disable="!this.votingIsOpen" color="negative" style="width: 30%" @click="finishVoting">
-                        Close voting
-                      </q-btn>
-                      <q-btn :disable="this.votingIsOpen || index == this.room.stories.length - 1" color="primary"
-                             style="width: 30%"
-                             @click="nextStory(index, true)">Next story
-                      </q-btn>
-                    </q-card-actions>
-                  </q-card>
-                </div>
-                <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 q-pl-md">
-                  <q-card>
-                    <div class="row">
-                      <div v-for="(option, index) in voteOptions.slice(0, 4)" v-bind:key="index"
-                           class="col-xs-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 text-center q-pa-sm">
-                        <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
-                               :style=getScreenSizeForButton() @click="vote(option)"/>
+                    <div class="col-12 q-pa-md">
+                      <div class="row">
+                        <template v-for="(user, index) in room.users" :key="index">
+                          <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm"
+                               style="height: 45px">
+                            <q-card>
+                              <div :class="getUserNameStyle(user.username)" class="text-center items-center">
+                                {{ user.username }}
+                              </div>
+                              <q-badge :label="getVoteValue(user)" color="primary" floating text-color="white"/>
+                            </q-card>
+                          </div>
+                        </template>
                       </div>
                     </div>
-                    <div class="row">
-                      <div v-for="(option, index) in voteOptions.slice(4, 8)" v-bind:key="index"
-                           class="col-xs-12 col-sm-12 col-md-6 col-lg-3 col-xl-3 text-center q-pa-sm">
-                        <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
-                               :style=getScreenSizeForButton() @click="vote(option)"/>
+                    <q-separator/>
+                    <div v-if="this.room.selectedStory != null && this.author === this.room.author" class="col-12">
+                      <div class="row text-center">
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
+                          <q-btn :disable="this.votingIsOpen" color="secondary" style="min-width: 120px"
+                                 @click="startVoting">Start voting
+                          </q-btn>
+                        </div>
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
+                          <q-btn :disable="!this.votingIsOpen" color="negative" style="min-width: 120px"
+                                 @click="finishVoting">Close voting
+                          </q-btn>
+                        </div>
+                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
+                          <q-btn :disable="this.votingIsOpen || index === this.room.stories.length - 1" class="col-12"
+                                 color="primary" style="min-width: 120px" @click="nextStory(index, true)">Next story
+                          </q-btn>
+                        </div>
                       </div>
+                    </div>
+                  </q-card>
+                </div>
+                <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 q-pa-md">
+                  <q-card>
+                    <div :style="setMinimumHeight()" class="row">
+                      <template v-for="(option, index) in voteOptions.slice(0, 8)" v-bind:key="index">
+                        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
+                          <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
+                                 :style="getScreenSizeForButton()"
+                                 class="full-height full-width" @click="vote(option)"/>
+                        </div>
+                      </template>
                     </div>
                   </q-card>
                 </div>
@@ -301,7 +303,7 @@ export default defineComponent({
                 this.subscribe();
 
                 for (let i = 0; i < this.room.stories.length; i++) {
-                  if (this.room.stories[i].id == this.room.selectedStoryId) {
+                  if (this.room.stories[i].id === this.room.selectedStoryId) {
                     this.room.selectedStory = this.room.stories[i];
                     this.tab = this.room.selectedStory.storyName;
                   }
@@ -313,7 +315,7 @@ export default defineComponent({
             })
             .catch(error => {
               this.roomId = null;
-              if (error.response.status == 409) {
+              if (error.response.status === 409) {
                 this.joinUsernameValid = true;
                 this.usernameErrorMessage = 'Username already in use!';
               } else {
@@ -358,7 +360,7 @@ export default defineComponent({
 
         this.room.stories.push(storyObject);
 
-        if (this.room.stories.length == 1) {
+        if (this.room.stories.length === 1) {
           storyObject.disabled = false;
           this.selectStory(this.room.stories[0]);
         }
@@ -395,7 +397,7 @@ export default defineComponent({
         this.room.selectedStoryId = votingIsOpen["storyId"];
 
         for (let i = 0; i < this.room.stories.length; i++) {
-          if (this.room.stories[i].id == this.room.selectedStoryId) {
+          if (this.room.stories[i].id === this.room.selectedStoryId) {
             this.room.selectedStory = this.room.stories[i];
           }
         }
@@ -422,8 +424,7 @@ export default defineComponent({
       votesMessageReceived(payload) {
         let refreshedCurrentVoteResult = this.parseWSResponseBody(payload.body);
 
-        let refreshedCurrentVoteResultObj = JSON.parse(refreshedCurrentVoteResult);
-        this.room.currentVoteResult = refreshedCurrentVoteResultObj;
+        this.room.currentVoteResult = JSON.parse(refreshedCurrentVoteResult);
 
         for (let i = 0; i < this.room.stories.length; i++) {
           if (this.room.stories[i].id === this.room.selectedStory.id) {
@@ -508,13 +509,13 @@ export default defineComponent({
             }
           }
         }
-        return "Not voted yet!";
+        return "?";
       },
       getLastVoteResult(story) {
         if (story !== null && story.id !== null) {
           let currStory = story;
           if (currStory !== null && currStory.voteResults) {
-            if (currStory.voteResults !== null && currStory.voteResults.length > 0) {
+            if (currStory.voteResults.length > 0) {
               let lastVoteResult;
               let id = -1;
               let index;
@@ -525,7 +526,7 @@ export default defineComponent({
                 }
               }
 
-              if (index != -1) {
+              if (index !== -1) {
                 lastVoteResult = currStory.voteResults[index];
               }
 
@@ -552,7 +553,18 @@ export default defineComponent({
           })
       },
       getVoteColor(voteValue) {
-        return this.chosenOption == voteValue || !this.votingIsOpen ? "green" : "red";
+        return this.chosenOption === voteValue || !this.votingIsOpen ? "red" : "green";
+      },
+      getUserNameStyle(username) {
+        if (username.length <= 4) {
+          return 'text-blue text-weight-bold text-h5'
+        }
+        if (username.length > 4 && username.length <= 7) {
+          return 'text-blue text-weight-bold text-h5'
+        }
+        if (username.length > 7) {
+          return 'text-blue text-weight-bold text-h6'
+        }
       },
       isStoryDisable(story) {
         return story.disabled;
@@ -572,20 +584,32 @@ export default defineComponent({
       },
       getScreenSizeForButton() {
         if (Screen.xs) {
-          return "width: 70%; height: 70%; font-size: 40px;";
+          return "font-size: 30px;";
         }
         if (Screen.sm) {
-          return "width: 70%; height: 70%; font-size: 40px;";
+          return "font-size: 40px;";
         }
         if (Screen.md) {
-          return "width: 70%; height: 70%; font-size: 40px;";
+          return "font-size: 50px;";
         }
         if (Screen.lg) {
-          return "width: 70%; height: 70%; font-size: 70px;";
+          return "font-size: 60px;";
         }
         if (Screen.xl) {
-          return "width: 70%; height: 70%; font-size: 70px;";
+          return "font-size: 60px;";
         }
+      },
+      getHeightOfStoryCard() {
+        let element = document.getElementById('storyCard')
+        console.log(element)
+        if (element) {
+          return document.getElementById('storyCard').getBoundingClientRect().height
+        } else {
+          return '310'
+        }
+      },
+      setMinimumHeight() {
+        return 'min-height: ' + this.getHeightOfStoryCard() + 'px'
       },
       parseWSResponseBody(body) {
         body = body.substring(body.indexOf("body") + 4);
@@ -596,3 +620,9 @@ export default defineComponent({
     }
 })
 </script>
+
+<style lang="sass" scoped>
+.overlapping
+  border: 2px solid white
+  position: absolute
+</style>
