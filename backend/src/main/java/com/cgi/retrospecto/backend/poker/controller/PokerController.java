@@ -2,11 +2,13 @@ package com.cgi.retrospecto.backend.poker.controller;
 
 import com.cgi.retrospecto.backend.poker.api.PokerConstants;
 import com.cgi.retrospecto.backend.poker.controller.dto.*;
+import com.cgi.retrospecto.backend.poker.domain.Room;
 import com.cgi.retrospecto.backend.poker.domain.Story;
 import com.cgi.retrospecto.backend.poker.domain.Vote;
 import com.cgi.retrospecto.backend.poker.domain.VoteResult;
 import com.cgi.retrospecto.backend.poker.exception.RoomNotFoundException;
 import com.cgi.retrospecto.backend.poker.exception.StoryNotFoundException;
+import com.cgi.retrospecto.backend.poker.exception.UsernameAlreadyInUseException;
 import com.cgi.retrospecto.backend.poker.helper.converter.RoomConverter;
 import com.cgi.retrospecto.backend.poker.helper.converter.StoryConverter;
 import com.cgi.retrospecto.backend.poker.service.RoomService;
@@ -49,10 +51,12 @@ public class PokerController {
             @PathVariable(PokerConstants.ID) int id,
             @PathVariable(PokerConstants.USERNAME) String username)
             throws RoomNotFoundException {
-        return new ResponseEntity<>(
-                RoomConverter.toDTO(
-                        roomService.addUser(id, username)
-                ), HttpStatus.OK);
+        try {
+            Room room = roomService.addUser(id, username);
+            return new ResponseEntity<>(RoomConverter.toDTO(room), HttpStatus.OK);
+        } catch (UsernameAlreadyInUseException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 
     @MessageMapping(ADD_USER)
@@ -61,6 +65,19 @@ public class PokerController {
             @DestinationVariable(ROOM_ID) int roomId,
             @Payload String username) {
         return new ResponseEntity<>(new JoinedUserDetails(username), HttpStatus.OK);
+    }
+
+    @MessageMapping(REMOVE_USER)
+    @SendTo(REMOVE_USER_TOPIC)
+    public ResponseEntity<JoinedUserDetails> removeUser(
+            @DestinationVariable(ROOM_ID) int roomId,
+            @Payload String username) throws RoomNotFoundException {
+        return new ResponseEntity<>(
+                new JoinedUserDetails(
+                        roomService.removeUser(
+                                roomId,
+                                username)
+                ), HttpStatus.OK);
     }
 
     @MessageMapping(ADD_STORY)
@@ -75,15 +92,18 @@ public class PokerController {
                 ), HttpStatus.OK);
     }
 
-
-    // TODO: refactor
     @MessageMapping(VOTE)
     @SendTo(VOTE_TOPIC)
     public ResponseEntity<VoteResult> vote(
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId,
             @Payload Vote dto) throws RoomNotFoundException, StoryNotFoundException {
-        return new ResponseEntity<>(roomService.vote(roomId, storyId, dto), HttpStatus.OK);
+        return new ResponseEntity<>(
+                roomService.vote(
+                        roomId,
+                        storyId,
+                        dto
+                ), HttpStatus.OK);
     }
 
     // TODO: refactor
@@ -93,7 +113,12 @@ public class PokerController {
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
-        return new ResponseEntity<>(new SelectedStoryDetails(roomId, storyId, roomService.setSelectedStory(roomId, storyId)), HttpStatus.OK);
+        return new ResponseEntity<>(
+                new SelectedStoryDetails(
+                        roomId,
+                        storyId,
+                        roomService.setSelectedStory(roomId, storyId)
+                ), HttpStatus.OK);
     }
 
     @MessageMapping(OPEN_VOTING)
@@ -102,7 +127,12 @@ public class PokerController {
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
-        return new ResponseEntity<>(new OpenVote(true, roomService.openVoting(roomId, storyId)), HttpStatus.OK);
+        return new ResponseEntity<>(
+                new OpenVote(
+                        true,
+                        storyId,
+                        roomService.openVoting(roomId, storyId)
+                ), HttpStatus.OK);
     }
 
     @MessageMapping(CLOSE_VOTING)
@@ -111,8 +141,10 @@ public class PokerController {
             @DestinationVariable(ROOM_ID) int roomId,
             @DestinationVariable(STORY_ID) int storyId)
             throws RoomNotFoundException, StoryNotFoundException {
-        return new ResponseEntity<>
-                (new OpenVote(false,
+        return new ResponseEntity<>(
+                new OpenVote(
+                        false,
+                        storyId,
                         roomService.closeVoting(roomId, storyId)
                 ), HttpStatus.OK);
     }
