@@ -52,9 +52,16 @@
     <div class="col-12 q-pa-md">
       <q-card>
         <div class="row full-width text-weight-bold text-center text-primary items-center q-pa-xs">
-          <div class="col-2 text-left" style="font-size:20px">
-            Current user: {{ this.username }}
-          </div>
+          <q-list class="col-2 text-left">
+            <template v-for="(user, index) in room.users" :key="index">
+              <q-avatar color="primary" size="lg" text-color="white">
+                {{ getFirstLetter(user.username) }}
+                <q-tooltip>
+                  {{ user.username }}
+                </q-tooltip>
+              </q-avatar>
+            </template>
+          </q-list>
           <div class="col-8" style="font-size:20px">
             Room ID: {{ this.room.id }}
           </div>
