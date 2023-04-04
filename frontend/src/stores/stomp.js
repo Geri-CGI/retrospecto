@@ -8,7 +8,10 @@ export const stompClientStore = defineStore('stompClientStore', {
     stompClientConnected: false,
     username: null,
     author: null,
-    boardId: null
+    boardId: null,
+    pokerRoomId: null,
+    pokerUsername: null,
+    pokerAuthor: null
   }),
 
   getters: {
@@ -30,6 +33,15 @@ export const stompClientStore = defineStore('stompClientStore', {
     getAuthor(state) {
       return state.author
     },
+    getPokerRoomId(state) {
+      return state.pokerRoomId
+    },
+    getPokerUsername(state) {
+      return state.pokerUsername
+    },
+    getPokerAuthor(state) {
+      return state.pokerAuthor
+    }
   },
 
   actions: {
@@ -53,6 +65,11 @@ export const stompClientStore = defineStore('stompClientStore', {
       this.username = username
       this.boardId = boardId
       this.author = author
+    },
+    setPokerRoomIdAuthorUsername(username, author, roomId) {
+      this.pokerUsername = username
+      this.pokerAuthor = author
+      this.pokerRoomId = roomId
     }
   }
 })
