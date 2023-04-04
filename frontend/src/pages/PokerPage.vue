@@ -123,7 +123,7 @@
                       <q-btn :disable="!this.votingIsOpen" color="negative" style="width: 30%" @click="finishVoting">
                         Close voting
                       </q-btn>
-                      <q-btn :disable="!this.votingIsOpen && index >= (this.room.stories.length - 1)" color="primary"
+                      <q-btn :disable="this.votingIsOpen || index == this.room.stories.length - 1" color="primary"
                              style="width: 30%"
                              @click="nextStory(index, true)">Next story
                       </q-btn>
@@ -186,7 +186,7 @@ export default defineComponent({
       subscriptions: [],
       spinnerVisible: true,
       usernameErrorMessage: 'Username already in use!',
-      frontendUrl: 'https://retrospecto.cloud',
+      frontendUrl: 'https://www.retrospecto.cloud',
       backendUrls: {
         pathParts: {
           poker: '/poker',
