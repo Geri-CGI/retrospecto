@@ -601,8 +601,8 @@ export default defineComponent({
         this.createCardVisible = false
         this.messageInputVisible = false
       }
-      this.username = localStorage.getItem('username')
-      this.author = localStorage.getItem('author')
+      this.username = localStorage.getItem('board-username')
+      this.author = localStorage.getItem('board-author')
     },
     deleteCardExpectColumn(key) {
       let retroBoardMessage = this.retroBoard.expectColumn[key]
@@ -787,7 +787,7 @@ export default defineComponent({
       store.getStompClient.send("/app/board/" + this.boardId + "/order.dislike", {}, JSON.stringify(null));
     },
     subscribe() {
-      localStorage.setItem('username', this.username)
+      localStorage.setItem('board-username', this.username)
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/add', this.onAddMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/delete', this.onDeleteMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/edit', this.onEditMessageReceived))
@@ -805,14 +805,14 @@ export default defineComponent({
         subscription.unsubscribe()
       })
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
-      stompClientStore().setUsernameAuthorBoarDId(localStorage.getItem('username'), localStorage.getItem('author'), null)
+      stompClientStore().setUsernameAuthorBoarDId(localStorage.getItem('board-username'), localStorage.getItem('board-author'), null)
       this.messageInputVisible = false
       this.joinCardVisible = true
       this.createCardVisible = true
-      this.username = localStorage.getItem('username')
+      this.username = localStorage.getItem('board-username')
       this.boardId = null
       this.retroBoard = null
-      this.author = localStorage.getItem('author')
+      this.author = localStorage.getItem('board-author')
     },
     getFirstLetter(username) {
       return Array.from(username)[0];
@@ -968,7 +968,7 @@ export default defineComponent({
               this.messageInputVisible = true
               this.joinCardVisible = false
               this.createCardVisible = false
-              localStorage.setItem('author', this.author)
+              localStorage.setItem('board-author', this.author)
               this.subscribe()
             }
           })
