@@ -52,7 +52,7 @@
     <div class="col-12 q-pa-md">
       <q-card>
         <div class="row items-center">
-          <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 elf-start">
+          <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 self-start">
             <template v-for="(user, index) in room.users" :key="index">
               <q-avatar :style="`left: ${index * 25}px`" class="overlapping" color="primary" size="xl"
                         text-color="white">
@@ -65,7 +65,7 @@
           </div>
           <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 text-bold text-primary text-center"
                style="font-size:20px">
-            Room ID: {{ this.room.id }}
+            Room ID: {{ room.id }}
           </div>
           <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 text-right q-pt-md q-pr-md q-gutter-sm">
             <q-btn color="primary" icon="ios_share" round size="md" @click="shareTheBoard"/>
@@ -88,14 +88,14 @@
       <q-card>
         <q-tabs v-model="tab" active-color="primary" align="justify"
                 class="bg-grey-3 text-grey-7" dense indicator-color="primary">
-          <template v-for="(story, index) in this.room.stories" :key="index">
+          <template v-for="(story, index) in room.stories" :key="index">
             <div @click="selectStory(story)">
               <q-tab :disable=isStoryDisable(story) :label=story.storyName :name=story.storyName no-caps></q-tab>
             </div>
           </template>
         </q-tabs>
         <q-tab-panels v-model="tab" animated class="text-black">
-          <template v-for="(story, index) in this.room.stories" :key="index">
+          <template v-for="(story, index) in room.stories" :key="index">
             <q-tab-panel :name=story.storyName>
               <div class="row">
                 <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 q-pa-md">
@@ -105,7 +105,7 @@
                       <div v-if="!votingIsOpen" class="text-subtitle2">{{ calculateVotesAvg() }}</div>
                     </div>
                     <q-separator/>
-                    <div v-if="!votingIsOpen" class="col-12 q-pa-md">
+                    <div v-if="!isSmallScreenAndVotingOpen()" class="col-12 q-pa-md">
                       <div class="row">
                         <template v-for="(user, index) in room.users" :key="index">
                           <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm"
@@ -124,17 +124,17 @@
                     <div v-if="isCurrentUserAuthor()" class="col-12">
                       <div class="row text-center">
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
-                          <q-btn :disable="this.votingIsOpen" color="secondary" style="min-width: 120px"
+                          <q-btn :disable="votingIsOpen" color="secondary" style="min-width: 120px"
                                  @click="startVoting">Start voting
                           </q-btn>
                         </div>
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
-                          <q-btn :disable="!this.votingIsOpen" color="negative" style="min-width: 120px"
+                          <q-btn :disable="!votingIsOpen" color="negative" style="min-width: 120px"
                                  @click="finishVoting">Close voting
                           </q-btn>
                         </div>
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
-                          <q-btn :disable="this.votingIsOpen || index === this.room.stories.length - 1" class="col-12"
+                          <q-btn :disable="votingIsOpen || index === room.stories.length - 1" class="col-12"
                                  color="primary" style="min-width: 120px" @click="nextStory(index, true)">Next story
                           </q-btn>
                         </div>
@@ -240,7 +240,7 @@ export default defineComponent({
         }
       },
       selectStory(story) {
-        if (this.author === this.room.author && !this.votingIsOpen && !story.disabled) {
+        if (this.isCurrentUserAuthor() && !this.votingIsOpen && !story.disabled) {
           store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
         }
       },
@@ -360,7 +360,7 @@ export default defineComponent({
 
         if (this.room.stories.length === 1) {
           storyObject.disabled = false;
-          this.selectStory(this.room.stories[0]);
+          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.stories[0]["id"] + "/selected", {});
         }
 
       },
@@ -596,6 +596,9 @@ export default defineComponent({
         if (Screen.xl) {
           return "font-size: 60px;";
         }
+      },
+      isSmallScreenAndVotingOpen() {
+        return Screen.xs && this.votingIsOpen;
       },
       getHeightOfStoryCard(storyName) {
         let element = document.getElementById('storyCard' + storyName)
