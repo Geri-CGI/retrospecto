@@ -48,8 +48,8 @@
       </q-card>
     </div>
   </q-page>
-  <q-page v-else class="row q-pa-md content-start">
-    <div class="col-12 q-pa-md">
+  <q-page v-else class="row q-pa-md content-start justify-center">
+    <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
         <div class="row items-center">
           <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 self-start">
@@ -73,10 +73,11 @@
           </div>
         </div>
         <div class="row">
-          <div v-if="isCurrentUserAuthor()" class="col-12 full-width">
+          <div class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="inputStory" label="Add story:" outlined @keydown.enter="createStory"/>
+                <q-input v-model="inputStory" :disable="!isCurrentUserAuthor()" label="Add story:" outlined
+                         @keydown.enter="createStory"/>
               </div>
             </div>
           </div>
@@ -84,7 +85,7 @@
       </q-card>
     </div>
 
-    <div class="col-12 q-pa-md">
+    <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
         <q-tabs v-model="tab" active-color="primary" align="justify"
                 class="bg-grey-3 text-grey-7" dense indicator-color="primary">
