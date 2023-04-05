@@ -51,10 +51,10 @@
   <q-page v-else class="row q-pa-md content-start">
     <div class="col-12 q-pa-md">
       <q-card>
-        <div class="row">
-          <div class="col-2">
+        <div class="row items-center">
+          <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 elf-start">
             <template v-for="(user, index) in room.users" :key="index">
-              <q-avatar :style="`left: ${index * 25}px`" class="overlapping" color="primary" size="lg"
+              <q-avatar :style="`left: ${index * 25}px`" class="overlapping" color="primary" size="xl"
                         text-color="white">
                 {{ getFirstLetter(user.username) }}
                 <q-tooltip>
@@ -63,16 +63,17 @@
               </q-avatar>
             </template>
           </div>
-          <div class="col-8 text-bold text-primary text-center" style="font-size:20px">
+          <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 text-bold text-primary text-center"
+               style="font-size:20px">
             Room ID: {{ this.room.id }}
           </div>
-          <div class="col-2 text-right">
+          <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 text-right q-pt-md q-pr-md q-gutter-sm">
             <q-btn color="primary" icon="ios_share" round size="md" @click="shareTheBoard"/>
             <q-btn color="red-13" icon="logout" round size="md" @click="exit"/>
           </div>
         </div>
         <div class="row">
-          <div v-if="this.room.author === this.author" class="col-12 full-width">
+          <div v-if="isCurrentUserAuthor()" class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
                 <q-input v-model="inputStory" label="Add story:" outlined @keydown.enter="createStory"/>
@@ -98,16 +99,13 @@
             <q-tab-panel :name=story.storyName>
               <div class="row">
                 <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 q-pa-md">
-                  <q-card id="storyCard">
+                  <q-card :id="'storyCard'+story.storyName">
                     <div class="col-12 q-pa-md">
-                      <div v-if="!votingIsOpen" class="text-h6 text-primary text-bold">{{ story.storyName }}</div>
-                      <div v-if="votingIsOpen" class="text-h6 text-primary text-bold">
-                        {{ this.room.selectedStory.storyName }}
-                      </div>
+                      <div class="text-h6 text-primary text-bold">{{ story.storyName }}</div>
                       <div v-if="!votingIsOpen" class="text-subtitle2">{{ calculateVotesAvg() }}</div>
                     </div>
                     <q-separator/>
-                    <div class="col-12 q-pa-md">
+                    <div v-if="!votingIsOpen" class="col-12 q-pa-md">
                       <div class="row">
                         <template v-for="(user, index) in room.users" :key="index">
                           <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm"
@@ -123,7 +121,7 @@
                       </div>
                     </div>
                     <q-separator/>
-                    <div v-if="this.room.selectedStory != null && this.author === this.room.author" class="col-12">
+                    <div v-if="isCurrentUserAuthor()" class="col-12">
                       <div class="row text-center">
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
                           <q-btn :disable="this.votingIsOpen" color="secondary" style="min-width: 120px"
@@ -146,7 +144,7 @@
                 </div>
                 <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 q-pa-md">
                   <q-card>
-                    <div :style="setMinimumHeight()" class="row">
+                    <div :id="'storyButtons'+story.storyName" :style="setMinimumHeight(story.storyName)" class="row">
                       <template v-for="(option, index) in voteOptions.slice(0, 8)" v-bind:key="index">
                         <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
                           <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
@@ -599,23 +597,26 @@ export default defineComponent({
           return "font-size: 60px;";
         }
       },
-      getHeightOfStoryCard() {
-        let element = document.getElementById('storyCard')
+      getHeightOfStoryCard(storyName) {
+        let element = document.getElementById('storyCard' + storyName)
         console.log(element)
         if (element) {
-          return document.getElementById('storyCard').getBoundingClientRect().height
+          return element.getBoundingClientRect().height
         } else {
           return '310'
         }
       },
-      setMinimumHeight() {
-        return 'min-height: ' + this.getHeightOfStoryCard() + 'px'
+      setMinimumHeight(storyName) {
+        return 'min-height: ' + this.getHeightOfStoryCard(storyName) + 'px'
       },
       parseWSResponseBody(body) {
         body = body.substring(body.indexOf("body") + 4);
         body = body.substring(body.indexOf("{"));
         body = body.substring(0, body.indexOf("statusCode") - 2);
         return body;
+      },
+      isCurrentUserAuthor() {
+        return this.username === this.room.author;
       }
     }
 })
