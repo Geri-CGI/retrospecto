@@ -11,7 +11,8 @@ export const stompClientStore = defineStore('stompClientStore', {
     boardId: null,
     pokerUsername: null,
     pokerAuthor: null,
-    pokerRoomId: null
+    pokerRoomId: null,
+    pokerSessionId: null
   }),
 
   getters: {
@@ -42,11 +43,14 @@ export const stompClientStore = defineStore('stompClientStore', {
     getPokerAuthor(state) {
       return state.pokerAuthor
     },
+    getPokerSessionId(state) {
+      return state.pokerSessionId
+    }
   },
 
   actions: {
     connect() {
-      let url = "https://www.retrospecto.cloud/ws";
+      let url = "https://retrospecto.cloud/ws";
       let socket = new SockJs(url);
       this.stompClient = Stomp.over(socket);
       this.stompClient.connect({}, this.onConnected, this.onError, this.onClose);
@@ -62,14 +66,20 @@ export const stompClientStore = defineStore('stompClientStore', {
       this.stompClientConnected = false
     },
     setUsernameAuthorBoardId(username, author, boardId) {
-      this.username = username
-      this.boardId = boardId
-      this.author = author
+      this.username = username;
+      this.boardId = boardId;
+      this.author = author;
     },
     setPokerUsernameAuthorRoomId(pokerUsername, pokerAuthor, pokerRoomId) {
-      this.pokerUsername = pokerUsername
-      this.pokerAuthor = pokerAuthor
-      this.pokerRoomId = pokerRoomId
+      this.pokerUsername = pokerUsername;
+      this.pokerAuthor = pokerAuthor;
+      this.pokerRoomId = pokerRoomId;
+    },
+    generatePokerSessionId() {
+      this.pokerSessionId = Math.floor(Math.random() * (999999 - 100000)) + 100000;
+    },
+    setPokerRoomIdNull() {
+      this.pokerRoomId = null;
     }
   }
 })

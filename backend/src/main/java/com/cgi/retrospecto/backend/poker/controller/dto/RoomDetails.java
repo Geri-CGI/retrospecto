@@ -1,19 +1,17 @@
 package com.cgi.retrospecto.backend.poker.controller.dto;
 
 import com.cgi.retrospecto.backend.poker.domain.Story;
+import com.cgi.retrospecto.backend.poker.domain.User;
 
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class RoomDetails {
     private int id;
-    private String author;
+    private User author;
     private List<Story> stories;
     private Integer selectedStoryId;
-    private List<JoinedUserDetails> users = new ArrayList<>();
+    private List<UserDetails> users = new ArrayList<>();
 
     public RoomDetails() {
     }
@@ -26,11 +24,11 @@ public class RoomDetails {
         this.id = id;
     }
 
-    public String getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
     public Integer getSelectedStoryId() {
@@ -41,11 +39,11 @@ public class RoomDetails {
         this.selectedStoryId = selectedStoryId;
     }
 
-    public List<JoinedUserDetails> getUsers() {
+    public List<UserDetails> getUsers() {
         return users;
     }
 
-    public void setUsers(List<JoinedUserDetails> users) {
+    public void setUsers(List<UserDetails> users) {
         this.users = users;
     }
 

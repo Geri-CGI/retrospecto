@@ -1,10 +1,10 @@
 <template>
-  <q-page v-if="spinnerVisible" class="row justify-center items-center content-center">
+  <q-page v-if="localFlags.spinnerVisible" class="row justify-center items-center content-center">
     <div>
       <q-spinner :thickness="10" color="primary" size="5em"/>
     </div>
   </q-page>
-  <q-page v-if="joinAndCreateButtonVisible" class="q-pa-md flex flex-center">
+  <q-page v-if="localFlags.showCreateAndJoinRoomComponents" class="q-pa-md flex flex-center">
     <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 col-xl-6" style="padding: 30px">
       <q-card>
         <q-card-section>
@@ -13,7 +13,7 @@
         <q-card-actions>
           <div class="row justify-center items-center">
             <div class="col-12">
-              <q-input v-model="author" :error="createUsernameValid" bg-color="white" error-message="Username required!"
+              <q-input v-model="localVariables.author" :error="localFlags.createUsernameInvalid" bg-color="white" error-message="Username required!"
                        label="Username" style="padding: 30px" type="text" @keydown.enter="createRoom"/>
             </div>
             <div class="col-12 text-center">
@@ -32,12 +32,12 @@
         <q-card-actions class="justify-center">
           <div class="justify-center">
             <div class="col-12" style="padding: 5px">
-              <q-input v-model="username" :error="joinUsernameValid" :error-message="usernameErrorMessage"
+              <q-input v-model="localVariables.username" :error="localFlags.joinRoomUsernameInvalid" :error-message="localFlags.joinRoomUsernameErrorMessage"
                        bg-color="white" label="Username"
                        type="text"/>
             </div>
             <div class="col-12" style="padding: 5px">
-              <q-input v-model="roomId" :error="roomIdValid" :error-message="roomIdErrorMessage"
+              <q-input v-model="localVariables.roomId" :error="localFlags.joinRoomIdInvalid" :error-message="localFlags.joinRoomIdRequiredErrorMessage"
                        bg-color="white" label="Room ID" type="text"/>
             </div>
             <div class="col-12 text-center" style="padding: 10px">
@@ -74,10 +74,22 @@
         </div>
         <div class="row">
           <div class="col-12 full-width">
+          <div class="col-2">
+            <div class="row">
+              <div class="col-10 text-right">
+                <q-btn color="primary" icon="ios_share" round size="sm" @click="shareTheBoard"/>
+              </div>
+              <div class="col-2">
+                <q-btn color="red-13" icon="logout" round size="sm" @click="exit"/>
+              </div>
+            </div>
+          </div>
+          <div v-if="isUserTheAuthor()" class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="inputStory" :disable="!isCurrentUserAuthor()" label="Add story:" outlined
+                <q-input v-model="inputStory" :disable="!isUserTheAuthor()" label="Add story:" outlined
                          @keydown.enter="createStory"/>
+                <q-input v-model="localVariables.inputStory" label="Add story:" outlined @keydown.enter="createStory"/>
               </div>
             </div>
           </div>
@@ -87,7 +99,7 @@
 
     <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
-        <q-tabs v-model="tab" active-color="primary" align="justify"
+        <q-tabs v-model="localVariables.tab" active-color="primary" align="justify"
                 class="bg-grey-3 text-grey-7" dense indicator-color="primary">
           <template v-for="(story, index) in room.stories" :key="index">
             <div @click="selectStory(story)">
@@ -95,7 +107,7 @@
             </div>
           </template>
         </q-tabs>
-        <q-tab-panels v-model="tab" animated class="text-black">
+        <q-tab-panels v-model="localVariables.tab" animated class="text-black">
           <template v-for="(story, index) in room.stories" :key="index">
             <q-tab-panel :name=story.storyName>
               <div class="row">
@@ -104,7 +116,7 @@
                     <div class="row q-pa-md items-center">
                       <div class="col-xl-7 col-lg-7 col-md-7 col-sm-12 col-xs-12">
                         <div class="text-h5 text-primary text-bold q-pa-md">Story name: {{ story.storyName }}</div>
-                        <div v-if="!votingIsOpen" class="text-subtitle1 text-primary text-bold q-pa-md">
+                        <div v-if="!localFlags.votingIsOpen" class="text-subtitle1 text-primary text-bold q-pa-md">
                           {{ calculateVotesAvg() }}
                         </div>
                       </div>
@@ -206,192 +218,300 @@
 </template>
 
 <script>
-import {defineComponent} from 'vue'
-import axios from 'axios'
-import {stompClientStore} from 'stores/stomp'
-import {copyToClipboard, Notify, Screen} from 'quasar'
+import {defineComponent, watch} from 'vue';
+import axios from 'axios';
+import {stompClientStore} from 'stores/stomp';
+import {copyToClipboard, Notify, Screen} from 'quasar';
+import {storeToRefs} from "pinia";
+import { json } from 'body-parser';
 
 const store = stompClientStore()
+const {stompClientConnected} = storeToRefs(store)
 
 export default defineComponent({
   name: 'PokerPage',
   data() {
     return {
-      author: null,
-      inputStory: null,
-      joinAndCreateButtonVisible: true,
-      room: null,
-      username: null,
-      createUsernameValid: false,
-      joinUsernameValid: false,
-      roomId: null,
-      roomIdValid: false,
-      roomIdErrorMessage: 'Room ID required!',
-      votingIsOpen: false,
-      currentVoting: null,
-      showVoteOptions: false,
-      chosenOption: null,
-      subscriptions: [],
-      spinnerVisible: true,
-      usernameErrorMessage: 'Username already in use!',
-      frontendUrl: 'https://www.retrospecto.cloud',
+      localVariables: {
+        author: null,
+        username: null,
+        inputStory: null,
+        roomId: null,
+        chosenOption: null,
+        subscriptions: [],
+        voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
+        tab: null,
+      },
+      room: {
+        id: null,
+        author: {
+          username: null,
+          sessionId: null
+        },
+        stories: [
+          {
+            id: null,
+            storyName: null,
+            disabled: null,
+            voteResults: [
+              {
+                id: null,
+                locked: null,
+                votes: [
+                  {
+                    user: {
+                      username: null,
+                      sessionId: null,
+                    },
+                    value: null,
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        selectedStoryId: null,
+        users: [
+          {
+            username: null,
+          }
+        ],
+        selectedStory: {
+            id: null,
+            storyName: null,
+            disabled: null,
+            voteResults: [
+              {
+                id: null,
+                locked: null,
+                votes: [
+                  {
+                    user: {
+                      username: null,
+                      sessionId: null,
+                    },
+                    value: null,
+                  }
+                ]
+              }
+            ]
+          }
+      },
+      localFlags: {
+        createUsernameInvalid: false,
+        joinRoomUsernameInvalid: false,
+        joinRoomIdInvalid: false,
+        joinRoomIdRequiredErrorMessage: 'Room ID required!',
+        joinRoomUsernameErrorMessage: 'Username already in use!',
+        spinnerVisible: true,
+        showCreateAndJoinRoomComponents: true,
+        votingIsOpen: false,
+        showVoteOptions: false,
+      },
+      frontendUrl: 'https://retrospecto.cloud',
       backendUrls: {
         pathParts: {
           poker: '/poker',
           room: '/room',
         },
-        baseUrl: 'https://www.retrospecto.cloud',
+        baseUrl: 'https://retrospecto.cloud',
         baseUrlPoker: function () {
           return this.baseUrl + this.pathParts.poker
         },
         createRoom: function () {
-          return this.baseUrlPoker() + this.pathParts.room + "/"
+          return this.baseUrlPoker() + this.pathParts.room
         },
         getRoom: function () {
           return this.baseUrlPoker() + this.pathParts.room + "/"
         },
       },
-      voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
-      tab: 'test',
     }
   },
   created() {
     window.addEventListener("resize", this.getScreenSizeForButton);
     setTimeout(this.createPage, 2000);
+    watch(stompClientConnected, () => {
+      if (!stompClientConnected) {
+        this.exit();
+      }
+    });
+    window.addEventListener("beforeunload", this.exit);
   },
   methods:
     {
+      setStateToDefault() {
+        let localFlags = {
+          createUsernameInvalid: false,
+          joinRoomUsernameInvalid: false,
+          joinRoomIdInvalid: false,
+          joinRoomIdRequiredErrorMessage: 'Room ID required!',
+          joinRoomUsernameErrorMessage: 'Username already in use!',
+          spinnerVisible: true,
+          showCreateAndJoinRoomComponents: true,
+          votingIsOpen: false,
+          showVoteOptions: false,
+       };
+
+       this.localFlags = localFlags;
+
+       let localVariables = {
+          author: localStorage.getItem('poker-author') !== null ? JSON.parse(localStorage.getItem('poker-author')).username : null,
+          username: localStorage.getItem('poker-username'),
+          inputStory: null,
+          roomId: this.localVariables.roomId,
+          chosenOption: null,
+          subscriptions: [],
+          voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
+          tab: null,
+        };
+
+        this.localVariables = localVariables;
+        this.room = null;
+
+
+
+      },
       getFirstLetter(username) {
         return Array.from(username)[0];
       },
       vote(voteValue) {
-        this.chosenOption = voteValue;
+        this.localVariables.chosenOption = voteValue;
         let vote = {
-          username: this.username,
+          user: {
+            username: this.localVariables.username,
+            sessionId: store.getPokerSessionId
+          },
           value: voteValue,
         };
 
         store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote", {}, JSON.stringify(vote));
-        this.showVoteOptions = false;
+        this.localFlags.showVoteOptions = false;
       },
       createStory() {
-        if (this.inputStory) {
-          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/add", {}, this.inputStory);
-          this.inputStory = null;
+        if (this.localVariables.inputStory) {
+          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/add", {}, this.localVariables.inputStory);
+          this.localVariables.inputStory = null;
         }
       },
       selectStory(story) {
-        if (this.isCurrentUserAuthor() && !this.votingIsOpen && !story.disabled) {
+        if (this.isUserTheAuthor() && !this.localFlags.votingIsOpen && !story.disabled) {
           store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
         }
       },
       nextStory(index) {
-        if (this.author === this.room.author && !this.votingIsOpen) {
+        if (this.isUserTheAuthor() && !this.localFlags.votingIsOpen) {
           let story = this.room.stories[index + 1];
           store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
         }
       },
       createRoom() {
-        if (!this.author) {
-          this.createUsernameValid = true
+        if (!this.localVariables.author) {
+          this.localFlags.createUsernameInvalid = true;
         } else {
           this.room = null;
-          var config = {
+
+          store.generatePokerSessionId();
+
+          let config = {
             headers: {
-              'Content-Type': 'text/plain'
+              'Content-Type': 'application/json',
             }
           };
-          axios.post(this.backendUrls.createRoom(), this.author, config)
+
+          let user = {
+            username: this.localVariables.author,
+            sessionId: store.getPokerSessionId
+          }
+
+          axios.post(this.backendUrls.createRoom(), JSON.stringify(user), config)
             .then(response => {
               if (response.data != null) {
                 this.room = response.data;
-                this.joinAndCreateButtonVisible = false;
-                this.username = this.author;
+                this.room.author.sessionId = store.getPokerSessionId;
+                this.localFlags.showCreateAndJoinRoomComponents = false;
+                this.localVariables.username = this.localVariables.author;
                 this.subscribe();
-                localStorage.setItem('poker-author', this.author);
+
+                localStorage.setItem('poker-author', JSON.stringify({username: this.localVariables.author, sessionId: store.getPokerSessionId}));
+                localStorage.setItem('poker-username', this.localVariables.author);
               }
+            })
+            .catch(error => {
+              console.log("Create room error: " + JSON.stringify(error));
             });
         }
       },
       joinRoom() {
-        if (!this.roomId && !this.username) {
-          this.joinUsernameValid = true;
-          this.roomIdValid = true;
-          this.roomIdErrorMessage = "Room ID required!";
-          this.usernameErrorMessage = "Username required!";
+        if (!this.localVariables.roomId) {
+          this.localFlags.joinRoomIdInvalid = true;
+        } else {
+          this.localFlags.joinRoomIdInvalid = false;
         }
-        if (!this.username && this.roomId) {
-          this.joinUsernameValid = true;
-          this.roomIdValid = false;
-          this.usernameErrorMessage = "Username required!";
-        }
-        if (this.username && !this.roomId) {
-          this.roomIdValid = true;
-          this.roomIdErrorMessage = "Room ID required!";
-          this.joinUsernameValid = false;
-        }
-        if (this.roomId && this.username) {
-          this.joinUsernameValid = false;
-          this.roomIdValid = false;
 
-          axios.get(this.backendUrls.getRoom() + this.roomId + '/username/' + this.username)
+        if (!this.localVariables.username) {
+          this.localFlags.joinRoomUsernameInvalid = true;
+          this.localFlags.joinRoomUsernameErrorMessage = "Username required!";
+        } else {
+          this.localFlags.joinRoomUsernameInvalid = false;
+        }
+
+        if (this.localVariables.roomId && this.localVariables.username) {
+          this.localFlags.joinRoomIdInvalid = false;
+          this.localFlags.joinRoomUsernameInvalid = false;
+
+          axios.get(this.backendUrls.getRoom() + this.localVariables.roomId)
             .then(response => {
               if (response.data != null) {
                 this.room = response.data;
-                this.joinAndCreateButtonVisible = false;
+                this.localFlags.showCreateAndJoinRoomComponents = false;
                 this.subscribe();
 
                 for (let i = 0; i < this.room.stories.length; i++) {
                   if (this.room.stories[i].id === this.room.selectedStoryId) {
                     this.room.selectedStory = this.room.stories[i];
-                    this.tab = this.room.selectedStory.storyName;
+                    this.localVariables.tab = this.room.selectedStory.storyName;
                   }
                 }
 
-                localStorage.removeItem("poker-author");
-                store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, this.username);
+                localStorage.setItem('poker-username', this.localVariables.username);
+                this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
+
+                let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
+                store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
+
+                store.generatePokerSessionId();
               }
             })
             .catch(error => {
-              this.roomId = null;
+              this.localVariables.roomId = null;
               if (error.response.status === 409) {
-                this.joinUsernameValid = true;
-                this.usernameErrorMessage = 'Username already in use!';
+                this.localFlags.joinRoomUsernameInvalid = true;
+                this.localFlags.joinRoomUsernameErrorMessage = 'Username already in use!';
               } else {
-                this.roomIdValid = true;
+                this.localFlags.joinRoomIdInvalid = true;
               }
-            })
+            });
         }
       },
       exit() {
-        this.subscriptions.forEach(function (subscription) {
+        this.localVariables.subscriptions.forEach(function (subscription) {
           subscription.unsubscribe()
         })
-        store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/remove", {}, this.username);
-        this.room = null;
-        this.joinAndCreateButtonVisible = true;
-        this.inputStory = null;
-        this.joinAndCreateButtonVisible = true;
-        this.room = null;
-        this.createUsernameValid = false;
-        this.joinUsernameValid = false;
-        this.roomIdValid = false;
-        this.votingIsOpen = false;
-        this.currentVoting = null;
-        this.showVoteOptions = false;
-        this.chosenOption = null;
-        this.subscriptions = [];
-        this.roomId = null;
+        store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/remove", {}, this.localVariables.username);
+        store.setPokerRoomIdNull();
+
+        this.setStateToDefault();
+        setTimeout(() => { this.localFlags.spinnerVisible = false; }, 1000);
       },
       subscribe() {
-        localStorage.setItem('poker-username', this.username)
         let prefixWithRoomId = '/topic/poker/room/' + this.room.id;
-        this.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/story/add', this.storyAddMessageReceived));
-        this.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/selected-story', this.storySelectedByAuthorMessageReceived));
-        this.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/vote/open-close', this.openVotingMessageReceived));
-        this.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/vote', this.votesMessageReceived));
-        this.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/user/joined', this.userJoinedMessageReceived));
-        this.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/user/removed', this.userRemovedMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/story/add', this.storyAddMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/selected-story', this.storySelectedByAuthorMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/vote/open-close', this.openVotingMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/vote', this.votesMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/user/joined', this.userJoinedMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/user/removed', this.userRemovedMessageReceived));
+        store.setPokerUsernameAuthorRoomId(this.localVariables.username, this.room.author.username, this.room.id);
       },
       storyAddMessageReceived(payload) {
         let storyString = this.parseWSResponseBody(payload.body);
@@ -412,7 +532,7 @@ export default defineComponent({
           if (this.room.stories[i]["id"] === selectedStory["storyId"]) {
             this.room.stories[i].disabled = selectedStory["disabled"];
             this.room.selectedStory = this.room.stories[i];
-            this.tab = this.room.stories[i].storyName;
+            this.localVariables.tab = this.room.stories[i].storyName;
 
             this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
           }
@@ -421,13 +541,14 @@ export default defineComponent({
       openVotingMessageReceived(payload) {
         let votingIsOpenString = this.parseWSResponseBody(payload.body);
         let votingIsOpen = JSON.parse(votingIsOpenString);
-        this.votingIsOpen = votingIsOpen["open"];
+        this.localFlags.votingIsOpen = votingIsOpen["open"];
 
-        if (!this.votingIsOpen) {
-          this.chosenOption = null;
+
+        if (!this.localFlags.votingIsOpen) {
+          this.localVariables.chosenOption = null;
         }
 
-        this.showVoteOptions = this.votingIsOpen;
+        this.localFlags.showVoteOptions = this.localFlags.votingIsOpen;
 
         let voteResult = votingIsOpen["voteResult"];
 
@@ -483,7 +604,7 @@ export default defineComponent({
         let username = this.parseWSResponseBody(payload.body);
         let usernameObj = JSON.parse(username);
 
-        if (usernameObj["username"] !== this.username) {
+        if (usernameObj["username"] !== this.localVariables.username) {
           let newArr = [];
           for (let i = 0; i < this.room.users.length; i++) {
             newArr.push(this.room.users[i].username);
@@ -518,14 +639,6 @@ export default defineComponent({
       finishVoting() {
         store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/close", {});
       },
-      getRoom() {
-        axios.get(this.backendUrls.getRoom() + this.roomId)
-          .then(response => {
-            if (response.data != null) {
-              this.room = response.data;
-            }
-          });
-      },
       calculateVotesAvg() {
         if (this.room.currentVoteResult && this.room.currentVoteResult.votes) {
           let total = 0;
@@ -542,7 +655,7 @@ export default defineComponent({
           if (this.room.currentVoteResult && this.room.currentVoteResult.votes) {
             let votes = this.room.currentVoteResult.votes;
             for (let i = 0; i < votes.length; i++) {
-              if (votes[i].username === user.username) {
+              if (votes[i].user.username === user.username) {
                 return votes[i].value;
               }
             }
@@ -551,7 +664,7 @@ export default defineComponent({
         return "?";
       },
       getLastVoteResult(story) {
-        if (story !== null && story.id !== null) {
+        if (story && story !== null && story.id !== null) {
           let currStory = story;
           if (currStory !== null && currStory.voteResults) {
             if (currStory.voteResults.length > 0) {
@@ -604,22 +717,63 @@ export default defineComponent({
         if (username.length > 7) {
           return 'text-blue text-weight-bold text-h6'
         }
+        return this.localVariables.chosenOption === voteValue || !this.localFlags.votingIsOpen ? "green" : "red";
       },
       isStoryDisable(story) {
         return story.disabled;
       },
       createPage() {
-        if (this.$route.params.roomId != null) {
-          this.roomId = this.$route.params.roomId;
+        if (store.getStompClientStatus && store.getPokerRoomId) {
+            this.localVariables.roomId = store.getPokerRoomId;
+            this.localVariables.username = store.getPokerUsername;
+            this.localVariables.author = store.getPokerAuthor;
+            axios.get(this.backendUrls.getRoom() + this.localVariables.roomId)
+            .then(response => {
+              if (response.data != null) {
+                this.room = response.data;
+                this.localFlags.showCreateAndJoinRoomComponents = false;
+                this.subscribe();
+
+                for (let i = 0; i < this.room.stories.length; i++) {
+                  if (this.room.stories[i].id === this.room.selectedStoryId) {
+                    this.room.selectedStory = this.room.stories[i];
+                    this.localVariables.tab = this.room.selectedStory.storyName;
+                  }
+                }
+
+                localStorage.setItem('poker-username', this.localVariables.username);
+                this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
+
+                let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
+                store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
+                //store.generatePokerSessionId();
+              }
+            })
+            .catch(error => {
+              this.localVariables.roomId = null;
+              if (error.response.status === 409) {
+                this.localFlags.joinRoomUsernameInvalid = true;
+                this.localFlags.joinRoomUsernameErrorMessage = 'Username already in use!';
+              } else {
+                this.localFlags.joinRoomIdInvalid = true;
+              }
+            })
+        } else {
+          if (this.$route.params.roomId != null) {
+            this.localVariables.roomId = this.$route.params.roomId;
+          }
+          if (localStorage.getItem("poker-username")) {
+           this.localVariables.username = localStorage.getItem("poker-username");
+          }
+          if (localStorage.getItem("poker-author")) {
+            this.localVariables.author = JSON.parse(localStorage.getItem("poker-author")).username;
+          }
         }
-        if (localStorage.getItem("poker-username")) {
-          this.username = localStorage.getItem("poker-username");
-        }
-        if (localStorage.getItem("poker-author")) {
-          this.author = localStorage.getItem("poker-author");
-          localStorage.removeItem("poker-username");
-        }
-        this.spinnerVisible = false;
+
+        this.localFlags.spinnerVisible = false;
+      },
+      isUserTheAuthor() {
+        return this.room.author.username === this.localVariables.author && this.room.author.sessionId === store.getPokerSessionId;
       },
       getScreenSizeForButton() {
         if (Screen.xs) {

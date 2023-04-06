@@ -1,18 +1,18 @@
 package com.cgi.retrospecto.backend.poker.domain;
 
 public class Vote {
-    private String username;
+    private User user;
     private int value;
 
     public Vote() {
     }
 
-    public String getUsername() {
-        return username;
+    public User getUser() {
+        return user;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public int getValue() {
@@ -26,7 +26,7 @@ public class Vote {
     @Override
     public String toString() {
         return "PokerVote{" +
-                "username='" + username + '\'' +
+                "user='" + user + '\'' +
                 ", value=" + value +
                 '}';
     }
