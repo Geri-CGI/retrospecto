@@ -74,22 +74,10 @@
         </div>
         <div class="row">
           <div class="col-12 full-width">
-          <div class="col-2">
-            <div class="row">
-              <div class="col-10 text-right">
-                <q-btn color="primary" icon="ios_share" round size="sm" @click="shareTheBoard"/>
-              </div>
-              <div class="col-2">
-                <q-btn color="red-13" icon="logout" round size="sm" @click="exit"/>
-              </div>
-            </div>
-          </div>
-          <div v-if="isUserTheAuthor()" class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="inputStory" :disable="!isUserTheAuthor()" label="Add story:" outlined
+                <q-input v-model="localVariables.inputStory" :disable="!isCurrentUserAuthor()" label="Add story:" outlined
                          @keydown.enter="createStory"/>
-                <q-input v-model="localVariables.inputStory" label="Add story:" outlined @keydown.enter="createStory"/>
               </div>
             </div>
           </div>
@@ -194,10 +182,10 @@
                       <div class="row text-center">
                         <div class="col-12 q-pa-md">
                           <div :id="'storyButtons'+story.storyName" class="row">
-                            <template v-for="(option, index) in voteOptions.slice(0, 8)" v-bind:key="index">
+                            <template v-for="(option, index) in localVariables.voteOptions.slice(0, 8)" v-bind:key="index">
                               <div
                                 class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
-                                <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
+                                <q-btn :color="getVoteColor(option)" :disable=!localFlags.showVoteOptions :label="option"
                                        :style="getScreenSizeForButton()"
                                        class="full-height full-width" @click="vote(option)"/>
                               </div>
@@ -394,12 +382,12 @@ export default defineComponent({
         }
       },
       selectStory(story) {
-        if (this.isUserTheAuthor() && !this.localFlags.votingIsOpen && !story.disabled) {
+        if (this.isCurrentUserAuthor() && !this.localFlags.votingIsOpen && !story.disabled) {
           store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
         }
       },
       nextStory(index) {
-        if (this.isUserTheAuthor() && !this.localFlags.votingIsOpen) {
+        if (this.isCurrentUserAuthor() && !this.localFlags.votingIsOpen) {
           let story = this.room.stories[index + 1];
           store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
         }
@@ -543,7 +531,6 @@ export default defineComponent({
         let votingIsOpen = JSON.parse(votingIsOpenString);
         this.localFlags.votingIsOpen = votingIsOpen["open"];
 
-
         if (!this.localFlags.votingIsOpen) {
           this.localVariables.chosenOption = null;
         }
@@ -579,7 +566,6 @@ export default defineComponent({
             }
           }
         }
-
       },
       votesMessageReceived(payload) {
         let refreshedCurrentVoteResult = this.parseWSResponseBody(payload.body);
@@ -601,10 +587,10 @@ export default defineComponent({
         }
       },
       userJoinedMessageReceived(payload) {
-        let username = this.parseWSResponseBody(payload.body);
-        let usernameObj = JSON.parse(username);
+        let user = this.parseWSResponseBody(payload.body);
+        let userObj = JSON.parse(user);
 
-        if (usernameObj["username"] !== this.localVariables.username) {
+        if (userObj["username"] !== this.localVariables.username) {
           let newArr = [];
           for (let i = 0; i < this.room.users.length; i++) {
             newArr.push(this.room.users[i].username);
@@ -620,13 +606,13 @@ export default defineComponent({
         }
       },
       userRemovedMessageReceived(payload) {
-        let username = this.parseWSResponseBody(payload.body);
-        let usernameObj = JSON.parse(username);
+        let user = this.parseWSResponseBody(payload.body);
+        let userObj = JSON.parse(user);
 
         let arr = [];
 
         for (let i = 0; i < this.room.users.length; i++) {
-          if (this.room.users[i].username !== usernameObj["username"]) {
+          if (this.room.users[i].username !== userObj["username"]) {
             arr.push(this.room.users[i]);
           }
         }
@@ -705,7 +691,7 @@ export default defineComponent({
           })
       },
       getVoteColor(voteValue) {
-        return this.chosenOption === voteValue || !this.votingIsOpen ? "red" : "green";
+        return this.localVariables.chosenOption === voteValue || !this.localFlags.votingIsOpen ? "red" : "green";
       },
       getUserNameStyle(username) {
         if (username.length <= 4) {
@@ -746,7 +732,6 @@ export default defineComponent({
 
                 let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
                 store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
-                //store.generatePokerSessionId();
               }
             })
             .catch(error => {
@@ -771,9 +756,6 @@ export default defineComponent({
         }
 
         this.localFlags.spinnerVisible = false;
-      },
-      isUserTheAuthor() {
-        return this.room.author.username === this.localVariables.author && this.room.author.sessionId === store.getPokerSessionId;
       },
       getScreenSizeForButton() {
         if (Screen.xs) {
@@ -810,7 +792,7 @@ export default defineComponent({
         }
       },
       isSmallScreenAndVotingOpen() {
-        return Screen.xs && this.votingIsOpen;
+        return Screen.xs && this.localFlags.votingIsOpen;
       },
       isSmallOrMediumScreen() {
         return Screen.xs || Screen.sm
@@ -819,19 +801,19 @@ export default defineComponent({
         switch (button) {
           case 'start':
             if (this.isCurrentUserAuthor()) {
-              return this.votingIsOpen
+              return this.localFlags.votingIsOpen
             } else {
               return true
             }
           case 'stop':
             if (this.isCurrentUserAuthor()) {
-              return !this.votingIsOpen
+              return !this.localFlags.votingIsOpen
             } else {
               return true
             }
           case 'next':
             if (this.isCurrentUserAuthor()) {
-              return this.votingIsOpen || index === this.room.stories.length - 1
+              return this.localFlags.votingIsOpen || index === this.room.stories.length - 1
             } else {
               return true
             }
@@ -839,7 +821,6 @@ export default defineComponent({
       },
       getHeightOfStoryCard(storyName) {
         let element = document.getElementById('storyCard' + storyName)
-        console.log(element)
         if (element) {
           return element.getBoundingClientRect().height
         } else {
@@ -856,7 +837,7 @@ export default defineComponent({
         return body;
       },
       isCurrentUserAuthor() {
-        return this.username === this.room.author;
+        return this.room.author.username === this.localVariables.author && this.room.author.sessionId === store.getPokerSessionId;
       }
     }
 })
