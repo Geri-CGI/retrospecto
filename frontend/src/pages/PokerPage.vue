@@ -13,7 +13,8 @@
         <q-card-actions>
           <div class="row justify-center items-center">
             <div class="col-12">
-              <q-input v-model="localVariables.author" :error="localFlags.createUsernameInvalid" bg-color="white" error-message="Username required!"
+              <q-input v-model="localVariables.author" :error="localFlags.createUsernameInvalid" bg-color="white"
+                       error-message="Username required!"
                        label="Username" style="padding: 30px" type="text" @keydown.enter="createRoom"/>
             </div>
             <div class="col-12 text-center">
@@ -32,12 +33,14 @@
         <q-card-actions class="justify-center">
           <div class="justify-center">
             <div class="col-12" style="padding: 5px">
-              <q-input v-model="localVariables.username" :error="localFlags.joinRoomUsernameInvalid" :error-message="localFlags.joinRoomUsernameErrorMessage"
+              <q-input v-model="localVariables.username" :error="localFlags.joinRoomUsernameInvalid"
+                       :error-message="localFlags.joinRoomUsernameErrorMessage"
                        bg-color="white" label="Username"
                        type="text"/>
             </div>
             <div class="col-12" style="padding: 5px">
-              <q-input v-model="localVariables.roomId" :error="localFlags.joinRoomIdInvalid" :error-message="localFlags.joinRoomIdRequiredErrorMessage"
+              <q-input v-model="localVariables.roomId" :error="localFlags.joinRoomIdInvalid"
+                       :error-message="localFlags.joinRoomIdRequiredErrorMessage"
                        bg-color="white" label="Room ID" type="text"/>
             </div>
             <div class="col-12 text-center" style="padding: 10px">
@@ -76,7 +79,8 @@
           <div class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="localVariables.inputStory" :disable="!isCurrentUserAuthor()" label="Add story:" outlined
+                <q-input v-model="localVariables.inputStory" :disable="!isCurrentUserAuthor()" label="Add story:"
+                         outlined
                          @keydown.enter="createStory"/>
               </div>
             </div>
@@ -108,36 +112,9 @@
                           {{ calculateVotesAvg() }}
                         </div>
                       </div>
-                      <q-separator v-if="!isSmallOrMediumScreen()" inset vertical></q-separator>
-                      <div v-if="!isSmallOrMediumScreen()"
-                           class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 text-right">
-                        <div class="row">
-                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                            <q-btn :disable="isButtonEnabled('start', index)" :size="getButtonSize()"
-                                   color="secondary" icon="play_arrow" round @click="startVoting">
-                              <q-tooltip>Start voting</q-tooltip>
-                            </q-btn>
-                          </div>
-                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                            <q-btn :disable="isButtonEnabled('stop', index)" :size="getButtonSize()"
-                                   color="negative" icon="stop" round @click="finishVoting">
-                              <q-tooltip>Stop voting</q-tooltip>
-                            </q-btn>
-                          </div>
-                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                            <q-btn :disable="isButtonEnabled('next', index)"
-                                   :size="getButtonSize()" color="primary" icon="arrow_forward_ios" round
-                                   @click="nextStory(index, true)">
-                              <q-tooltip>Next story</q-tooltip>
-                            </q-btn>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <q-separator v-if="isSmallOrMediumScreen()" inset/>
-                    <div>
-                      <div v-if="isSmallOrMediumScreen()"
-                           class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 q-pa-md text-center">
+                      <q-separator :class="isSmallOrMediumScreenFullWidth()" :vertical="isSmallOrMediumScreenVertical()"
+                                   inset></q-separator>
+                      <div :class="isSmallOrMediumScreen()">
                         <div class="row">
                           <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
                             <q-btn :disable="isButtonEnabled('start', index)" :size="getButtonSize()"
@@ -162,35 +139,41 @@
                       </div>
                     </div>
                     <q-separator inset/>
-                    <div v-if="!isSmallScreenAndVotingOpen()" class="col-12 q-pa-md">
-                      <div class="row">
-                        <template v-for="(user, index) in room.users" :key="index">
-                          <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm"
-                               style="height: 45px">
-                            <q-card>
-                              <div :class="getUserNameStyle(user.username)" class="text-center items-center">
-                                {{ user.username }}
-                              </div>
-                              <q-badge :label="getVoteValue(user)" color="primary" floating text-color="white"/>
-                            </q-card>
-                          </div>
-                        </template>
+                    <div class="row">
+                      <div v-if="!isSmallScreenAndVotingOpen()" :class="isRowViewOrColumn('users')">
+                        <div class="row">
+                          <template v-for="(user, index) in room.users" :key="index">
+                            <div :class="isRowViewOrColumnUsers()" style="height: 45px">
+                              <q-card>
+                                <div class="row items-center q-pa-xs">
+                                  <div :class="getUserNameStyle(user.username)" class="col-10 text-center items-center">
+                                    {{ user.username }}
+                                  </div>
+                                  <div
+                                    class="col-2 rounded-borders text-center text-white bg-primary text-bold text-h6">
+                                    {{ getVoteValue(user) }}
+                                  </div>
+                                </div>
+                              </q-card>
+                            </div>
+                          </template>
+                        </div>
                       </div>
-                    </div>
-                    <q-separator inset/>
-                    <div class="col-12">
-                      <div class="row text-center">
-                        <div class="col-12 q-pa-md">
-                          <div :id="'storyButtons'+story.storyName" class="row">
-                            <template v-for="(option, index) in localVariables.voteOptions.slice(0, 8)" v-bind:key="index">
-                              <div
-                                class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
-                                <q-btn :color="getVoteColor(option)" :disable=!localFlags.showVoteOptions :label="option"
-                                       :style="getScreenSizeForButton()"
-                                       class="full-height full-width" @click="vote(option)"/>
-                              </div>
-                            </template>
-                          </div>
+                      <div v-if="localVariables.isRowView" class="col-12">
+                        <q-separator inset/>
+                      </div>
+                      <div :class="isRowViewOrColumn('numbers')">
+                        <div :id="'storyButtons'+story.storyName" class="row">
+                          <template v-for="(option, index) in localVariables.voteOptions.slice(0, 8)"
+                                    v-bind:key="index">
+                            <div
+                              class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
+                              <q-btn :color="getVoteColor(option)" :disable=!localFlags.showVoteOptions
+                                     :label="option"
+                                     :style="getScreenSizeForButton()"
+                                     class="full-height full-width" @click="vote(option)"/>
+                            </div>
+                          </template>
                         </div>
                       </div>
                     </div>
@@ -202,6 +185,14 @@
         </q-tab-panels>
       </q-card>
     </div>
+    <q-page-sticky v-if="!localFlags.showCreateAndJoinRoomComponents" :offset="[18, 18]" position="bottom-right">
+      <q-fab color="primary" direction="up" icon="space_dashboard">
+        <q-fab-action v-if="!localVariables.isRowViewMenu" color="primary" icon="table_rows"
+                      @click="changeRowViewTrue()"/>
+        <q-fab-action v-if="localVariables.isRowViewMenu" color="primary" icon="view_column"
+                      @click="changeRowViewFalse()"/>
+      </q-fab>
+    </q-page-sticky>
   </q-page>
 </template>
 
@@ -228,6 +219,8 @@ export default defineComponent({
         subscriptions: [],
         voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
         tab: null,
+        isRowView: true,
+        isRowViewMenu: true
       },
       room: {
         id: null,
@@ -264,25 +257,25 @@ export default defineComponent({
           }
         ],
         selectedStory: {
-            id: null,
-            storyName: null,
-            disabled: null,
-            voteResults: [
-              {
-                id: null,
-                locked: null,
-                votes: [
-                  {
-                    user: {
-                      username: null,
-                      sessionId: null,
-                    },
-                    value: null,
-                  }
-                ]
-              }
-            ]
-          }
+          id: null,
+          storyName: null,
+          disabled: null,
+          voteResults: [
+            {
+              id: null,
+              locked: null,
+              votes: [
+                {
+                  user: {
+                    username: null,
+                    sessionId: null,
+                  },
+                  value: null,
+                }
+              ]
+            }
+          ]
+        }
       },
       localFlags: {
         createUsernameInvalid: false,
@@ -337,11 +330,11 @@ export default defineComponent({
           showCreateAndJoinRoomComponents: true,
           votingIsOpen: false,
           showVoteOptions: false,
-       };
+        };
 
-       this.localFlags = localFlags;
+        this.localFlags = localFlags;
 
-       let localVariables = {
+        let localVariables = {
           author: localStorage.getItem('poker-author') !== null ? JSON.parse(localStorage.getItem('poker-author')).username : null,
           username: localStorage.getItem('poker-username'),
           inputStory: null,
@@ -354,7 +347,6 @@ export default defineComponent({
 
         this.localVariables = localVariables;
         this.room = null;
-
 
 
       },
@@ -419,7 +411,10 @@ export default defineComponent({
                 this.localVariables.username = this.localVariables.author;
                 this.subscribe();
 
-                localStorage.setItem('poker-author', JSON.stringify({username: this.localVariables.author, sessionId: store.getPokerSessionId}));
+                localStorage.setItem('poker-author', JSON.stringify({
+                  username: this.localVariables.author,
+                  sessionId: store.getPokerSessionId
+                }));
                 localStorage.setItem('poker-username', this.localVariables.author);
               }
             })
@@ -488,7 +483,9 @@ export default defineComponent({
         store.setPokerRoomIdNull();
 
         this.setStateToDefault();
-        setTimeout(() => { this.localFlags.spinnerVisible = false; }, 1000);
+        setTimeout(() => {
+          this.localFlags.spinnerVisible = false;
+        }, 1000);
       },
       subscribe() {
         let prefixWithRoomId = '/topic/poker/room/' + this.room.id;
@@ -709,10 +706,10 @@ export default defineComponent({
       },
       createPage() {
         if (store.getStompClientStatus && store.getPokerRoomId) {
-            this.localVariables.roomId = store.getPokerRoomId;
-            this.localVariables.username = store.getPokerUsername;
-            this.localVariables.author = store.getPokerAuthor;
-            axios.get(this.backendUrls.getRoom() + this.localVariables.roomId)
+          this.localVariables.roomId = store.getPokerRoomId;
+          this.localVariables.username = store.getPokerUsername;
+          this.localVariables.author = store.getPokerAuthor;
+          axios.get(this.backendUrls.getRoom() + this.localVariables.roomId)
             .then(response => {
               if (response.data != null) {
                 this.room = response.data;
@@ -747,7 +744,7 @@ export default defineComponent({
             this.localVariables.roomId = this.$route.params.roomId;
           }
           if (localStorage.getItem("poker-username")) {
-           this.localVariables.username = localStorage.getItem("poker-username");
+            this.localVariables.username = localStorage.getItem("poker-username");
           }
           if (localStorage.getItem("poker-author")) {
             this.localVariables.author = JSON.parse(localStorage.getItem("poker-author")).username;
@@ -778,7 +775,7 @@ export default defineComponent({
           return "md";
         }
         if (Screen.sm) {
-          return "md";
+          return "lg";
         }
         if (Screen.md) {
           return "lg";
@@ -794,7 +791,48 @@ export default defineComponent({
         return Screen.xs && this.localFlags.votingIsOpen;
       },
       isSmallOrMediumScreen() {
-        return Screen.xs || Screen.sm
+        if (Screen.xs || Screen.sm) {
+          return 'col-12 q-pa-md text-center'
+        } else {
+          return 'col-4 text-right'
+        }
+      },
+      isSmallOrMediumScreenVertical() {
+        return !(Screen.xs || Screen.sm);
+      },
+      isSmallOrMediumScreenFullWidth() {
+        if (Screen.xs || Screen.sm) {
+          return 'full-width'
+        } else {
+          return ''
+        }
+      },
+      isRowViewOrColumn(card) {
+        if (this.localVariables.isRowView) {
+          return 'col-12 q-pa-md'
+        } else {
+          switch (card) {
+            case 'users':
+              return 'col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12 q-pa-md order-last'
+            case 'numbers':
+              return 'col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12 q-pa-md'
+          }
+        }
+      },
+      isRowViewOrColumnUsers() {
+        if (this.localVariables.isRowView) {
+          return 'col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm'
+        } else {
+          return 'col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12 items-center q-pl-sm q-pr-sm'
+        }
+      },
+      changeRowViewTrue() {
+        this.localVariables.isRowView = true;
+        this.localVariables.isRowViewMenu = true
+      },
+      changeRowViewFalse() {
+        this.localVariables.isRowView = false;
+        this.localVariables.isRowViewMenu = false
       },
       isButtonEnabled(button, index) {
         switch (button) {
