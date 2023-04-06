@@ -320,7 +320,7 @@ export default defineComponent({
   methods:
     {
       setStateToDefault() {
-        let localFlags = {
+        this.localFlags = {
           createUsernameInvalid: false,
           joinRoomUsernameInvalid: false,
           joinRoomIdInvalid: false,
@@ -332,9 +332,7 @@ export default defineComponent({
           showVoteOptions: false,
         };
 
-        this.localFlags = localFlags;
-
-        let localVariables = {
+        this.localVariables = {
           author: localStorage.getItem('poker-author') !== null ? JSON.parse(localStorage.getItem('poker-author')).username : null,
           username: localStorage.getItem('poker-username'),
           inputStory: null,
@@ -344,8 +342,6 @@ export default defineComponent({
           voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
           tab: null,
         };
-
-        this.localVariables = localVariables;
         this.room = null;
 
 
@@ -424,11 +420,7 @@ export default defineComponent({
         }
       },
       joinRoom() {
-        if (!this.localVariables.roomId) {
-          this.localFlags.joinRoomIdInvalid = true;
-        } else {
-          this.localFlags.joinRoomIdInvalid = false;
-        }
+        this.localFlags.joinRoomIdInvalid = !this.localVariables.roomId;
 
         if (!this.localVariables.username) {
           this.localFlags.joinRoomUsernameInvalid = true;
@@ -646,7 +638,7 @@ export default defineComponent({
         return "?";
       },
       getLastVoteResult(story) {
-        if (story && story !== null && story.id !== null) {
+        if (story && story.id !== null) {
           let currStory = story;
           if (currStory !== null && currStory.voteResults) {
             if (currStory.voteResults.length > 0) {
@@ -699,7 +691,6 @@ export default defineComponent({
         if (username.length > 7) {
           return 'text-blue text-weight-bold text-h6'
         }
-        return this.localVariables.chosenOption === voteValue || !this.localFlags.votingIsOpen ? "green" : "red";
       },
       isStoryDisable(story) {
         return story.disabled;
