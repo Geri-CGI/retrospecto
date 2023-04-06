@@ -740,6 +740,7 @@ export default defineComponent({
           if (localStorage.getItem("poker-author")) {
             this.localVariables.author = JSON.parse(localStorage.getItem("poker-author")).username;
           }
+          this.localFlags.spinnerVisible = false;
         }
       },
       getScreenSizeForButton() {
