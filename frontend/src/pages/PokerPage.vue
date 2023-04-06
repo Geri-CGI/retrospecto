@@ -578,20 +578,18 @@ export default defineComponent({
         let user = this.parseWSResponseBody(payload.body);
         let userObj = JSON.parse(user);
 
-        if (userObj["username"] !== this.localVariables.username) {
-          let newArr = [];
-          for (let i = 0; i < this.room.users.length; i++) {
-            newArr.push(this.room.users[i].username);
-          }
-
-          newArr.push(userObj["username"]);
-
-          newArr.sort();
-
-          this.room.users = [];
-
-          newArr.forEach((name) => this.room.users.push({username: name}));
+        let newArr = [];
+        for (let i = 0; i < this.room.users.length; i++) {
+          newArr.push(this.room.users[i].username);
         }
+
+        newArr.push(userObj["username"]);
+
+        newArr.sort();
+
+        this.room.users = [];
+
+        newArr.forEach((name) => this.room.users.push({username: name}));
       },
       userRemovedMessageReceived(payload) {
         let user = this.parseWSResponseBody(payload.body);
