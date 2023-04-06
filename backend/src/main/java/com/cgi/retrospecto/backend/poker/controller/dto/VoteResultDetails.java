@@ -2,15 +2,15 @@ package com.cgi.retrospecto.backend.poker.controller.dto;
 
 import com.cgi.retrospecto.backend.poker.domain.VoteResult;
 
-public class OpenVote {
+public class VoteResultDetails {
     private boolean open;
     private int storyId;
     private VoteResult voteResult;
 
-    public OpenVote() {
+    public VoteResultDetails() {
     }
 
-    public OpenVote(boolean open, int storyId, VoteResult voteResult) {
+    public VoteResultDetails(boolean open, int storyId, VoteResult voteResult) {
         this.open = open;
         this.storyId = storyId;
         this.voteResult = voteResult;

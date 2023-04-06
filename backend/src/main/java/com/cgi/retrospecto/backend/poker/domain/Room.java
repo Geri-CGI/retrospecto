@@ -1,25 +1,23 @@
 package com.cgi.retrospecto.backend.poker.domain;
 
+import com.cgi.retrospecto.backend.poker.domain.comparator.UserComparatorByName;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Room {
     private int id;
-    private String author;
+    private User author;
     private List<Story> stories = new ArrayList<>();
     private LocalDateTime lastActionSubmittedTime;
-    private Set<String> users = new TreeSet<>();
+    private Set<User> users = new TreeSet<>(new UserComparatorByName());
     private Story selectedStory;
 
     public Room() {
     }
 
-    public List<Integer> getStoriesIdsList() {
-        return stories.stream().map(Story::getId).collect(Collectors.toList());
-    }
-
-    public void addUser(String author) {
+    public void addUser(User author) {
         users.add(author);
     }
 
@@ -35,11 +33,11 @@ public class Room {
         this.id = id;
     }
 
-    public String getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 
@@ -59,11 +57,11 @@ public class Room {
         this.lastActionSubmittedTime = lastActionSubmittedTime;
     }
 
-    public Set<String> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<String> users) {
+    public void setUsers(Set<User> users) {
         this.users = users;
     }
 

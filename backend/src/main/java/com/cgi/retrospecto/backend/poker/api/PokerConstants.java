@@ -21,7 +21,7 @@ public class PokerConstants {
         public static final String POKER = "/poker";
         public static final String ROOM = "/room";
         public static final String USERNAME = "/username";
-        public static final String GET_ROOM = ApiConstants.ROOM + PathVarConstants.PATH_VAR_ID + ApiConstants.USERNAME + PathVarConstants.PATH_VAR_USERNAME;
+        public static final String GET_ROOM = ApiConstants.ROOM + PathVarConstants.PATH_VAR_ID;
         public static final String USER = "/user";
 
         private ApiConstants() {

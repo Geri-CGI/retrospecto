@@ -1,9 +1,6 @@
 package com.cgi.retrospecto.backend.poker.service;
 
-import com.cgi.retrospecto.backend.poker.domain.Room;
-import com.cgi.retrospecto.backend.poker.domain.Story;
-import com.cgi.retrospecto.backend.poker.domain.Vote;
-import com.cgi.retrospecto.backend.poker.domain.VoteResult;
+import com.cgi.retrospecto.backend.poker.domain.*;
 import com.cgi.retrospecto.backend.poker.exception.RoomNotFoundException;
 import com.cgi.retrospecto.backend.poker.exception.StoryNotFoundException;
 import com.cgi.retrospecto.backend.poker.exception.UsernameAlreadyInUseException;
@@ -49,12 +46,12 @@ public class RoomService {
         return repo.getPokerRoom(id);
     }
 
-    public Room addUser(int id, String username) throws RoomNotFoundException, UsernameAlreadyInUseException {
+    public void addUser(int id, User user) throws RoomNotFoundException, UsernameAlreadyInUseException {
         Room room = getPokerRoom(id);
-        if (room.getUsers().contains(username)) throw new UsernameAlreadyInUseException("Username already in use!");
-        room.addUser(username);
-
-        return room;
+        if (room.getUsers().contains(user)) {
+            throw new UsernameAlreadyInUseException("Username already in use!");
+        }
+        room.addUser(user);
     }
 
     public VoteResult vote(int roomId, int storyId, Vote vote) throws RoomNotFoundException, StoryNotFoundException {
@@ -102,9 +99,11 @@ public class RoomService {
         return getVotingOrCreateNew(repo.getPokerStory(roomId, storyId));
     }
 
-    public String removeUser(int roomId, String username) throws RoomNotFoundException {
-        Room room = getPokerRoom(roomId);
-        room.setUsers(room.getUsers().stream().filter(u -> !u.equals(username)).collect(Collectors.toSet()));
-        return username;
+    public String removeUser(int roomId, User user) throws RoomNotFoundException {
+        getPokerRoom(roomId)
+                .getUsers()
+                  .removeIf(u -> u.getUsername().equals(user.getUsername()));
+
+        return user.getUsername();
     }
 }
