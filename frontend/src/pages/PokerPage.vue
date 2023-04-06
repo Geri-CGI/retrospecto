@@ -48,8 +48,8 @@
       </q-card>
     </div>
   </q-page>
-  <q-page v-else class="row q-pa-md content-start">
-    <div class="col-12 q-pa-md">
+  <q-page v-else class="row q-pa-md content-start justify-center">
+    <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
         <div class="row items-center">
           <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 self-start">
@@ -73,10 +73,11 @@
           </div>
         </div>
         <div class="row">
-          <div v-if="isCurrentUserAuthor()" class="col-12 full-width">
+          <div class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="inputStory" label="Add story:" outlined @keydown.enter="createStory"/>
+                <q-input v-model="inputStory" :disable="!isCurrentUserAuthor()" label="Add story:" outlined
+                         @keydown.enter="createStory"/>
               </div>
             </div>
           </div>
@@ -84,7 +85,7 @@
       </q-card>
     </div>
 
-    <div class="col-12 q-pa-md">
+    <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
         <q-tabs v-model="tab" active-color="primary" align="justify"
                 class="bg-grey-3 text-grey-7" dense indicator-color="primary">
@@ -98,17 +99,73 @@
           <template v-for="(story, index) in room.stories" :key="index">
             <q-tab-panel :name=story.storyName>
               <div class="row">
-                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 q-pa-md">
+                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12 q-pa-md">
                   <q-card :id="'storyCard'+story.storyName">
-                    <div class="col-12 q-pa-md">
-                      <div class="text-h6 text-primary text-bold">{{ story.storyName }}</div>
-                      <div v-if="!votingIsOpen" class="text-subtitle2">{{ calculateVotesAvg() }}</div>
+                    <div class="row q-pa-md items-center">
+                      <div class="col-xl-7 col-lg-7 col-md-7 col-sm-12 col-xs-12">
+                        <div class="text-h5 text-primary text-bold q-pa-md">Story name: {{ story.storyName }}</div>
+                        <div v-if="!votingIsOpen" class="text-subtitle1 text-primary text-bold q-pa-md">
+                          {{ calculateVotesAvg() }}
+                        </div>
+                      </div>
+                      <q-separator v-if="!isSmallOrMediumScreen()" inset vertical></q-separator>
+                      <div v-if="!isSmallOrMediumScreen()"
+                           class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 text-right">
+                        <div class="row">
+                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                            <q-btn :disable="isButtonEnabled('start', index)" :size="getButtonSize()"
+                                   color="secondary" icon="play_arrow" round @click="startVoting">
+                              <q-tooltip>Start voting</q-tooltip>
+                            </q-btn>
+                          </div>
+                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                            <q-btn :disable="isButtonEnabled('stop', index)" :size="getButtonSize()"
+                                   color="negative" icon="stop" round @click="finishVoting">
+                              <q-tooltip>Stop voting</q-tooltip>
+                            </q-btn>
+                          </div>
+                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                            <q-btn :disable="isButtonEnabled('next', index)"
+                                   :size="getButtonSize()" color="primary" icon="arrow_forward_ios" round
+                                   @click="nextStory(index, true)">
+                              <q-tooltip>Next story</q-tooltip>
+                            </q-btn>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <q-separator/>
+                    <q-separator v-if="isSmallOrMediumScreen()" inset/>
+                    <div>
+                      <div v-if="isSmallOrMediumScreen()"
+                           class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 q-pa-md text-center">
+                        <div class="row">
+                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                            <q-btn :disable="isButtonEnabled('start', index)" :size="getButtonSize()"
+                                   color="secondary" icon="play_arrow" round @click="startVoting">
+                              <q-tooltip>Start voting</q-tooltip>
+                            </q-btn>
+                          </div>
+                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                            <q-btn :disable="isButtonEnabled('stop', index)" :size="getButtonSize()"
+                                   color="negative" icon="stop" round @click="finishVoting">
+                              <q-tooltip>Stop voting</q-tooltip>
+                            </q-btn>
+                          </div>
+                          <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                            <q-btn :disable="isButtonEnabled('next', index)"
+                                   :size="getButtonSize()" color="primary" icon="arrow_forward_ios" round
+                                   @click="nextStory(index, true)">
+                              <q-tooltip>Next story</q-tooltip>
+                            </q-btn>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <q-separator inset/>
                     <div v-if="!isSmallScreenAndVotingOpen()" class="col-12 q-pa-md">
                       <div class="row">
                         <template v-for="(user, index) in room.users" :key="index">
-                          <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm"
+                          <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-12 items-center q-pl-sm q-pr-sm"
                                style="height: 45px">
                             <q-card>
                               <div :class="getUserNameStyle(user.username)" class="text-center items-center">
@@ -120,38 +177,22 @@
                         </template>
                       </div>
                     </div>
-                    <q-separator/>
-                    <div v-if="isCurrentUserAuthor()" class="col-12">
+                    <q-separator inset/>
+                    <div class="col-12">
                       <div class="row text-center">
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
-                          <q-btn :disable="votingIsOpen" color="secondary" style="min-width: 120px"
-                                 @click="startVoting">Start voting
-                          </q-btn>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
-                          <q-btn :disable="!votingIsOpen" color="negative" style="min-width: 120px"
-                                 @click="finishVoting">Close voting
-                          </q-btn>
-                        </div>
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-4 col-xs-12 q-pa-sm">
-                          <q-btn :disable="votingIsOpen || index === room.stories.length - 1" class="col-12"
-                                 color="primary" style="min-width: 120px" @click="nextStory(index, true)">Next story
-                          </q-btn>
+                        <div class="col-12 q-pa-md">
+                          <div :id="'storyButtons'+story.storyName" class="row">
+                            <template v-for="(option, index) in voteOptions.slice(0, 8)" v-bind:key="index">
+                              <div
+                                class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
+                                <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
+                                       :style="getScreenSizeForButton()"
+                                       class="full-height full-width" @click="vote(option)"/>
+                              </div>
+                            </template>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </q-card>
-                </div>
-                <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 q-pa-md">
-                  <q-card>
-                    <div :id="'storyButtons'+story.storyName" :style="setMinimumHeight(story.storyName)" class="row">
-                      <template v-for="(option, index) in voteOptions.slice(0, 8)" v-bind:key="index">
-                        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
-                          <q-btn :color="getVoteColor(option)" :disable=!showVoteOptions :label="option"
-                                 :style="getScreenSizeForButton()"
-                                 class="full-height full-width" @click="vote(option)"/>
-                        </div>
-                      </template>
                     </div>
                   </q-card>
                 </div>
@@ -582,10 +623,10 @@ export default defineComponent({
       },
       getScreenSizeForButton() {
         if (Screen.xs) {
-          return "font-size: 30px;";
+          return "font-size: 20px;";
         }
         if (Screen.sm) {
-          return "font-size: 40px;";
+          return "font-size: 30px;";
         }
         if (Screen.md) {
           return "font-size: 50px;";
@@ -597,8 +638,50 @@ export default defineComponent({
           return "font-size: 60px;";
         }
       },
+      getButtonSize() {
+        if (Screen.xs) {
+          return "md";
+        }
+        if (Screen.sm) {
+          return "md";
+        }
+        if (Screen.md) {
+          return "lg";
+        }
+        if (Screen.lg) {
+          return "xl";
+        }
+        if (Screen.xl) {
+          return "xl";
+        }
+      },
       isSmallScreenAndVotingOpen() {
         return Screen.xs && this.votingIsOpen;
+      },
+      isSmallOrMediumScreen() {
+        return Screen.xs || Screen.sm
+      },
+      isButtonEnabled(button, index) {
+        switch (button) {
+          case 'start':
+            if (this.isCurrentUserAuthor()) {
+              return this.votingIsOpen
+            } else {
+              return true
+            }
+          case 'stop':
+            if (this.isCurrentUserAuthor()) {
+              return !this.votingIsOpen
+            } else {
+              return true
+            }
+          case 'next':
+            if (this.isCurrentUserAuthor()) {
+              return this.votingIsOpen || index === this.room.stories.length - 1
+            } else {
+              return true
+            }
+        }
       },
       getHeightOfStoryCard(storyName) {
         let element = document.getElementById('storyCard' + storyName)
