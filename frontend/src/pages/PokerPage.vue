@@ -211,7 +211,6 @@ import axios from 'axios';
 import {stompClientStore} from 'stores/stomp';
 import {copyToClipboard, Notify, Screen} from 'quasar';
 import {storeToRefs} from "pinia";
-import { json } from 'body-parser';
 
 const store = stompClientStore()
 const {stompClientConnected} = storeToRefs(store)
@@ -296,13 +295,13 @@ export default defineComponent({
         votingIsOpen: false,
         showVoteOptions: false,
       },
-      frontendUrl: 'https://retrospecto.cloud',
+      frontendUrl: 'https://www.retrospecto.cloud',
       backendUrls: {
         pathParts: {
           poker: '/poker',
           room: '/room',
         },
-        baseUrl: 'https://retrospecto.cloud',
+        baseUrl: 'https://www.retrospecto.cloud',
         baseUrlPoker: function () {
           return this.baseUrl + this.pathParts.poker
         },

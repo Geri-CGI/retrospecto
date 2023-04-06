@@ -33,7 +33,7 @@ export const stompClientStore = defineStore('stompClientStore', {
     },
     getAuthor(state) {
       return state.author
-    },    
+    },
     getPokerRoomId(state) {
       return state.pokerRoomId
     },
@@ -50,7 +50,7 @@ export const stompClientStore = defineStore('stompClientStore', {
 
   actions: {
     connect() {
-      let url = "https://retrospecto.cloud/ws";
+      let url = "https://www.retrospecto.cloud/ws";
       let socket = new SockJs(url);
       this.stompClient = Stomp.over(socket);
       this.stompClient.connect({}, this.onConnected, this.onError, this.onClose);
