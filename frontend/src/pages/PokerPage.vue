@@ -342,9 +342,8 @@ export default defineComponent({
           voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
           tab: null,
         };
+
         this.room = null;
-
-
       },
       getFirstLetter(username) {
         return Array.from(username)[0];
@@ -717,6 +716,8 @@ export default defineComponent({
 
                 let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
                 store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
+              
+                this.localFlags.spinnerVisible = false;
               }
             })
             .catch(error => {
@@ -727,6 +728,7 @@ export default defineComponent({
               } else {
                 this.localFlags.joinRoomIdInvalid = true;
               }
+              this.localFlags.spinnerVisible = false;
             })
         } else {
           if (this.$route.params.roomId != null) {
@@ -739,8 +741,6 @@ export default defineComponent({
             this.localVariables.author = JSON.parse(localStorage.getItem("poker-author")).username;
           }
         }
-
-        this.localFlags.spinnerVisible = false;
       },
       getScreenSizeForButton() {
         if (Screen.xs) {
