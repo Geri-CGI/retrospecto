@@ -164,7 +164,7 @@
                       </div>
                       <div :class="isRowViewOrColumn('numbers')">
                         <div :id="'storyButtons'+story.storyName" class="row">
-                          <template v-for="(option, index) in localVariables.voteOptions.slice(0, 8)"
+                          <template v-for="(option, index) in localVariables.voteOptions"
                                     v-bind:key="index">
                             <div
                               class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-xs-6 text-center items-center q-pa-sm">
