@@ -52,6 +52,21 @@
     </div>
   </q-page>
   <q-page v-else class="row q-pa-md content-start justify-center">
+    <q-dialog v-model="localVariables.alert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Edit story name:</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input v-model="localVariables.alertInput" type="text">
+          </q-input>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn v-close-popup color="primary" flat label="Ok" @click="sendEditMessage"/>
+          <q-btn v-close-popup color="negative" flat label="Close"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
         <div class="row items-center">
@@ -104,12 +119,22 @@
             <q-tab-panel :name=story.storyName>
               <div class="row">
                 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12 q-pa-md">
-                  <q-card :id="'storyCard'+story.storyName">
+                  <q-card>
                     <div class="row q-pa-md items-center">
                       <div class="col-xl-7 col-lg-7 col-md-7 col-sm-12 col-xs-12">
-                        <div class="text-h5 text-primary text-bold q-pa-md">Story name: {{ story.storyName }}</div>
-                        <div v-if="!localFlags.votingIsOpen" class="text-subtitle1 text-primary text-bold q-pa-md">
-                          {{ calculateVotesAvg() }}
+                        <div class="row items-center">
+                          <div class="col-10">
+                            <div class="text-h5 text-primary text-bold q-pa-md">Story name: {{ story.storyName }}</div>
+                            <div class="text-subtitle1 text-primary text-bold q-pa-md">
+                              {{ calculateVotesAvg() }}
+                            </div>
+                          </div>
+                          <div class="col-2 q-gutter-sm text-center">
+                            <q-btn color="warning" icon="edit" round
+                                   size="md" @click="enableStoryEditAlert(story.id)"/>
+                            <q-btn color="negative" icon="delete" round
+                                   size="md" @click="deleteStory(story.id)"/>
+                          </div>
                         </div>
                       </div>
                       <q-separator :class="isSmallOrMediumScreenFullWidth()" :vertical="isSmallOrMediumScreenVertical()"
@@ -220,7 +245,10 @@ export default defineComponent({
         voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
         tab: null,
         isRowView: true,
-        isRowViewMenu: true
+        isRowViewMenu: true,
+        alert: false,
+        alertInput: null,
+        alertStoryId: null
       },
       room: {
         id: null,
@@ -716,7 +744,7 @@ export default defineComponent({
 
                 let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
                 store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
-              
+
                 this.localFlags.spinnerVisible = false;
               }
             })
@@ -865,6 +893,17 @@ export default defineComponent({
       },
       isCurrentUserAuthor() {
         return this.room.author.username === this.localVariables.author && this.room.author.sessionId === store.getPokerSessionId;
+      },
+      deleteStory(storyId) {
+        //TODO delete story based on storyId
+      },
+      enableStoryEditAlert(storyId) {
+        this.localVariables.alert = true
+        this.localVariables.alertStoryId = storyId
+      },
+      sendEditMessage() {
+        //TODO send alertInput to alertStoryId
+        console.log(this.localVariables.alertInput)
       }
     }
 })
