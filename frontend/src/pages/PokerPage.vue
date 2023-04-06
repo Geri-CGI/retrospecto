@@ -592,7 +592,7 @@ export default defineComponent({
             newArr.push(this.room.users[i].username);
           }
 
-          newArr.push(usernameObj["username"]);
+          newArr.push(userObj["username"]);
 
           newArr.sort();
 
