@@ -58,7 +58,7 @@
           <div class="text-h6">Edit story name:</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <q-input v-model="localVariables.alertInput" type="text" @keydown.enter="sendEditMessage">
+          <q-input v-model="localVariables.alertInput" :rules="[ val => val && val.trim().length > 0 || 'Please type something']" type="text" @keydown.enter="sendEditMessage">
           </q-input>
         </q-card-section>
         <q-card-actions align="right">
