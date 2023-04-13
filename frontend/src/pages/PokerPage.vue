@@ -982,11 +982,13 @@ export default defineComponent({
         }
       },
       enableStoryEditAlert(storyId) {
+        this.localVariables.alertInput = this.room.stories.find(s => s.id === storyId).storyName;
         this.localVariables.alert = true;
         this.localVariables.alertStoryId = storyId;
       },
       sendEditMessage() {
-        if (this.isCurrentUserAuthor()) {
+        this.localVariables.alertInput = this.localVariables.alertInput.trim();
+        if (this.isCurrentUserAuthor() && this.localVariables.alertInput) {
           store.getStompClient.send(
             this.replaceRoomIdAndStoryId(this.backendUrls.smStoryEdit(), this.room.id, this.room.selectedStory["id"]),
             {},
