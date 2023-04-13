@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 @Service
 public class RoomService {
@@ -54,12 +53,12 @@ public class RoomService {
         room.addUser(user);
     }
 
-    public VoteResult vote(int roomId, int storyId, Vote vote) throws RoomNotFoundException, StoryNotFoundException {
+    public Vote vote(int roomId, int storyId, Vote vote) throws RoomNotFoundException, StoryNotFoundException {
         Story story = repo.getPokerStory(roomId, storyId);
         VoteResult voteResult = getVotingOrCreateNew(story);
         voteResult.addVote(vote);
 
-        return voteResult;
+        return vote;
     }
 
     public VoteResult closeVoting(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
@@ -105,5 +104,18 @@ public class RoomService {
                   .removeIf(u -> u.getUsername().equals(user.getUsername()));
 
         return user.getUsername();
+    }
+
+    public Story editStory(int roomId, int storyId, String storyName) throws RoomNotFoundException, StoryNotFoundException {
+        Story story = repo.getPokerStory(roomId, storyId);
+        story.setStoryName(storyName);
+        return story;
+    }
+
+    public Story deleteStory(int roomId, int storyId) throws RoomNotFoundException, StoryNotFoundException {
+        Story story = repo.getPokerStory(roomId, storyId);
+        Room room = getPokerRoom(roomId);
+        room.getStories().remove(story);
+        return story;
     }
 }

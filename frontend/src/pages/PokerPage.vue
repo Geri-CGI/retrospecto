@@ -52,6 +52,21 @@
     </div>
   </q-page>
   <q-page v-else class="row q-pa-md content-start justify-center">
+    <q-dialog v-model="localVariables.alert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Edit story name:</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input v-model="localVariables.alertInput" :rules="[ val => val && val.trim().length > 0 || 'Please type something']" type="text" @keydown.enter="sendEditMessage">
+          </q-input>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn v-close-popup color="primary" flat label="Ok" @click="sendEditMessage"/>
+          <q-btn v-close-popup color="negative" flat label="Close"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <div class="col-xl-9 col-lg-9 col-md-9 col-md-10 col-sm-12 col-xs-12 q-pa-md">
       <q-card>
         <div class="row items-center">
@@ -71,15 +86,17 @@
             Room ID: {{ room.id }}
           </div>
           <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-xs-12 text-right q-pt-md q-pr-md q-gutter-sm">
+            <q-btn v-if="false" color="secondary" icon="settings" round size="md" @click="openSettings"/>
             <q-btn color="primary" icon="ios_share" round size="md" @click="shareTheBoard"/>
             <q-btn color="red-13" icon="logout" round size="md" @click="exit"/>
           </div>
         </div>
-        <div class="row">
+        <div v-if="isCurrentUserAuthor()" class="row">
           <div class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="localVariables.inputStory" :disable="!isCurrentUserAuthor()" label="Add story:"
+                <q-input v-model="localVariables.inputStory" 
+                         label="Add story:"
                          outlined
                          @keydown.enter="createStory"/>
               </div>
@@ -95,21 +112,44 @@
                 class="bg-grey-3 text-grey-7" dense indicator-color="primary">
           <template v-for="(story, index) in room.stories" :key="index">
             <div @click="selectStory(story)">
-              <q-tab :disable=isStoryDisable(story) :label=story.storyName :name=story.storyName no-caps></q-tab>
+              <q-tab :disable="getStoryDisabled(story)" :label=story.storyName :name=story.storyName no-caps></q-tab>
             </div>
           </template>
         </q-tabs>
         <q-tab-panels v-model="localVariables.tab" animated class="text-black">
           <template v-for="(story, index) in room.stories" :key="index">
             <q-tab-panel :name=story.storyName>
+              <div v-if="this.localFlags.votingIsOpen" class="row justify-center">
+                  <div class="text-h5 text-primary text-bold q-pa-md">Voting has started !!!</div>
+              </div>
               <div class="row">
                 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12 q-pa-md">
-                  <q-card :id="'storyCard'+story.storyName">
+                  <q-card>
                     <div class="row q-pa-md items-center">
                       <div class="col-xl-7 col-lg-7 col-md-7 col-sm-12 col-xs-12">
-                        <div class="text-h5 text-primary text-bold q-pa-md">Story name: {{ story.storyName }}</div>
-                        <div v-if="!localFlags.votingIsOpen" class="text-subtitle1 text-primary text-bold q-pa-md">
-                          {{ calculateVotesAvg() }}
+                        <div class="row items-center">
+                          <div class="col-10">
+                            <div class="text-h5 text-primary text-bold q-pa-md">Story name: {{ getStoryName(story.storyName) }}</div>
+                            <div class="text-subtitle1 text-primary text-bold q-pa-md">
+                              {{ calculateVotesAvg() }}
+                            </div>
+                          </div>
+                          <div v-if="isCurrentUserAuthor()" class="col-2 q-gutter-sm text-center">
+                            <q-btn :disabled="localFlags.votingIsOpen" color="warning" icon="edit" round
+                                   size="md" @click="enableStoryEditAlert(story.id)">
+                                <q-tooltip>Edit story</q-tooltip>
+                            </q-btn>
+                            <q-btn :disabled="localFlags.votingIsOpen" color="negative" icon="delete" round
+                                   size="md" @click="deleteStory(story.id)">
+                                <q-tooltip>Remove story</q-tooltip>
+                            </q-btn>
+                          </div>
+                          <div v-if="!isCurrentUserAuthor()" class="col-2 q-gutter-sm text-center">
+                            <q-btn :disabled="localFlags.votingIsOpen || localVariables.selectedStory.id === room.selectedStory.id" color="primary" icon="screen_share" round
+                                   size="md" @click="jumpToCurrentStory">
+                                <q-tooltip>Jump to current story</q-tooltip>
+                            </q-btn>
+                          </div>
                         </div>
                       </div>
                       <q-separator :class="isSmallOrMediumScreenFullWidth()" :vertical="isSmallOrMediumScreenVertical()"
@@ -220,7 +260,11 @@ export default defineComponent({
         voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
         tab: null,
         isRowView: true,
-        isRowViewMenu: true
+        isRowViewMenu: true,
+        alert: false,
+        alertInput: null,
+        alertStoryId: null,
+        selectedStory: null,
       },
       room: {
         id: null,
@@ -294,16 +338,44 @@ export default defineComponent({
           poker: '/poker',
           room: '/room',
         },
+
         baseUrl: 'https://www.retrospecto.cloud',
-        baseUrlPoker: function () {
-          return this.baseUrl + this.pathParts.poker
+
+        baseUrlPoker: function() { return this.baseUrl + this.pathParts.poker; },
+        createRoom: function() { return this.baseUrlPoker() + this.pathParts.room; },
+        getRoom: function() { return this.baseUrlPoker() + this.pathParts.room + "/"; },
+
+        placeHolders: {
+          roomId: "{roomId}",
+          storyId: "{storyId}",
         },
-        createRoom: function () {
-          return this.baseUrlPoker() + this.pathParts.room
-        },
-        getRoom: function () {
-          return this.baseUrlPoker() + this.pathParts.room + "/"
-        },
+        
+        prefixAppPokerRoom: "/app/poker/room",
+        roomWithIdPlaceholder: function() { return this.prefixAppPokerRoom + "/" + this.placeHolders.roomId; },
+        story: function() { return this.roomWithIdPlaceholder() + "/story"; },
+        storyWithIdPlaceholder() { return this.story() + "/" + this.placeHolders.storyId },
+        smUserAdd: function() { return this.roomWithIdPlaceholder() + "/user/add"; },
+        smUserRemove: function() { return this.roomWithIdPlaceholder() + "/user/remove"; },
+        smStoryAdd: function() { return this.story() + "/add"; },
+        smStoryEdit: function() { return this.storyWithIdPlaceholder() + "/edit"; },
+        smStoryDelete: function() { return this.storyWithIdPlaceholder() + "/remove"; },
+        smStorySelect: function() { return this.storyWithIdPlaceholder() + "/select"; },
+        smVote: function() { return this.storyWithIdPlaceholder() + "/vote"; },
+        smVoteOpen: function() { return this.storyWithIdPlaceholder() + "/vote/open"; },
+        smVoteClose: function() { return this.storyWithIdPlaceholder() + "/vote/close"; },          
+        
+        prefixWithRoomId: function() { return '/topic/poker/room/' + this.placeHolders.roomId; },
+        prefixWithRoomIdAndStory: function() { return this.prefixWithRoomId() + "/story"; },
+        prefixWithRoomIdAndUser: function() { return this.prefixWithRoomId() + "/user"; },
+        prefixWithRoomIdAndVote: function() { return this.prefixWithRoomId() + "/vote"; },
+        stUserAdd: function() { return this.prefixWithRoomIdAndUser() + "/joined"; },
+        stUserRemove: function() { return this.prefixWithRoomIdAndUser() + "/remove"; },
+        stStoryAdd: function() { return this.prefixWithRoomIdAndStory() + "/add"; },
+        stStoryEdit: function() { return this.prefixWithRoomIdAndStory() + "/edit"; },
+        stStoryDelete: function() { return this.prefixWithRoomIdAndStory() + "/remove"; },
+        stStorySelect: function() { return this.prefixWithRoomIdAndStory() + "/select"; },
+        stVote: function() { return this.prefixWithRoomIdAndVote(); },
+        stVoteOpenClose: function() { return this.prefixWithRoomIdAndVote() + "/open-close"; },          
       },
     }
   },
@@ -315,6 +387,7 @@ export default defineComponent({
         this.exit();
       }
     });
+
     window.addEventListener("beforeunload", this.exit);
   },
   methods:
@@ -341,6 +414,10 @@ export default defineComponent({
           subscriptions: [],
           voteOptions: [1, 2, 3, 5, 7, 11, 13, 17],
           tab: null,
+          alert: false,
+          alertInput: null,
+          alertStoryId: null,
+          selectedStory: null,
         };
 
         this.room = null;
@@ -358,24 +435,43 @@ export default defineComponent({
           value: voteValue,
         };
 
-        store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote", {}, JSON.stringify(vote));
+        store.getStompClient.send(
+          this.replaceRoomIdAndStoryId(this.backendUrls.smVote(), this.room.id, this.room.selectedStory["id"]),
+          {}, 
+          JSON.stringify(vote)
+        );
+
         this.localFlags.showVoteOptions = false;
       },
       createStory() {
         if (this.localVariables.inputStory) {
-          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/add", {}, this.localVariables.inputStory);
+          store.getStompClient.send(
+            this.replaceRoomId(this.backendUrls.smStoryAdd(), this.room.id), 
+            {}, 
+            this.localVariables.inputStory
+          );
           this.localVariables.inputStory = null;
         }
       },
       selectStory(story) {
+        if (!story.disabled) {
+          this.localVariables.selectedStory = story;
+        }
+
         if (this.isCurrentUserAuthor() && !this.localFlags.votingIsOpen && !story.disabled) {
-          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
+          store.getStompClient.send(
+            this.replaceRoomIdAndStoryId(this.backendUrls.smStorySelect(), this.room.id, story["id"]), 
+            {}
+          );
         }
       },
       nextStory(index) {
         if (this.isCurrentUserAuthor() && !this.localFlags.votingIsOpen) {
           let story = this.room.stories[index + 1];
-          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + story["id"] + "/selected", {});
+          store.getStompClient.send(
+            this.replaceRoomIdAndStoryId(this.backendUrls.smStorySelect(), this.room.id, story["id"]),
+            {}
+          );
         }
       },
       createRoom() {
@@ -401,10 +497,10 @@ export default defineComponent({
             .then(response => {
               if (response.data != null) {
                 this.room = response.data;
+                this.subscribe();
                 this.room.author.sessionId = store.getPokerSessionId;
                 this.localFlags.showCreateAndJoinRoomComponents = false;
                 this.localVariables.username = this.localVariables.author;
-                this.subscribe();
 
                 localStorage.setItem('poker-author', JSON.stringify({
                   username: this.localVariables.author,
@@ -436,12 +532,13 @@ export default defineComponent({
             .then(response => {
               if (response.data != null) {
                 this.room = response.data;
-                this.localFlags.showCreateAndJoinRoomComponents = false;
                 this.subscribe();
+                this.localFlags.showCreateAndJoinRoomComponents = false;
 
                 for (let i = 0; i < this.room.stories.length; i++) {
                   if (this.room.stories[i].id === this.room.selectedStoryId) {
                     this.room.selectedStory = this.room.stories[i];
+                    this.localVariables.selectedStory = this.room.selectedStory;
                     this.localVariables.tab = this.room.selectedStory.storyName;
                   }
                 }
@@ -450,9 +547,16 @@ export default defineComponent({
                 this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
 
                 let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
-                store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
+
+                store.getStompClient.send(
+                  this.replaceRoomId(this.backendUrls.smUserAdd(), this.room.id),
+                  {},
+                  JSON.stringify(user)
+                );
 
                 store.generatePokerSessionId();
+
+                this.localFlags.spinnerVisible = false;
               }
             })
             .catch(error => {
@@ -463,6 +567,7 @@ export default defineComponent({
               } else {
                 this.localFlags.joinRoomIdInvalid = true;
               }
+              this.localFlags.spinnerVisible = false;
             });
         }
       },
@@ -470,7 +575,13 @@ export default defineComponent({
         this.localVariables.subscriptions.forEach(function (subscription) {
           subscription.unsubscribe()
         })
-        store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/remove", {}, this.localVariables.username);
+
+        store.getStompClient.send(
+          this.replaceRoomId(this.backendUrls.smUserRemove(), this.room.id),
+          {},
+          JSON.stringify({username: this.localVariables.username, sessionId: store.getPokerSessionId})
+        );
+
         store.setPokerRoomIdNull();
 
         this.setStateToDefault();
@@ -479,184 +590,173 @@ export default defineComponent({
         }, 1000);
       },
       subscribe() {
-        let prefixWithRoomId = '/topic/poker/room/' + this.room.id;
-        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/story/add', this.storyAddMessageReceived));
-        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/selected-story', this.storySelectedByAuthorMessageReceived));
-        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/vote/open-close', this.openVotingMessageReceived));
-        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/vote', this.votesMessageReceived));
-        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/user/joined', this.userJoinedMessageReceived));
-        this.localVariables.subscriptions.push(store.getStompClient.subscribe(prefixWithRoomId + '/user/removed', this.userRemovedMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stUserAdd(), this.room.id), this.userJoinedMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stUserRemove(), this.room.id), this.userRemovedMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stStoryAdd(), this.room.id), this.storyAddMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stStoryEdit(), this.room.id), this.storyEditMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stStoryDelete(), this.room.id), this.storyDeleteMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stStorySelect(), this.room.id), this.storySelectedByAuthorMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stVoteOpenClose(), this.room.id), this.openVotingMessageReceived));
+        this.localVariables.subscriptions.push(store.getStompClient.subscribe(this.replaceRoomId(this.backendUrls.stVote(), this.room.id), this.votesMessageReceived));
         store.setPokerUsernameAuthorRoomId(this.localVariables.username, this.room.author.username, this.room.id);
       },
       storyAddMessageReceived(payload) {
-        let storyString = this.parseWSResponseBody(payload.body);
-        let storyObject = JSON.parse(storyString);
-
-        this.room.stories.push(storyObject);
+        let payloadBody = JSON.parse(payload.body);
+        let story = payloadBody.body;
+        this.room.stories.push(story);
 
         if (this.room.stories.length === 1) {
-          storyObject.disabled = false;
-          store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.stories[0]["id"] + "/selected", {});
+          story.disabled = false;
+
+          store.getStompClient.send(
+            this.replaceRoomIdAndStoryId(this.backendUrls.smStorySelect(), this.room.id, this.room.stories[0]["id"]),
+            {}
+          );
         }
 
       },
       storySelectedByAuthorMessageReceived(payload) {
-        let storyString = this.parseWSResponseBody(payload.body);
-        let selectedStory = JSON.parse(storyString);
-        for (let i = 0; i < this.room.stories.length; i++) {
-          if (this.room.stories[i]["id"] === selectedStory["storyId"]) {
-            this.room.stories[i].disabled = selectedStory["disabled"];
-            this.room.selectedStory = this.room.stories[i];
-            this.localVariables.tab = this.room.stories[i].storyName;
+        let payloadBody = JSON.parse(payload.body);
+        let selectedStory = payloadBody.body;
 
-            this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
-          }
+        let story = this.room.stories.find(story => story.id === selectedStory.storyId);
+        story.disabled = selectedStory.disabled;
+        this.room.selectedStory = story;
+        if (this.isCurrentUserAuthor() || !this.localVariables.selectedStory) {
+          this.localVariables.selectedStory = story;
+          this.localVariables.tab = story.storyName;
         }
+        this.room.currentVoteResult = this.getLastVoteResult(story);
+
+        this.room.stories = this.room.stories.map(s1 => [ story ].find(s2 => s2.id === s1.id) || s1);
       },
       openVotingMessageReceived(payload) {
-        let votingIsOpenString = this.parseWSResponseBody(payload.body);
-        let votingIsOpen = JSON.parse(votingIsOpenString);
-        this.localFlags.votingIsOpen = votingIsOpen["open"];
+        let payloadBody = JSON.parse(payload.body);
+        let message = payloadBody.body;
+
+        this.localFlags.votingIsOpen = message.open;
+        this.localFlags.showVoteOptions = this.localFlags.votingIsOpen;
+        this.room.currentVoteResult = message.voteResult;
+        this.room.selectedStoryId = message.storyId;
 
         if (!this.localFlags.votingIsOpen) {
           this.localVariables.chosenOption = null;
         }
 
-        this.localFlags.showVoteOptions = this.localFlags.votingIsOpen;
-
-        let voteResult = votingIsOpen["voteResult"];
-
-        this.room.currentVoteResult = voteResult;
-
-        this.room.selectedStoryId = votingIsOpen["storyId"];
-
         for (let i = 0; i < this.room.stories.length; i++) {
-          if (this.room.stories[i].id === this.room.selectedStoryId) {
-            this.room.selectedStory = this.room.stories[i];
+          let story = this.room.stories[i];
+          if (story.id === this.room.selectedStory.id) {
+            if (story.voteResults.length === 0) {
+              story.voteResults.push(this.room.currentVoteResult);
+            } else {
+              let ids = story.voteResults.map(vr => {
+                return vr.id;
+              });
+              if (!ids.includes(this.room.currentVoteResult.id)) {
+                story.voteResults.push(this.room.currentVoteResult);
+              }
+            }
           }
         }
 
-        for (let i = 0; i < this.room.stories.length; i++) {
-          if (this.room.stories[i].id === this.room.selectedStory.id) {
-            let voteResults = this.room.stories[i].voteResults;
-            this.room.stories[i].voteResults = [];
-            if (voteResults !== null && voteResults.length > 0) {
-              for (let j = 0; j < voteResults.length; j++) {
-                if (voteResults[j].id !== voteResult.id) {
-                  this.room.stories[i].voteResults.push(voteResults[j]);
-                } else {
-                  this.room.stories[i].voteResults.push(voteResult);
-                }
-              }
-            } else {
-              this.room.stories[i].voteResults.push(voteResult);
-            }
-          }
+        let selectedStory = this.room.stories.find(story => story.id === this.room.selectedStoryId);
+        this.room.selectedStory = selectedStory;
+
+        if (this.localFlags.votingIsOpen) {
+          this.localVariables.tab = selectedStory.storyName;
+        } else {
+          this.localVariables.tab = this.localVariables.selectedStory.storyName;
         }
       },
       votesMessageReceived(payload) {
-        let refreshedCurrentVoteResult = this.parseWSResponseBody(payload.body);
-
-        this.room.currentVoteResult = JSON.parse(refreshedCurrentVoteResult);
+        let payloadBody = JSON.parse(payload.body);
+        let vote = payloadBody.body;
 
         for (let i = 0; i < this.room.stories.length; i++) {
           if (this.room.stories[i].id === this.room.selectedStory.id) {
-            let voteResults = this.room.stories[i].voteResults;
-            this.room.stories[i].voteResults = [];
-            for (let j = 0; j < voteResults.length; j++) {
-              if (voteResults[j].id !== this.room.currentVoteResult.id) {
-                this.room.stories[i].voteResults.push(voteResults[j]);
-              } else {
-                this.room.stories[i].voteResults.push(this.room.currentVoteResult);
-              }
-            }
+            let lastVoteResult = this.getLastVoteResult(this.room.stories[i]);
+            lastVoteResult.votes.push(vote);
+            this.room.stories[i].voteResults = this.room.stories[i].voteResults.map(s1 => [ lastVoteResult ].find(s2 => s2.id === s1.id) || s1);
+            this.room.currentVoteResult = lastVoteResult;
           }
+        }
+
+        if (this.isCurrentUserAuthor() && this.room.currentVoteResult.votes.length === this.room.users.length) {
+          this.finishVoting();
         }
       },
       userJoinedMessageReceived(payload) {
-        let user = this.parseWSResponseBody(payload.body);
-        let userObj = JSON.parse(user);
-
-        let newArr = [];
-        for (let i = 0; i < this.room.users.length; i++) {
-          newArr.push(this.room.users[i].username);
-        }
-
-        newArr.push(userObj["username"]);
-
-        newArr.sort();
-
-        this.room.users = [];
-
-        newArr.forEach((name) => this.room.users.push({username: name}));
+        let payloadBody = JSON.parse(payload.body);
+        let userObj = payloadBody.body;
+        this.room.users.push({username: userObj.username});
       },
       userRemovedMessageReceived(payload) {
-        let user = this.parseWSResponseBody(payload.body);
-        let userObj = JSON.parse(user);
+        let payloadBody = JSON.parse(payload.body);
+        let userObj = payloadBody.body;
 
-        let arr = [];
-
-        for (let i = 0; i < this.room.users.length; i++) {
-          if (this.room.users[i].username !== userObj["username"]) {
-            arr.push(this.room.users[i]);
-          }
-        }
-
-        this.room.users = arr;
+        this.room.users = this.room.users.filter(user => user.username !== userObj.username);
       },
       startVoting() {
-        store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/open", {});
+        store.getStompClient.send(
+          this.replaceRoomIdAndStoryId(this.backendUrls.smVoteOpen(), this.room.id, this.room.selectedStory.id),
+          {}
+        );
       },
       finishVoting() {
-        store.getStompClient.send("/app/poker/room/" + this.room.id + "/story/" + this.room.selectedStory["id"] + "/vote/close", {});
+        store.getStompClient.send(
+          this.replaceRoomIdAndStoryId(this.backendUrls.smVoteClose(), this.room.id, this.room.selectedStory.id),
+          {}
+        );
       },
       calculateVotesAvg() {
-        if (this.room.currentVoteResult && this.room.currentVoteResult.votes) {
-          let total = 0;
-          for (let i = 0; i < this.room.currentVoteResult.votes.length; i++) {
-            total += this.room.currentVoteResult.votes[i].value;
+        if (this.localVariables.selectedStory && this.localVariables.selectedStory.voteResults && !this.localFlags.votingIsOpen) {
+          let voteResult = this.getLastVoteResult(this.localVariables.selectedStory);
+          if (voteResult && voteResult.votes && voteResult.votes.length > 0) {
+            let total = voteResult.votes.reduce((acc, vote) => { return acc + vote.value; }, 0);
+            return 'Average: ' + parseFloat(total / voteResult.votes.length).toFixed(2);
           }
-
-          return 'Average: ' + total / this.room.currentVoteResult.votes.length;
         }
         return "";
       },
       getVoteValue(user) {
-        if (this.room.selectedStory) {
-          if (this.room.currentVoteResult && this.room.currentVoteResult.votes) {
-            let votes = this.room.currentVoteResult.votes;
-            for (let i = 0; i < votes.length; i++) {
-              if (votes[i].user.username === user.username) {
-                return votes[i].value;
-              }
+        let story;
+        if (this.localFlags.votingIsOpen) { 
+          if (!this.localVariables.chosenOption) {
+            return "?";
+          }
+
+          story = this.room.selectedStory; 
+        } else if (this.localVariables.selectedStory) { 
+          story = this.localVariables.selectedStory; 
+        }
+
+
+        if (story) {
+          let voteResult = this.getLastVoteResult(story);
+          if (voteResult && voteResult.votes) {
+            let votes = voteResult.votes;
+            let vote = votes.find(v => v.user.username === user.username);
+      
+            if (vote && vote.value) {
+              return vote.value;
             }
           }
         }
+
         return "?";
       },
       getLastVoteResult(story) {
-        if (story && story.id !== null) {
-          let currStory = story;
-          if (currStory !== null && currStory.voteResults) {
-            if (currStory.voteResults.length > 0) {
-              let lastVoteResult;
-              let id = -1;
-              let index;
-              for (let j = 0; j < currStory.voteResults.length; j++) {
-                if (currStory.voteResults[j].id > id) {
-                  id = currStory.voteResults[j].id;
-                  index = j;
-                }
-              }
+        if (story && story.id !== null && story.voteResults && story.voteResults.length > 0) {
+          let ids = story.voteResults.map(vr => {
+            return vr.id;
+          });
 
-              if (index !== -1) {
-                lastVoteResult = currStory.voteResults[index];
-              }
+          let lastVoteResultId = Math.max(...ids);
+          let lastVoteResult = story.voteResults.find(vr => vr.id === lastVoteResultId);
 
-              return lastVoteResult;
-            }
-          }
+          return lastVoteResult;
         }
+
         return null;
       },
       shareTheBoard() {
@@ -676,6 +776,18 @@ export default defineComponent({
           })
       },
       getVoteColor(voteValue) {
+        let selectedStory = this.localVariables.selectedStory;
+        if (!this.localFlags.votingIsOpen && selectedStory && selectedStory.voteResults) {
+          let voteResult = this.getLastVoteResult(selectedStory);
+          if (voteResult && voteResult.votes) {
+            let vote = voteResult.votes.find(vote => this.isCurrentUser(vote.user.username, vote.user.sessionId));
+
+            if (vote && vote.value) {
+              return vote.value === voteValue ? "red" : "green";
+            }
+          }
+        }
+
         return this.localVariables.chosenOption === voteValue || !this.localFlags.votingIsOpen ? "red" : "green";
       },
       getUserNameStyle(username) {
@@ -689,24 +801,22 @@ export default defineComponent({
           return 'text-blue text-weight-bold text-h6'
         }
       },
-      isStoryDisable(story) {
-        return story.disabled;
-      },
       createPage() {
         if (store.getStompClientStatus && store.getPokerRoomId) {
           this.localVariables.roomId = store.getPokerRoomId;
           this.localVariables.username = store.getPokerUsername;
           this.localVariables.author = store.getPokerAuthor;
-          axios.get(this.backendUrls.getRoom() + this.localVariables.roomId)
+          axios.get(this.backendUrls.getRoom() + "/" + this.localVariables.roomId)
             .then(response => {
               if (response.data != null) {
                 this.room = response.data;
-                this.localFlags.showCreateAndJoinRoomComponents = false;
                 this.subscribe();
+                this.localFlags.showCreateAndJoinRoomComponents = false;
 
                 for (let i = 0; i < this.room.stories.length; i++) {
                   if (this.room.stories[i].id === this.room.selectedStoryId) {
                     this.room.selectedStory = this.room.stories[i];
+                    this.localVariables.selectedStory = this.room.selectedStory;
                     this.localVariables.tab = this.room.selectedStory.storyName;
                   }
                 }
@@ -714,9 +824,12 @@ export default defineComponent({
                 localStorage.setItem('poker-username', this.localVariables.username);
                 this.room.currentVoteResult = this.getLastVoteResult(this.room.selectedStory);
 
-                let user = {username: this.localVariables.username, sessionId: store.getPokerSessionId};
-                store.getStompClient.send("/app/poker/room/" + this.room.id + "/user/add", {}, JSON.stringify(user));
-              
+                store.getStompClient.send(
+                  this.replaceRoomId(this.backendUrls.smUserAdd(), this.room.id),
+                  {},
+                  JSON.stringify({username: this.localVariables.username, sessionId: store.getPokerSessionId})
+                );
+
                 this.localFlags.spinnerVisible = false;
               }
             })
@@ -828,22 +941,19 @@ export default defineComponent({
         switch (button) {
           case 'start':
             if (this.isCurrentUserAuthor()) {
-              return this.localFlags.votingIsOpen
-            } else {
-              return true
+              return this.localFlags.votingIsOpen;
             }
+            return true;
           case 'stop':
             if (this.isCurrentUserAuthor()) {
-              return !this.localFlags.votingIsOpen
-            } else {
-              return true
+              return !this.localFlags.votingIsOpen;
             }
+            return true;
           case 'next':
             if (this.isCurrentUserAuthor()) {
-              return this.localFlags.votingIsOpen || index === this.room.stories.length - 1
-            } else {
-              return true
+              return this.localFlags.votingIsOpen || index === this.room.stories.length - 1;
             }
+            return true;
         }
       },
       getHeightOfStoryCard(storyName) {
@@ -857,14 +967,90 @@ export default defineComponent({
       setMinimumHeight(storyName) {
         return 'min-height: ' + this.getHeightOfStoryCard(storyName) + 'px'
       },
-      parseWSResponseBody(body) {
-        body = body.substring(body.indexOf("body") + 4);
-        body = body.substring(body.indexOf("{"));
-        body = body.substring(0, body.indexOf("statusCode") - 2);
-        return body;
-      },
       isCurrentUserAuthor() {
         return this.room.author.username === this.localVariables.author && this.room.author.sessionId === store.getPokerSessionId;
+      },
+      isCurrentUser(username, sessionId) {
+        return username === this.localVariables.username && sessionId === store.getPokerSessionId;
+      },
+      deleteStory(storyId) {
+        if (this.isCurrentUserAuthor() && !this.localFlags.votingIsOpen) {
+          store.getStompClient.send(
+            this.replaceRoomIdAndStoryId(this.backendUrls.smStoryDelete(), this.room.id, storyId),
+            {}
+          );
+        }
+      },
+      enableStoryEditAlert(storyId) {
+        this.localVariables.alertInput = this.room.stories.find(s => s.id === storyId).storyName;
+        this.localVariables.alert = true;
+        this.localVariables.alertStoryId = storyId;
+      },
+      sendEditMessage() {
+        this.localVariables.alertInput = this.localVariables.alertInput.trim();
+        if (this.isCurrentUserAuthor() && this.localVariables.alertInput) {
+          store.getStompClient.send(
+            this.replaceRoomIdAndStoryId(this.backendUrls.smStoryEdit(), this.room.id, this.room.selectedStory["id"]),
+            {},
+            this.localVariables.alertInput
+          );
+
+          this.localVariables.alertInput = "";
+        }
+      },
+      storyEditMessageReceived(payload) {
+        let payloadBodyObject = JSON.parse(payload.body);
+        
+        let story = payloadBodyObject.body;
+        for (let i = 0; i < this.room.stories.length; i++) {
+          if (this.room.stories[i].id === this.room.selectedStory.id) {
+            this.room.stories[i].storyName = story.storyname;
+            this.room.selectedStory.storyName = story.storyName;
+            this.localVariables.tab = story.storyName;
+          }
+        }
+      },
+      storyDeleteMessageReceived(payload) {
+        let payloadBodyObject = JSON.parse(payload.body);
+        let story = payloadBodyObject.body;
+
+        this.room.stories = this.room.stories.filter(s => s.id !== story.id);
+
+        if (this.room.stories.length > 0 && this.localVariables.selectedStory.id === story.id) {
+          this.room.stories[0].disabled = false;
+          this.room.selectedStory = this.room.stories[0];
+          this.room.selectedStoryId = this.room.stories[0].id;
+          this.room.currentVoteResult = this.getLastVoteResult(this.room.stories[0]);
+          this.localVariables.selectedStory = this.room.stories[0];
+          this.localVariables.tab = this.room.stories[0].storyName;
+        }
+      },
+      replaceRoomId(url, roomId) {
+        return url.replace(this.backendUrls.placeHolders.roomId, roomId);
+      },      
+      replaceRoomIdAndStoryId(url, roomId, storyId) {
+        return this.replaceRoomId(url, roomId)
+                   .replace(this.backendUrls.placeHolders.storyId, storyId);
+      },
+      getStoryName(storyName) {
+        if (this.localFlags.votingIsOpen) {
+          return this.room.selectedStory.storyName;
+        }
+
+        return storyName;
+      },
+      jumpToCurrentStory() {
+        if (this.localVariables.selectedStory.id !== this.room.selectedStory.id) {
+          this.localVariables.selectedStory = this.room.selectedStory;
+          this.localVariables.tab = this.room.selectedStory.storyName;
+        }
+      },
+      openSettings() {
+        console.log("Open settings... Not implemented yet!");
+      },
+      getStoryDisabled(story) {
+        if (this.localFlags.votingIsOpen && !this.localVariables.chosenOption) return true;
+        return story.disabled;
       }
     }
 })
