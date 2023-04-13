@@ -797,7 +797,7 @@ export default defineComponent({
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/locking', this.onLockMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/blur', this.onBlurMessageReceived))
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
-      stompClientStore().setUsernameAuthorBoarDId(this.username, this.retroBoard.author, this.boardId)
+      stompClientStore().setUsernameAuthorBoardId(this.username, this.retroBoard.author, this.boardId)
     },
     exit() {
       this.getNumberOfActiveRetroBoards()
@@ -805,7 +805,7 @@ export default defineComponent({
         subscription.unsubscribe()
       })
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.remove", {});
-      stompClientStore().setUsernameAuthorBoarDId(localStorage.getItem('board-username'), localStorage.getItem('board-author'), null)
+      stompClientStore().setUsernameAuthorBoardId(localStorage.getItem('board-username'), localStorage.getItem('board-author'), null)
       this.messageInputVisible = false
       this.joinCardVisible = true
       this.createCardVisible = true
