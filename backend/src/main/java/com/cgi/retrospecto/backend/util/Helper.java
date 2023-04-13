@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class Helper {
     private static Random random = new Random();
-    private static AtomicInteger currentId = new AtomicInteger(random.nextInt(900000) + 100000);
+    private static AtomicInteger currentId = new AtomicInteger(random.nextInt(20000) + 100000);
 
     public static int generateId() {
         return currentId.getAndAdd(random.nextInt(900) + 100);
