@@ -95,7 +95,7 @@
           <div class="col-12 full-width">
             <div class="row q-pa-md items-center">
               <div class="col-12">
-                <q-input v-model="localVariables.inputStory" 
+                <q-input v-model="localVariables.inputStory"
                          label="Add story:"
                          outlined
                          @keydown.enter="createStory"/>
@@ -119,9 +119,6 @@
         <q-tab-panels v-model="localVariables.tab" animated class="text-black">
           <template v-for="(story, index) in room.stories" :key="index">
             <q-tab-panel :name=story.storyName>
-              <div v-if="this.localFlags.votingIsOpen" class="row justify-center">
-                  <div class="text-h5 text-primary text-bold q-pa-md">Voting has started !!!</div>
-              </div>
               <div class="row">
                 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-xs-12 q-pa-md">
                   <q-card>
@@ -159,20 +156,17 @@
                           <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
                             <q-btn :disable="isButtonEnabled('start', index)" :size="getButtonSize()"
                                    color="secondary" icon="play_arrow" round @click="startVoting">
-                              <q-tooltip>Start voting</q-tooltip>
                             </q-btn>
                           </div>
                           <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
                             <q-btn :disable="isButtonEnabled('stop', index)" :size="getButtonSize()"
                                    color="negative" icon="stop" round @click="finishVoting">
-                              <q-tooltip>Stop voting</q-tooltip>
                             </q-btn>
                           </div>
                           <div class="col-xl-4 col-lg-4 col-md-4 col-sm-4 col-xs-4">
                             <q-btn :disable="isButtonEnabled('next', index)"
                                    :size="getButtonSize()" color="primary" icon="arrow_forward_ios" round
                                    @click="nextStory(index, true)">
-                              <q-tooltip>Next story</q-tooltip>
                             </q-btn>
                           </div>
                         </div>
@@ -349,33 +343,79 @@ export default defineComponent({
           roomId: "{roomId}",
           storyId: "{storyId}",
         },
-        
+
         prefixAppPokerRoom: "/app/poker/room",
         roomWithIdPlaceholder: function() { return this.prefixAppPokerRoom + "/" + this.placeHolders.roomId; },
-        story: function() { return this.roomWithIdPlaceholder() + "/story"; },
-        storyWithIdPlaceholder() { return this.story() + "/" + this.placeHolders.storyId },
-        smUserAdd: function() { return this.roomWithIdPlaceholder() + "/user/add"; },
-        smUserRemove: function() { return this.roomWithIdPlaceholder() + "/user/remove"; },
-        smStoryAdd: function() { return this.story() + "/add"; },
-        smStoryEdit: function() { return this.storyWithIdPlaceholder() + "/edit"; },
-        smStoryDelete: function() { return this.storyWithIdPlaceholder() + "/remove"; },
-        smStorySelect: function() { return this.storyWithIdPlaceholder() + "/select"; },
-        smVote: function() { return this.storyWithIdPlaceholder() + "/vote"; },
-        smVoteOpen: function() { return this.storyWithIdPlaceholder() + "/vote/open"; },
-        smVoteClose: function() { return this.storyWithIdPlaceholder() + "/vote/close"; },          
-        
-        prefixWithRoomId: function() { return '/topic/poker/room/' + this.placeHolders.roomId; },
-        prefixWithRoomIdAndStory: function() { return this.prefixWithRoomId() + "/story"; },
-        prefixWithRoomIdAndUser: function() { return this.prefixWithRoomId() + "/user"; },
-        prefixWithRoomIdAndVote: function() { return this.prefixWithRoomId() + "/vote"; },
-        stUserAdd: function() { return this.prefixWithRoomIdAndUser() + "/joined"; },
-        stUserRemove: function() { return this.prefixWithRoomIdAndUser() + "/remove"; },
-        stStoryAdd: function() { return this.prefixWithRoomIdAndStory() + "/add"; },
-        stStoryEdit: function() { return this.prefixWithRoomIdAndStory() + "/edit"; },
-        stStoryDelete: function() { return this.prefixWithRoomIdAndStory() + "/remove"; },
-        stStorySelect: function() { return this.prefixWithRoomIdAndStory() + "/select"; },
-        stVote: function() { return this.prefixWithRoomIdAndVote(); },
-        stVoteOpenClose: function() { return this.prefixWithRoomIdAndVote() + "/open-close"; },          
+        story: function () {
+          return this.roomWithIdPlaceholder() + "/story";
+        },
+        storyWithIdPlaceholder() {
+          return this.story() + "/" + this.placeHolders.storyId
+        },
+        smUserAdd: function () {
+          return this.roomWithIdPlaceholder() + "/user/add";
+        },
+        smUserRemove: function () {
+          return this.roomWithIdPlaceholder() + "/user/remove";
+        },
+        smStoryAdd: function () {
+          return this.story() + "/add";
+        },
+        smStoryEdit: function () {
+          return this.storyWithIdPlaceholder() + "/edit";
+        },
+        smStoryDelete: function () {
+          return this.storyWithIdPlaceholder() + "/remove";
+        },
+        smStorySelect: function () {
+          return this.storyWithIdPlaceholder() + "/select";
+        },
+        smVote: function () {
+          return this.storyWithIdPlaceholder() + "/vote";
+        },
+        smVoteOpen: function () {
+          return this.storyWithIdPlaceholder() + "/vote/open";
+        },
+        smVoteClose: function () {
+          return this.storyWithIdPlaceholder() + "/vote/close";
+        },
+
+        prefixWithRoomId: function () {
+          return '/topic/poker/room/' + this.placeHolders.roomId;
+        },
+        prefixWithRoomIdAndStory: function () {
+          return this.prefixWithRoomId() + "/story";
+        },
+        prefixWithRoomIdAndUser: function () {
+          return this.prefixWithRoomId() + "/user";
+        },
+        prefixWithRoomIdAndVote: function () {
+          return this.prefixWithRoomId() + "/vote";
+        },
+        stUserAdd: function () {
+          return this.prefixWithRoomIdAndUser() + "/joined";
+        },
+        stUserRemove: function () {
+          return this.prefixWithRoomIdAndUser() + "/remove";
+        },
+        stStoryAdd: function () {
+          return this.prefixWithRoomIdAndStory() + "/add";
+        },
+        stStoryEdit: function () {
+          return this.prefixWithRoomIdAndStory() + "/edit";
+        },
+        stStoryDelete: function () {
+          return this.prefixWithRoomIdAndStory() + "/remove";
+        },
+        stStorySelect: function () {
+          return this.prefixWithRoomIdAndStory() + "/select";
+        },
+        stVote: function () {
+          return this.prefixWithRoomIdAndVote();
+        },
+        stVoteOpenClose: function () {
+          return this.prefixWithRoomIdAndVote() + "/open-close";
+        },
       },
     }
   },
@@ -437,7 +477,7 @@ export default defineComponent({
 
         store.getStompClient.send(
           this.replaceRoomIdAndStoryId(this.backendUrls.smVote(), this.room.id, this.room.selectedStory["id"]),
-          {}, 
+          {},
           JSON.stringify(vote)
         );
 
@@ -446,8 +486,8 @@ export default defineComponent({
       createStory() {
         if (this.localVariables.inputStory) {
           store.getStompClient.send(
-            this.replaceRoomId(this.backendUrls.smStoryAdd(), this.room.id), 
-            {}, 
+            this.replaceRoomId(this.backendUrls.smStoryAdd(), this.room.id),
+            {},
             this.localVariables.inputStory
           );
           this.localVariables.inputStory = null;
@@ -460,7 +500,7 @@ export default defineComponent({
 
         if (this.isCurrentUserAuthor() && !this.localFlags.votingIsOpen && !story.disabled) {
           store.getStompClient.send(
-            this.replaceRoomIdAndStoryId(this.backendUrls.smStorySelect(), this.room.id, story["id"]), 
+            this.replaceRoomIdAndStoryId(this.backendUrls.smStorySelect(), this.room.id, story["id"]),
             {}
           );
         }
@@ -720,14 +760,14 @@ export default defineComponent({
       },
       getVoteValue(user) {
         let story;
-        if (this.localFlags.votingIsOpen) { 
+        if (this.localFlags.votingIsOpen) {
           if (!this.localVariables.chosenOption) {
             return "?";
           }
 
-          story = this.room.selectedStory; 
-        } else if (this.localVariables.selectedStory) { 
-          story = this.localVariables.selectedStory; 
+          story = this.room.selectedStory;
+        } else if (this.localVariables.selectedStory) {
+          story = this.localVariables.selectedStory;
         }
 
 
@@ -736,7 +776,7 @@ export default defineComponent({
           if (voteResult && voteResult.votes) {
             let votes = voteResult.votes;
             let vote = votes.find(v => v.user.username === user.username);
-      
+
             if (vote && vote.value) {
               return vote.value;
             }
@@ -1000,7 +1040,7 @@ export default defineComponent({
       },
       storyEditMessageReceived(payload) {
         let payloadBodyObject = JSON.parse(payload.body);
-        
+
         let story = payloadBodyObject.body;
         for (let i = 0; i < this.room.stories.length; i++) {
           if (this.room.stories[i].id === this.room.selectedStory.id) {
@@ -1027,10 +1067,10 @@ export default defineComponent({
       },
       replaceRoomId(url, roomId) {
         return url.replace(this.backendUrls.placeHolders.roomId, roomId);
-      },      
+      },
       replaceRoomIdAndStoryId(url, roomId, storyId) {
         return this.replaceRoomId(url, roomId)
-                   .replace(this.backendUrls.placeHolders.storyId, storyId);
+          .replace(this.backendUrls.placeHolders.storyId, storyId);
       },
       getStoryName(storyName) {
         if (this.localFlags.votingIsOpen) {
