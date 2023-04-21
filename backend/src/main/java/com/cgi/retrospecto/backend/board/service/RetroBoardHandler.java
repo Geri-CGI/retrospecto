@@ -224,16 +224,15 @@ public class RetroBoardHandler {
         final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
         int index = retroBoardMessage.getIndex();
         retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        RetroBoardMessage retroBoardMessageFromDB = null;
         switch (retroBoardMessage.getColumnType()) {
-            case TRY ->
-                    retroBoard.getWantToTryColumn().get(index).setActionMessage(retroBoardMessage.getActionMessage());
-            case WELL ->
-                    retroBoard.getWentWellColumn().get(index).setActionMessage(retroBoardMessage.getActionMessage());
-            case EXPECT ->
-                    retroBoard.getExpectColumn().get(index).setActionMessage(retroBoardMessage.getActionMessage());
-            case NOT_WELL ->
-                    retroBoard.getDidNotGoWellColumn().get(index).setActionMessage(retroBoardMessage.getActionMessage());
+            case TRY -> retroBoardMessageFromDB = retroBoard.getWantToTryColumn().get(index);
+            case WELL -> retroBoardMessageFromDB = retroBoard.getWentWellColumn().get(index);
+            case EXPECT -> retroBoardMessageFromDB = retroBoard.getExpectColumn().get(index);
+            case NOT_WELL -> retroBoardMessageFromDB = retroBoard.getDidNotGoWellColumn().get(index);
         }
-        return retroBoardMessage;
+        retroBoardMessageFromDB.setActionMessage(retroBoardMessage.getActionMessage());
+        retroBoardMessageFromDB.setHasAction(true);
+        return retroBoardMessageFromDB;
     }
 }

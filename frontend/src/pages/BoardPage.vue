@@ -346,6 +346,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
@@ -355,6 +358,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -405,6 +412,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
@@ -414,6 +424,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -464,6 +478,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit"
                                      round
                                      size="sm"
@@ -475,6 +492,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -954,6 +975,9 @@ export default defineComponent({
       }
     },
     getIsDisabled() {
+      if (this.userIsAuthor()) {
+        return false
+      }
       return this.retroBoard.locked
     },
     getNumberOfActiveRetroBoards() {
