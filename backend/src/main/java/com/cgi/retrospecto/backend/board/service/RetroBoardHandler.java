@@ -233,6 +233,6 @@ public class RetroBoardHandler {
         }
         retroBoardMessageFromDB.setActionMessage(retroBoardMessage.getActionMessage());
         retroBoardMessageFromDB.setHasAction(true);
-        return retroBoardMessageFromDB;
+        return retroBoardMessage;
     }
 }
