@@ -15,6 +15,37 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="deleteAlert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Are you sure you want to delete this card?</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          {{ deleteAlertMessage.cardMessage }}
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn v-close-popup color="primary" flat label="Ok"
+                 @click="deleteCard(deleteAlertMessage, deleteAlertIndex)"/>
+          <q-btn v-close-popup color="negative" flat label="Close"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="actionAlert">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Action:</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input v-model="actionAlertMessage.actionMessage" type="textarea">
+          </q-input>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn v-close-popup color="primary" flat label="Ok"
+                 @click="addAction(actionAlertMessage, actionAlertIndex)"/>
+          <q-btn v-close-popup color="negative" flat label="Close"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <q-dialog v-model="createBoardAlert">
       <q-card>
         <q-img src="~assets/retrospecto-board.png" width="455px">
@@ -222,7 +253,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="getBlur(card.username)">
+                        <div class="row q-pr-lg" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -248,6 +279,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
@@ -257,6 +291,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -282,7 +320,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="getBlur(card.username)">
+                        <div class="row q-pr-lg" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -308,6 +346,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
@@ -317,6 +358,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -341,7 +386,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="getBlur(card.username)">
+                        <div class="row q-pr-lg" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -367,6 +412,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit" round
                                      size="sm"
                                      :disable="getIsDisabled()" @click="enableAlert(card, index)"/>
@@ -376,6 +424,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -400,7 +452,7 @@
                   <div style="padding: 5px">
                     <q-card v-touch-hold="card.show" @mouseleave="card.show = false" @mouseover="card.show = true">
                       <q-card-section>
-                        <div class="row" v-bind:style="getBlur(card.username)">
+                        <div class="row q-pr-lg" v-bind:style="getBlur(card.username)">
                           {{ card.cardMessage }}
                         </div>
                         <q-badge class="row" color="transparent" floating>
@@ -426,6 +478,9 @@
                               <q-btn v-if="likeButtonsVisible(card.uniqueId, card.likedOrDisliked)" color="red-13"
                                      icon="thumb_down" round size="sm"
                                      :disable="getIsDisabled()" @click="dislike(card, index)"/>
+                              <q-btn v-if="userIsAuthor()" :disable="getIsDisabled()"
+                                     color="green-6" icon="add_circle" round
+                                     size="sm" @click="enabledActionAlert(card, index)"/>
                               <q-btn v-if="userIsAuthorOrIsHisCard(card.username)" color="warning" icon="edit"
                                      round
                                      size="sm"
@@ -437,6 +492,10 @@
                             </div>
                           </div>
                         </q-slide-transition>
+                      </q-card-section>
+                      <q-card-section v-if="card.hasAction">
+                        <div>Action:</div>
+                        {{ card.actionMessage }}
                       </q-card-section>
                     </q-card>
                   </div>
@@ -505,7 +564,9 @@ export default defineComponent({
         show: false,
         likes: 0,
         dislikes: 0,
-        likedOrDisliked: false
+        likedOrDisliked: false,
+        actionMessage: null,
+        hasAction: false
       },
       boardIdErrorMessage: 'Board ID required!',
       usernameErrorMessage: 'Username required!',
@@ -515,6 +576,12 @@ export default defineComponent({
       spinnerVisible: false,
       alert: false,
       alertMessage: null,
+      deleteAlert: false,
+      deleteAlertIndex: null,
+      deleteAlertMessage: null,
+      actionAlert: false,
+      actionAlertIndex: null,
+      actionAlertMessage: null,
       subscriptions: [],
       numberOfActiveRetroBoards: 0,
       retroBoardInput: {
@@ -605,20 +672,24 @@ export default defineComponent({
       this.author = localStorage.getItem('board-author')
     },
     deleteCardExpectColumn(key) {
-      let retroBoardMessage = this.retroBoard.expectColumn[key]
-      this.deleteCard(retroBoardMessage, key)
+      this.deleteAlertMessage = this.retroBoard.expectColumn[key]
+      this.deleteAlertIndex = key
+      this.deleteAlert = true
     },
     deleteCardWentWellColumn(key) {
-      let retroBoardMessage = this.retroBoard.wentWellColumn[key]
-      this.deleteCard(retroBoardMessage, key)
+      this.deleteAlertMessage = this.retroBoard.wentWellColumn[key]
+      this.deleteAlertIndex = key
+      this.deleteAlert = true
     },
     deleteCardNotWellColumn(key) {
-      let retroBoardMessage = this.retroBoard.didNotGoWellColumn[key]
-      this.deleteCard(retroBoardMessage, key)
+      this.deleteAlertMessage = this.retroBoard.didNotGoWellColumn[key]
+      this.deleteAlertIndex = key
+      this.deleteAlert = true
     },
     deleteCardTryColumn(key) {
-      let retroBoardMessage = this.retroBoard.wantToTryColumn[key]
-      this.deleteCard(retroBoardMessage, key)
+      this.deleteAlertMessage = this.retroBoard.wantToTryColumn[key]
+      this.deleteAlertIndex = key
+      this.deleteAlert = true
     },
     deleteCard(retroBoardMessage, key) {
       retroBoardMessage.index = key
@@ -690,6 +761,17 @@ export default defineComponent({
       message.likedOrDisliked = false
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/card.removeLike", {}, JSON.stringify(message));
     },
+    enabledActionAlert(message, index) {
+      this.actionAlertMessage = message
+      this.actionAlertIndex = index
+      this.actionAlert = true
+    },
+    addAction(message, index) {
+      message.index = index
+      message.hasAction = true
+      message.actionMessage = this.actionAlertMessage.actionMessage
+      store.getStompClient.send("/app/board/" + this.boardId + "/action.add", {}, JSON.stringify(message));
+    },
     likeButtonsVisible(uniqueId, likedOrDisliked) {
       try {
         const map = this.retroBoard.likedRecords
@@ -749,6 +831,25 @@ export default defineComponent({
         this.retroBoard.wantToTryColumn[retroBoardMessage.index].cardMessage = retroBoardMessage.cardMessage
       }
     },
+    onActionMessageReceived(payload) {
+      let retroBoardMessage = JSON.parse(payload.body);
+      if (retroBoardMessage.columnType === 'EXPECT') {
+        this.retroBoard.expectColumn[retroBoardMessage.index].actionMessage = retroBoardMessage.actionMessage
+        this.retroBoard.expectColumn[retroBoardMessage.index].hasAction = true
+      }
+      if (retroBoardMessage.columnType === 'WELL') {
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].actionMessage = retroBoardMessage.actionMessage
+        this.retroBoard.wentWellColumn[retroBoardMessage.index].hasAction = true
+      }
+      if (retroBoardMessage.columnType === 'NOT_WELL') {
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].actionMessage = retroBoardMessage.actionMessage
+        this.retroBoard.didNotGoWellColumn[retroBoardMessage.index].hasAction = true
+      }
+      if (retroBoardMessage.columnType === 'TRY') {
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].actionMessage = retroBoardMessage.actionMessage
+        this.retroBoard.wantToTryColumn[retroBoardMessage.index].hasAction = true
+      }
+    },
     onLikeMessageReceived(payload) {
       let retroBoardMessage = JSON.parse(payload.body);
       if (retroBoardMessage.columnType === 'EXPECT') {
@@ -796,6 +897,7 @@ export default defineComponent({
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/user', this.onUserMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/locking', this.onLockMessageReceived))
       this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/blur', this.onBlurMessageReceived))
+      this.subscriptions.push(store.getStompClient.subscribe('/topic/board/' + this.boardId + '/action', this.onActionMessageReceived))
       store.getStompClient.send("/app/board/" + this.boardId + "/" + this.username + "/user.add", {});
       stompClientStore().setUsernameAuthorBoardId(this.username, this.retroBoard.author, this.boardId)
     },
@@ -873,6 +975,9 @@ export default defineComponent({
       }
     },
     getIsDisabled() {
+      if (this.userIsAuthor()) {
+        return false
+      }
       return this.retroBoard.locked
     },
     getNumberOfActiveRetroBoards() {

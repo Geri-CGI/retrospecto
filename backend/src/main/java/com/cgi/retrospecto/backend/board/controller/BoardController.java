@@ -58,6 +58,12 @@ public class BoardController {
         return retroBoardHandler.removeLikeRetroBoardCard(boardId, username, retroBoardMessage);
     }
 
+    @MessageMapping("/board/{boardId}/action.add")
+    @SendTo("/topic/board/{boardId}/action")
+    public RetroBoardMessage addActionToRetroBoardCard(@DestinationVariable int boardId, @Payload RetroBoardMessage retroBoardMessage) {
+        return retroBoardHandler.addActionToRetroBoardCard(boardId, retroBoardMessage);
+    }
+
     @MessageMapping("/board/{boardId}/{username}/user.add")
     @SendTo("/topic/board/{boardId}/user")
     public Set<String> addUserToRetroBoard(@DestinationVariable int boardId, @DestinationVariable String username) {

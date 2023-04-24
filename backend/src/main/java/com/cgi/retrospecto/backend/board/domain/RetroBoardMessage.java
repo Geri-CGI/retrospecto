@@ -11,6 +11,10 @@ public class RetroBoardMessage {
 
     private String cardMessage;
 
+    private String actionMessage;
+
+    private boolean hasAction = false;
+
     private ColumnType columnType;
 
     private int index;
@@ -62,6 +66,22 @@ public class RetroBoardMessage {
 
     public int getLikes() {
         return likes;
+    }
+
+    public String getActionMessage() {
+        return actionMessage;
+    }
+
+    public void setActionMessage(String actionMessage) {
+        this.actionMessage = actionMessage;
+    }
+
+    public boolean isHasAction() {
+        return hasAction;
+    }
+
+    public void setHasAction(boolean hasAction) {
+        this.hasAction = hasAction;
     }
 
     public void increaseLikes(String username) {

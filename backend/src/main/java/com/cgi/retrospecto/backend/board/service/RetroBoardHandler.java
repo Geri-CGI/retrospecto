@@ -219,4 +219,20 @@ public class RetroBoardHandler {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
     }
+
+    public RetroBoardMessage addActionToRetroBoardCard(int boardId, RetroBoardMessage retroBoardMessage) {
+        final RetroBoard retroBoard = retroBoardKeeper.getRetroBoard(boardId);
+        int index = retroBoardMessage.getIndex();
+        retroBoard.setLastActionSubmittedTime(LocalDateTime.now());
+        RetroBoardMessage retroBoardMessageFromDB = null;
+        switch (retroBoardMessage.getColumnType()) {
+            case TRY -> retroBoardMessageFromDB = retroBoard.getWantToTryColumn().get(index);
+            case WELL -> retroBoardMessageFromDB = retroBoard.getWentWellColumn().get(index);
+            case EXPECT -> retroBoardMessageFromDB = retroBoard.getExpectColumn().get(index);
+            case NOT_WELL -> retroBoardMessageFromDB = retroBoard.getDidNotGoWellColumn().get(index);
+        }
+        retroBoardMessageFromDB.setActionMessage(retroBoardMessage.getActionMessage());
+        retroBoardMessageFromDB.setHasAction(true);
+        return retroBoardMessage;
+    }
 }
