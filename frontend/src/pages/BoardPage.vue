@@ -131,7 +131,7 @@
                            label="Board ID"
                            type="text"/>
                 </div>
-                <div class="col-12 text-center" style="p3adding: 10px">
+                <div class="col-12 text-center" style="padding: 10px">
                   <q-btn color="secondary" label="Join" @click="joinBoard"/>
                 </div>
               </div>
