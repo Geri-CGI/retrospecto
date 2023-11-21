@@ -21,7 +21,7 @@ pipeline {
         stage('Stop and remove old docker image') {
             steps {
                 sh '''
-                        docker stop retrospecto
+                        docker stop retrospecto || true
                     '''
             }
         }
