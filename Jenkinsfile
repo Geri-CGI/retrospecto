@@ -21,7 +21,7 @@ pipeline {
         stage('Stop and remove old docker image') {
             steps {
                 sh '''
-                        docker stop retrospecto || true
+                        docker stop retrospecto || true && docker rm retrospecto || true
                     '''
             }
         }
@@ -35,7 +35,7 @@ pipeline {
 
         stage('Start retrospecto docker image') {
             steps {
-                sh 'docker run -d -p 8098:8098 --name retrospecto --rm retrospecto-backend'
+                sh 'docker run -d -p 8098:8098 --name retrospecto --restart unless-stopped retrospecto-backend'
             }
         }
     }
